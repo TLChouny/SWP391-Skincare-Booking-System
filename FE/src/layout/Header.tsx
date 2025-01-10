@@ -1,18 +1,21 @@
 import React from "react";
 import '../../src/index.css';
-import logo from '../assets/logo.png';
+import logo from '../assets/logo7.png';
 const Header: React.FC = () => {
   return (
-    <header className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white py-4 shadow-lg sticky top-0 z-50">
+    <header 
+    style={{ background: "#dad5c9" }}
+    className="bg-#dad5c9 to-indigo-500 text-black py-4 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center px-6">
         <div className="flex items-center space-x-3">
           <img
             src={logo}
             alt="LuLuSpa Logo"
-            className="w-12 h-12 rounded-full shadow-md"
+            className="w-16 h-16 rounded-full"
           />
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-wide">
-            LuLu<span className="text-yellow-300">Spa</span>
+            <span className="text-black-300">LuLu</span>
+            <span className="text-yellow-300">Spa</span>
           </h1>
         </div>
 
