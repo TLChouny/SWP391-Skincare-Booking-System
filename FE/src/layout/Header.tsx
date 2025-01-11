@@ -2,6 +2,7 @@ import React from "react";
 import '../../src/index.css';
 import logo from '../assets/logo7.png';
 import { Link } from "react-router-dom";
+import { Divider } from 'antd';
 const Header: React.FC = () => {
   return (
     <header
@@ -59,7 +60,7 @@ const Header: React.FC = () => {
           </ul>
         </nav>
 
-        <div className="md:hidden">
+        {/* <div className="md:hidden">
           <button
             title="Open menu"
             aria-label="Open menu"
@@ -80,15 +81,28 @@ const Header: React.FC = () => {
               />
             </svg>
           </button>
+        </div> */}
+        <div className="flex items-center space-x-4">
+          <button
+            title="Book your appointment now"
+            className="hidden md:block bg-yellow-300 text-black py-2 px-6 rounded-lg shadow-md hover:bg-yellow-400 transition duration-300 ease-in-out"
+          >
+            Book Now
+          </button>
+          <div className="flex items-center space-x-2">
+            <Link to="/login" className="flex items-center space-x-2">
+              <span>Đăng nhập</span>
+            </Link>
+            <Divider type="vertical" className="border-black mt-1 h-7"/>
+            <div>
+              <Link to="/register" className="flex items-center space-x-2">
+                <span>Đăng ký</span>
+              </Link>
+            </div>
+          </div>
         </div>
-
-        <button
-          title="Book your appointment now"
-          className="hidden md:block bg-yellow-300 text-black py-2 px-6 rounded-lg shadow-md hover:bg-yellow-400 transition duration-300 ease-in-out"
-        >
-          Book Now
-        </button>
       </div>
+
     </header>
   );
 };
