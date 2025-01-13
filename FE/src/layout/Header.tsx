@@ -91,12 +91,12 @@ const Header: React.FC = () => {
           </button>
           <div className="flex items-center space-x-2">
             <Link to="/login" className="flex items-center space-x-2">
-              <span>Đăng nhập</span>
+              <span>Login</span>
             </Link>
             <Divider type="vertical" className="border-black mt-1 h-7"/>
             <div>
               <Link to="/register" className="flex items-center space-x-2">
-                <span>Đăng ký</span>
+                <span>Signup</span>
               </Link>
             </div>
           </div>
