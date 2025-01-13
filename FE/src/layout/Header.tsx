@@ -1,13 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
 import '../../src/index.css';
 import logo from '../assets/logo7.png';
 import { Link } from "react-router-dom";
 import { Divider } from 'antd';
+
 const Header: React.FC = () => {
+  // State để mở/đóng modal
+  const [showModal, setShowModal] = useState(false);
+
+  // Hàm mở modal
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  // Hàm đóng modal
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
   return (
     <header
       style={{ background: "#dad5c9" }}
-      className="bg-#dad5c9 to-indigo-500 text-black py-4 shadow-lg sticky top-0 z-50">
+      className="bg-#dad5c9 to-indigo-500 text-black py-4 shadow-lg sticky top-0 z-50"
+    >
       <div className="container mx-auto flex justify-between items-center px-6">
         <div className="flex items-center space-x-3">
           <Link to="/">
@@ -26,62 +41,41 @@ const Header: React.FC = () => {
         <nav>
           <ul className="hidden md:flex space-x-8 text-lg font-medium">
             <li>
-              <a
-                href="/"
+              <Link
+                to="/"
                 className="hover:text-yellow-300 transition duration-300 ease-in-out"
               >
                 Home
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href="/services"
+              <Link
+                to="/services"
                 className="hover:text-yellow-300 transition duration-300 ease-in-out"
               >
                 Services
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href="/booking"
+              <Link
+                to="/booking"
                 className="hover:text-yellow-300 transition duration-300 ease-in-out"
               >
                 Booking
-              </a>
+              </Link>
             </li>
+            {/* Thay đổi liên kết thành hành động mở modal */}
             <li>
-              <a
-                href="/contact"
-                className="hover:text-yellow-300 transition duration-300 ease-in-out"
+              <button
+                onClick={handleOpenModal}
+                className="hover:text-yellow-300 transition duration-300 ease-in-out cursor-pointer"
               >
                 Contact
-              </a>
+              </button>
             </li>
           </ul>
         </nav>
 
-        {/* <div className="md:hidden">
-          <button
-            title="Open menu"
-            aria-label="Open menu"
-            className="text-white focus:outline-none"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16m-7 6h7"
-              />
-            </svg>
-          </button>
-        </div> */}
         <div className="flex items-center space-x-4">
           <button
             title="Book your appointment now"
@@ -103,6 +97,34 @@ const Header: React.FC = () => {
         </div>
       </div>
 
+      {/* Modal Contact */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-1/2">
+            <button onClick={handleCloseModal} className="absolute top-4 right-4 text-2xl">×</button>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Contact Information</h3>
+            <form>
+              <input
+                type="text"
+                placeholder="Name"
+                className="mb-4 p-2 border w-full"
+              />
+              <input
+                type="text"
+                placeholder="Phone Number"
+                className="mb-4 p-2 border w-full"
+              />
+              <button className="py-2 px-4 bg-blue-500 text-white rounded-lg mt-4">Submit</button>
+            </form>
+            <div className="mt-6">
+              <p className="text-gray-600">Store Name: LuLuSpa</p>
+              <p className="text-gray-600">Phone: 123-456-789</p>
+              <p className="text-gray-600">Email: info@luluspa.com</p>
+              <a href="https://facebook.com/luluspa" className="text-blue-600">Facebook</a>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

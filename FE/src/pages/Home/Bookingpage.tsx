@@ -1,68 +1,28 @@
-import React, { useState, useEffect } from "react";
-import { getBookings, createBooking } from "../../api/api";
-import { Booking } from "../../types/booking";
+import React from "react";
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 
 const BookingPage: React.FC = () => {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [newBooking, setNewBooking] = useState<Booking>({
-    name: "",
-    date: "",
-    service: "",
-  });
+  const center = { lat: 21.0285, lng: 105.8542 }; // Example center location
 
-  useEffect(() => {
-    getBookings().then((res) => setBookings(res.data));
-  }, []);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewBooking({ ...newBooking, [name]: value });
-  };
-
-  const handleSubmit = async () => {
-    await createBooking(newBooking);
-    const res = await getBookings();
-    setBookings(res.data);
-    setNewBooking({ name: "", date: "", service: "" });
-  };
+  const branches = [
+    { name: "LuLuSpa Branch 1", lat: 21.0285, lng: 105.8542 },
+    { name: "LuLuSpa Branch 2", lat: 21.0290, lng: 105.8550 },
+  ];
 
   return (
-    <div>
-      <h1>Booking Page</h1>
-      <form onSubmit={(e) => e.preventDefault()}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Name"
-          value={newBooking.name}
-          onChange={handleInputChange}
-        />
-        <input
-          type="date"
-          name="date"
-          value={newBooking.date}
-          onChange={handleInputChange}
-        />
-        <input
-          type="text"
-          name="service"
-          placeholder="Service"
-          value={newBooking.service}
-          onChange={handleInputChange}
-        />
-        <button type="button" onClick={handleSubmit}>
-          Book Now
-        </button>
-      </form>
-
-      <h2>Existing Bookings</h2>
-      <ul>
-        {bookings.map((booking) => (
-          <li key={booking.id}>
-            {booking.name} - {booking.service} on {booking.date}
-          </li>
-        ))}
-      </ul>
+    <div className="container mx-auto py-16">
+      <h2 className="text-4xl font-bold text-center mb-10">Select Your Branch</h2>
+      <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
+        <GoogleMap
+          mapContainerStyle={{ width: "100%", height: "400px" }}
+          center={center}
+          zoom={15}
+        >
+          {branches.map((branch, index) => (
+            <Marker key={index} position={{ lat: branch.lat, lng: branch.lng }} label={branch.name} />
+          ))}
+        </GoogleMap>
+      </LoadScript>
     </div>
   );
 };
