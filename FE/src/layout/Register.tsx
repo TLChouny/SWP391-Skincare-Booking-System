@@ -98,32 +98,32 @@ const Register: React.FC = () => {
                     <div className="flex flex-col items-center">
                         <div className="text-center">
                             <h1 className="mt-4 mb-2 text-2xl font-extrabold text-blue-900 xl:text-4xl">
-                                Sign up
+                                Đăng ký
                             </h1>
                         </div>
                         <form onSubmit={handleSubmit} className="flex-1 w-full">
                             <div className="flex flex-col max-w-xs gap-4 mx-auto">
                                 <label className="text-sm font-medium text-left text-gray-700">
-                                    Username
+                                    Tên đăng nhập
                                 </label>
                                 <input
                                     className="w-full px-5 py-3 text-sm font-medium placeholder-gray-500 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 focus:bg-white"
                                     type="text"
                                     name="username"
-                                    placeholder="Please enter your username"
+                                    placeholder="Nhập tên đăng nhập"
                                     value={formData.username}
                                     onChange={handleInputChange}
                                 />
 
                                 <label className="text-sm font-medium text-left text-gray-700">
-                                    Password
+                                    Mật khẩu
                                 </label>
                                 <div className="relative w-full">
                                     <input
                                         className="w-full px-5 py-3 text-sm font-medium placeholder-gray-500 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 focus:bg-white"
                                         type={passwordVisible ? "text" : "password"}
                                         name="password"
-                                        placeholder="Please enter your password"
+                                        placeholder="Nhập mật khẩu"
                                         value={formData.password}
                                         onChange={handleInputChange}
                                     />
@@ -147,7 +147,7 @@ const Register: React.FC = () => {
                                     className="w-full px-5 py-3 text-sm font-medium placeholder-gray-500 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 focus:bg-white"
                                     type="email"
                                     name="email"
-                                    placeholder="Please enter your email"
+                                    placeholder="Nhập email"
                                     value={formData.email}
                                     onChange={handleInputChange}
                                 />
@@ -160,14 +160,14 @@ const Register: React.FC = () => {
                                     {loading ? (
                                         "Đang xử lý..."
                                     ) : (
-                                        <span className="ml-3">{"Sign up"}</span>
+                                        <span className="ml-3">{"Đăng ký"}</span>
                                     )}
                                 </button>
                                 <p className="mt-2 mb-4 text-xs text-center text-gray-600">
-                                    Have an account - {" "}
+                                    Bạn đã có tài khoản - {" "}
                                     <Link to="/login">
                                         <span className="font-semibold text-blue-900">
-                                            Login
+                                            Đăng nhập
                                         </span>
                                     </Link>
                                 </p>
