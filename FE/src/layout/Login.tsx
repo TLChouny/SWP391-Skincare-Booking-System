@@ -77,7 +77,7 @@ const Login: React.FC = () => {
                 <div className="p-4 lg:w-1/2 xl:w-1/2 sm:p-12 md:w-1/3">
                     <div className="flex flex-col items-center">
                         <h1 className="text-2xl font-extrabold text-blue-900 xl:text-4xl">
-                            Đăng nhập
+                            Login
                         </h1>
                         <form
                             onSubmit={handleSubmit}
@@ -86,7 +86,7 @@ const Login: React.FC = () => {
                             <input
                                 className="w-full px-5 py-3 text-sm font-medium placeholder-gray-500 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 focus:bg-white"
                                 type="text"
-                                placeholder="Nhập tên đăng nhập"
+                                placeholder="Please enter your username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                             />
@@ -95,7 +95,7 @@ const Login: React.FC = () => {
                                 <input
                                     className="w-full px-5 py-3 text-sm font-medium placeholder-gray-500 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 focus:bg-white"
                                     type={passwordVisible ? "text" : "password"}
-                                    placeholder="Nhập mật khẩu"
+                                    placeholder="Please enter your password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
@@ -116,7 +116,7 @@ const Login: React.FC = () => {
                                     : "bg-blue-900 hover:bg-indigo-700"
                                     }`}
                             >
-                                {loading ? "Đang xử lý..." : "Đăng nhập"}
+                                {loading ? "Đang xử lý..." : "Login"}
                             </button>
 
                             <div className="mt-1 text-center">
@@ -124,15 +124,15 @@ const Login: React.FC = () => {
                                     to="/forgot-password"
                                     className="text-sm font-medium text-blue-900 hover:underline"
                                 >
-                                    Quên mật khẩu
+                                    Forgot password
                                 </Link>
                             </div>
 
                             <p className="mt-6 text-xs text-center text-gray-600">
-                                Bạn chưa có tài khoản - {" "}
+                                Don't have an account - {" "}
                                 <Link to="/register">
                                     <span className="font-semibold text-blue-900">
-                                        Đăng ký
+                                        Sign up
                                     </span>
                                 </Link>
                             </p>
