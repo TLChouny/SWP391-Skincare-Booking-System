@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import { getServices } from "../../api/apiService"; // Đảm bảo thay đúng đường dẫn tới API
+import  Layout  from "../../layout/Layout";
 
 const BookingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>(); // Lấy id từ URL
@@ -30,6 +31,7 @@ const BookingPage: React.FC = () => {
   }, [id]);
 
   return (
+    <Layout>
     <div className="container mx-auto py-16">
       <h2 className="text-4xl font-bold text-center mb-10">Booking Service</h2>
 
@@ -110,6 +112,7 @@ const BookingPage: React.FC = () => {
         </GoogleMap>
       </LoadScript>
     </div>
+    </Layout>
   );
 };
 
