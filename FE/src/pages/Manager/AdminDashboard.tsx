@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { getBookings } from "../../api/api";
+// import { getBookings } from "../../api/apiService";
 import { Booking } from "../../types/booking";
 
 const AdminDashboard: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
-    getBookings().then((res) => setBookings(res.data));
+    // getBookings().then((res) => setBookings(res.data));
   }, []);
 
   return (

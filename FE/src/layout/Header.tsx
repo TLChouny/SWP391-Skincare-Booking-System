@@ -68,7 +68,7 @@ const Header: React.FC = () => {
             <li>
               <button
                 onClick={handleOpenModal}
-                className="hover:text-yellow-300 transition duration-300 ease-in-out cursor-pointer"
+                className="hover:text-yellow-300 transition duration-300 ease-in-out"
               >
                 Contact
               </button>

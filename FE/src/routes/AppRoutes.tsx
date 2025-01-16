@@ -14,7 +14,7 @@ const AppRoutes: React.FC = () => {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/booking" element={<BookingPage />} />
+        <Route path="/booking/:id" element={<BookingPage />} />
         <Route path="/contact" element={<ContactPage />} /> {/* Modal sẽ hiện ra ở đây */}
         <Route path="/services" element={<ServicePage />} />
         <Route path="/admin" element={<AdminDashboard />} />

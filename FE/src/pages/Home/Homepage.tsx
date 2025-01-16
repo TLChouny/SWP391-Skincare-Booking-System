@@ -1,8 +1,31 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../layout/Layout";
 import video1 from "../../assets/video/invideo-ai-1080 Discover the Magic of LuLuSpa_ Your Skin 2025-01-10.mp4";
+import { getServices } from "../../api/apiService"; // import hàm getServices từ api
+import { useNavigate } from "react-router-dom";
 
 const HomePage: React.FC = () => {
+  const [services, setServices] = useState<any[]>([]); // Khai báo state để lưu dịch vụ
+
+  useEffect(() => {
+    // Gọi API để lấy danh sách dịch vụ
+    getServices()
+      .then((response) => {
+        setServices(response.data); // Lưu dữ liệu vào state
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy dịch vụ:", error);
+      });
+  }, []); // useEffect chạy một lần khi component được render
+
+  const navigate = useNavigate(); // Khởi tạo navigate
+
+  // Hàm điều hướng đến trang booking với id dịch vụ đã chọn
+  const handleBookNow = (serviceId: number) => {
+    // Điều hướng đến trang booking với id dịch vụ
+    navigate(`/booking/${serviceId}`);
+  };
+
   return (
     <div>
       <Layout>
@@ -44,7 +67,10 @@ const HomePage: React.FC = () => {
               <div className="container mx-auto h-full flex items-center justify-center text-center text-white">
                 <h1 className="text-5xl font-bold">Discover the Magic of LuLuSpa</h1>
                 <p className="mt-4 text-xl">Your Skin, Our Passion</p>
-                <button className="mt-8 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                <button
+                  onClick={() => handleBookNow(1)} // Truyền id dịch vụ đầu tiên khi nhấn Book
+                  className="mt-8 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                >
                   Book Your Appointment
                 </button>
               </div>
@@ -57,34 +83,31 @@ const HomePage: React.FC = () => {
           <div className="container mx-auto text-center">
             <h2 className="text-4xl font-bold text-gray-800 mb-10">Our Skincare Packages</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[ 
-                {
-                  name: "Glow & Radiance Combo",
-                  description: "Facial treatment, acne therapy, and a rejuvenating mask for ultimate glow.",
-                  price: "$120",
-                  image: "path_to_image_1.jpg"
-                },
-                {
-                  name: "Clear Skin Combo",
-                  description: "Combines acne therapy with a deep cleansing facial to combat blemishes.",
-                  price: "$100",
-                  image: "path_to_image_2.jpg"
-                },
-                {
-                  name: "Anti-Aging Combo",
-                  description: "Anti-aging facial treatments, collagen boosters, and moisturizing masks.",
-                  price: "$150",
-                  image: "path_to_image_3.jpg"
-                },
-              ].map((packageItem, index) => (
-                <div key={index} className="bg-white p-6 rounded-lg shadow-lg transition transform hover:scale-105 hover:shadow-xl">
-                  <img src={packageItem.image} alt={packageItem.name} className="w-full h-40 object-cover rounded-lg" />
-                  <h3 className="text-2xl font-semibold text-gray-800 mt-4">{packageItem.name}</h3>
-                  <p className="mt-4 text-gray-600">{packageItem.description}</p>
-                  <p className="mt-4 text-xl font-bold text-gray-900">{packageItem.price}</p>
-                  <button className="mt-6 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">Book Now</button>
-                </div>
-              ))}
+              {services.length === 0 ? (
+                <p>Loading services...</p> // Hiển thị khi dữ liệu chưa được tải
+              ) : (
+                services.map((service, index) => (
+                  <div
+                    key={index}
+                    className="bg-white p-6 rounded-lg shadow-lg transition transform hover:scale-105 hover:shadow-xl"
+                  >
+                    <img
+                      src={service.image}
+                      alt={service.name}
+                      className="w-full h-40 object-cover rounded-lg"
+                    />
+                    <h3 className="text-2xl font-semibold text-gray-800 mt-4">{service.name}</h3>
+                    <p className="mt-4 text-gray-600">{service.description}</p>
+                    <p className="mt-4 text-xl font-bold text-gray-900">{`$${service.price}`}</p>
+                    <button
+                      onClick={() => handleBookNow(service.id)} // Truyền id dịch vụ khi nhấn "Book Now"
+                      className="mt-6 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                    >
+                      Book Now
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -94,27 +117,11 @@ const HomePage: React.FC = () => {
           <div className="container mx-auto text-center">
             <h2 className="text-4xl font-bold text-gray-800 mb-10">Latest from our Blog</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[ 
-                {
-                  title: "How to Choose the Right Skincare Combo",
-                  description: "Discover the best skincare packages tailored to your skin type and needs.",
-                  image: "path_to_blog_image_1.jpg"
-                },
-                {
-                  title: "The Benefits of Acne Therapy",
-                  description: "Learn how acne therapy can clear up your skin and boost your confidence.",
-                  image: "path_to_blog_image_2.jpg"
-                },
-                {
-                  title: "Why Facial Treatments Are Essential",
-                  description: "Explore the science behind facial treatments and why they're crucial for healthy, glowing skin.",
-                  image: "path_to_blog_image_3.jpg"
-                },
-              ].map((blogPost, index) => (
+              {[ /* Blog Posts */ ].map((blogPost, index) => (
                 <div key={index} className="bg-white p-6 rounded-lg shadow-lg transition transform hover:scale-105 hover:shadow-xl">
-                  <img src={blogPost.image} alt={blogPost.title} className="w-full h-40 object-cover rounded-lg" />
-                  <h3 className="text-2xl font-semibold text-gray-800 mt-4">{blogPost.title}</h3>
-                  <p className="mt-4 text-gray-600">{blogPost.description}</p>
+                  {/* <img src={blogPost.image} alt={blogPost.title} className="w-full h-40 object-cover rounded-lg" /> */}
+                  {/* <h3 className="text-2xl font-semibold text-gray-800 mt-4">{blogPost.title}</h3> */}
+                  {/* <p className="mt-4 text-gray-600">{blogPost.description}</p> */}
                   <button className="mt-6 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">Read More</button>
                 </div>
               ))}
