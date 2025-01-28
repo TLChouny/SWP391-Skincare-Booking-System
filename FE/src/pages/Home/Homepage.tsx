@@ -20,10 +20,9 @@ const HomePage: React.FC = () => {
 
   const navigate = useNavigate(); // Khởi tạo navigate
 
-  // Hàm điều hướng đến trang booking với id dịch vụ đã chọn
-  const handleBookNow = (serviceId: number) => {
+  const handleBookNow = (id: string) => {
     // Điều hướng đến trang booking với id dịch vụ
-    navigate(`/booking/${serviceId}`);
+    navigate(`/booking/${id}`);
   };
 
   return (
@@ -68,7 +67,7 @@ const HomePage: React.FC = () => {
                 <h1 className="text-5xl font-bold">Discover the Magic of LuLuSpa</h1>
                 <p className="mt-4 text-xl">Your Skin, Our Passion</p>
                 <button
-                  onClick={() => handleBookNow(1)} // Truyền id dịch vụ đầu tiên khi nhấn Book
+                  onClick={() => handleBookNow('service_id')}  // Truyền id dịch vụ đầu tiên khi nhấn Book
                   className="mt-8 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
                 >
                   Book Your Appointment
@@ -83,31 +82,28 @@ const HomePage: React.FC = () => {
           <div className="container mx-auto text-center">
             <h2 className="text-4xl font-bold text-gray-800 mb-10">Our Skincare Packages</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {services.length === 0 ? (
-                <p>Loading services...</p> // Hiển thị khi dữ liệu chưa được tải
-              ) : (
-                services.map((service, index) => (
-                  <div
-                    key={index}
-                    className="bg-white p-6 rounded-lg shadow-lg transition transform hover:scale-105 hover:shadow-xl"
-                  >
-                    <img
-                      src={service.image}
-                      alt={service.name}
-                      className="w-full h-40 object-cover rounded-lg"
-                    />
-                    <h3 className="text-2xl font-semibold text-gray-800 mt-4">{service.name}</h3>
-                    <p className="mt-4 text-gray-600">{service.description}</p>
-                    <p className="mt-4 text-xl font-bold text-gray-900">{`$${service.price}`}</p>
-                    <button
-                      onClick={() => handleBookNow(service.id)} // Truyền id dịch vụ khi nhấn "Book Now"
-                      className="mt-6 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-                    >
-                      Book Now
-                    </button>
-                  </div>
-                ))
-              )}
+            {services.map((service) => (
+  <div
+    key={service.id}
+    className="bg-white p-6 rounded-lg shadow-lg transition transform hover:scale-105 hover:shadow-xl"
+  >
+    <img
+      src={service.image}
+      alt={service.name}
+      className="w-full h-40 object-cover rounded-lg"
+    />
+    <h3 className="text-2xl font-semibold text-gray-800 mt-4">{service.name}</h3>
+    <p className="mt-4 text-gray-600">{service.description}</p>
+    <p className="mt-4 text-xl font-bold text-gray-900">{`$${service.price}`}</p>
+    <button
+      onClick={() => handleBookNow(service.id)} // Truyền ID dịch vụ khi nhấn "Book Now"
+      className="mt-6 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+    >
+      Book Now
+    </button>
+  </div>
+))}
+
             </div>
           </div>
         </section>
@@ -117,7 +113,7 @@ const HomePage: React.FC = () => {
           <div className="container mx-auto text-center">
             <h2 className="text-4xl font-bold text-gray-800 mb-10">Latest from our Blog</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[ /* Blog Posts */ ].map((blogPost, index) => (
+              {[ /* Blog Posts */].map((blogPost, index) => (
                 <div key={index} className="bg-white p-6 rounded-lg shadow-lg transition transform hover:scale-105 hover:shadow-xl">
                   {/* <img src={blogPost.image} alt={blogPost.title} className="w-full h-40 object-cover rounded-lg" /> */}
                   {/* <h3 className="text-2xl font-semibold text-gray-800 mt-4">{blogPost.title}</h3> */}
