@@ -73,6 +73,14 @@ const Header: React.FC = () => {
                 Contact
               </button>
             </li>
+            <li>
+              <Link
+                to="/blog"
+                className="hover:text-yellow-300 transition duration-300 ease-in-out"
+              >
+                Blog
+              </Link>
+            </li>
           </ul>
         </nav>
 
