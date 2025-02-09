@@ -10,6 +10,8 @@ const api = axios.create({
 });
 
 export const getServices = () => api.get("/services");
+export const getTherapists = () => api.get("/services");
+export const getTherapistSchedule = (id?: any) => api.get("/services");
 export const createService = (data: Service) => api.post("/services", data);
 
 export default api;
