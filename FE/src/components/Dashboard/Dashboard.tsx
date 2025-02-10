@@ -30,6 +30,17 @@ const items: MenuItem[] = [
     <PieChartOutlined />
   ),
   getItem("BlogManagement", "/admin/blog-management", <PieChartOutlined />),
+  getItem(
+    "PaymentManagement",
+    "/admin/payment-management",
+    <PieChartOutlined />
+  ),
+  getItem("RatingManagement", "/admin/rating-management", <PieChartOutlined />),
+  getItem(
+    "QuestionManagement",
+    "/admin/question-management",
+    <PieChartOutlined />
+  ),
 ];
 
 const Dashboard: React.FC = () => {

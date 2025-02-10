@@ -16,6 +16,9 @@ import Dashboard from "../components/Dashboard/Dashboard";
 import ManageUser from "../pages/admin/ManageUser";
 import ManageCategory from "../pages/admin/ManageCategory";
 import ManageBlog from "../pages/admin/ManageBlog";
+import ManagePayment from "../pages/admin/ManagePayment";
+import ManageRating from "../pages/admin/ManageRating";
+import ManageQuestion from "../pages/admin/ManageQuestion";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -32,6 +35,9 @@ const AppRoutes: React.FC = () => {
           <Route path='user-management' element={<ManageUser />} />
           <Route path='category-management' element={<ManageCategory />} />
           <Route path='blog-management' element={<ManageBlog />} />
+          <Route path='payment-management' element={<ManagePayment />} />
+          <Route path='rating-management' element={<ManageRating />} />
+          <Route path='question-management' element={<ManageQuestion />} />
         </Route>
         <Route
           path='/login'
