@@ -19,6 +19,7 @@ import ManageBlog from "../pages/admin/ManageBlog";
 import ManagePayment from "../pages/admin/ManagePayment";
 import ManageRating from "../pages/admin/ManageRating";
 import ManageQuestion from "../pages/admin/ManageQuestion";
+import CheckoutPage from "../pages/Home/CheckoutPage";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -26,6 +27,7 @@ const AppRoutes: React.FC = () => {
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path='/booking/:id' element={<BookingPage />} />
+        <Route path='/checkout' element={<CheckoutPage />} />
         <Route path='/contact' element={<ContactPage />} />{" "}
         {/* Modal sẽ hiện ra ở đây */}
         <Route path='/services' element={<ServicePage />} />
