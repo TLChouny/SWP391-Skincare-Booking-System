@@ -1,0 +1,6 @@
+@LuluSPA_HostAddress = http://localhost:5196
+
+GET {{LuluSPA_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
