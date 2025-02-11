@@ -171,3 +171,13 @@ C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\obj\Debug\net8.0\re
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\obj\Debug\net8.0\LuluSPA.pdb
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\obj\Debug\net8.0\LuluSPA.genruntimeconfig.cache
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\obj\Debug\net8.0\ref\LuluSPA.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.Common.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.Data.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.Repository.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.RepositoryContract.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.Service.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.Data.pdb
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.Repository.pdb
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.Service.pdb
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.Common.pdb
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.RepositoryContract.pdb

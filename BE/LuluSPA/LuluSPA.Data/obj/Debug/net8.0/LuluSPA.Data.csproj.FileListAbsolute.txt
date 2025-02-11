@@ -1,0 +1,15 @@
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.csproj.AssemblyReference.cache
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.AssemblyInfoInputs.cache
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.AssemblyInfo.cs
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.csproj.CoreCompileInputs.cache
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.sourcelink.json
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\bin\Debug\net8.0\LuluSPA.Data.deps.json
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\bin\Debug\net8.0\LuluSPA.Data.runtimeconfig.json
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\bin\Debug\net8.0\LuluSPA.Data.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\bin\Debug\net8.0\LuluSPA.Data.pdb
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\refint\LuluSPA.Data.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.pdb
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.genruntimeconfig.cache
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\ref\LuluSPA.Data.dll

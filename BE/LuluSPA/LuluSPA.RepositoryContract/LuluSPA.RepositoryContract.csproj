@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LuluSPA.Common\LuluSPA.Common.csproj" />
+    <ProjectReference Include="..\LuluSPA.Data\LuluSPA.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Interface\" />
+  </ItemGroup>
+
+</Project>

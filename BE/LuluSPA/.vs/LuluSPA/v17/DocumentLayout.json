@@ -3,48 +3,32 @@
   "WorkspaceRootPath": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\migrations\\20250211100751_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\migrations\\20250211100751_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\controllers\\servicecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\controllers\\servicecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}|LuluSPA.Data\\LuluSPA.Data.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa.data\\models\\booking.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}|LuluSPA.Data\\LuluSPA.Data.csproj|solutionrelative:luluspa.data\\models\\booking.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\models\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\models\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}|LuluSPA.Data\\LuluSPA.Data.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa.data\\models\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}|LuluSPA.Data\\LuluSPA.Data.csproj|solutionrelative:luluspa.data\\models\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\models\\therapist.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\models\\therapist.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}|LuluSPA.Data\\LuluSPA.Data.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa.data\\models\\payment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}|LuluSPA.Data\\LuluSPA.Data.csproj|solutionrelative:luluspa.data\\models\\payment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\models\\payment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\models\\payment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}|LuluSPA.Data\\LuluSPA.Data.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa.data\\models\\customer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}|LuluSPA.Data\\LuluSPA.Data.csproj|solutionrelative:luluspa.data\\models\\customer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\models\\customer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\models\\customer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\models\\booking.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\models\\booking.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\models\\blog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\models\\blog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\luluspa.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\luluspa.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|c:\\users\\tnqt3\\onedrive\\m\u00E1y t\u00EDnh\\github\\be\\luluspa\\luluspa\\weatherforecast.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1183E505-E09E-41D2-9998-D56B844ED886}|LuluSPA\\LuluSPA.csproj|solutionrelative:luluspa\\weatherforecast.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -54,154 +38,102 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "20250211100751_InitialCreate.cs",
-              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Migrations\\20250211100751_InitialCreate.cs",
-              "RelativeDocumentMoniker": "LuluSPA\\Migrations\\20250211100751_InitialCreate.cs",
-              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Migrations\\20250211100751_InitialCreate.cs",
-              "RelativeToolTip": "LuluSPA\\Migrations\\20250211100751_InitialCreate.cs",
-              "ViewState": "AgIAAHAAAAAAAAAAAAAgwIkAAAA/AAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "ServiceController.cs",
+              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Controllers\\ServiceController.cs",
+              "RelativeDocumentMoniker": "LuluSPA\\Controllers\\ServiceController.cs",
+              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Controllers\\ServiceController.cs",
+              "RelativeToolTip": "LuluSPA\\Controllers\\ServiceController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-11T10:07:51.665Z",
+              "WhenOpened": "2025-02-11T14:19:39.687Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Program.cs",
               "RelativeDocumentMoniker": "LuluSPA\\Program.cs",
               "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Program.cs",
               "RelativeToolTip": "LuluSPA\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAkAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-11T10:04:50.482Z",
+              "WhenOpened": "2025-02-11T14:13:43.971Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "appsettings.Development.json",
-              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\appsettings.Development.json",
-              "RelativeDocumentMoniker": "LuluSPA\\appsettings.Development.json",
-              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\appsettings.Development.json",
-              "RelativeToolTip": "LuluSPA\\appsettings.Development.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-02-11T10:03:05.474Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\appsettings.json",
-              "RelativeDocumentMoniker": "LuluSPA\\appsettings.json",
-              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\appsettings.json",
-              "RelativeToolTip": "LuluSPA\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-02-11T10:02:33.534Z",
+              "Title": "Booking.cs",
+              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA.Data\\Models\\Booking.cs",
+              "RelativeDocumentMoniker": "LuluSPA.Data\\Models\\Booking.cs",
+              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA.Data\\Models\\Booking.cs",
+              "RelativeToolTip": "LuluSPA.Data\\Models\\Booking.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-11T14:08:17.285Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\ApplicationDbContext.cs",
-              "RelativeDocumentMoniker": "LuluSPA\\Models\\ApplicationDbContext.cs",
-              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\ApplicationDbContext.cs",
-              "RelativeToolTip": "LuluSPA\\Models\\ApplicationDbContext.cs",
+              "Title": "Payment.cs",
+              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA.Data\\Models\\Payment.cs",
+              "RelativeDocumentMoniker": "LuluSPA.Data\\Models\\Payment.cs",
+              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA.Data\\Models\\Payment.cs",
+              "RelativeToolTip": "LuluSPA.Data\\Models\\Payment.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-11T10:01:16.286Z",
+              "WhenOpened": "2025-02-11T14:06:20.558Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "Therapist.cs",
-              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\Therapist.cs",
-              "RelativeDocumentMoniker": "LuluSPA\\Models\\Therapist.cs",
-              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\Therapist.cs",
-              "RelativeToolTip": "LuluSPA\\Models\\Therapist.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAgwAAAAAAAAAAAAAAAAA==",
+              "Title": "Customer.cs",
+              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA.Data\\Models\\Customer.cs",
+              "RelativeDocumentMoniker": "LuluSPA.Data\\Models\\Customer.cs",
+              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA.Data\\Models\\Customer.cs",
+              "RelativeToolTip": "LuluSPA.Data\\Models\\Customer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-11T09:58:45.88Z",
+              "WhenOpened": "2025-02-11T14:06:19.637Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 6,
-              "Title": "Payment.cs",
-              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\Payment.cs",
-              "RelativeDocumentMoniker": "LuluSPA\\Models\\Payment.cs",
-              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\Payment.cs",
-              "RelativeToolTip": "LuluSPA\\Models\\Payment.cs",
+              "Title": "WeatherForecast.cs",
+              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\WeatherForecast.cs",
+              "RelativeDocumentMoniker": "LuluSPA\\WeatherForecast.cs",
+              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\WeatherForecast.cs",
+              "RelativeToolTip": "LuluSPA\\WeatherForecast.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-11T09:58:45.043Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "Customer.cs",
-              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\Customer.cs",
-              "RelativeDocumentMoniker": "LuluSPA\\Models\\Customer.cs",
-              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\Customer.cs",
-              "RelativeToolTip": "LuluSPA\\Models\\Customer.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-11T09:58:41.502Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Booking.cs",
-              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\Booking.cs",
-              "RelativeDocumentMoniker": "LuluSPA\\Models\\Booking.cs",
-              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\Booking.cs",
-              "RelativeToolTip": "LuluSPA\\Models\\Booking.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-11T09:58:40.498Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "Blog.cs",
-              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\Blog.cs",
-              "RelativeDocumentMoniker": "LuluSPA\\Models\\Blog.cs",
-              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\Models\\Blog.cs",
-              "RelativeToolTip": "LuluSPA\\Models\\Blog.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-11T09:58:39.686Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "LuluSPA",
-              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\LuluSPA.csproj",
-              "RelativeDocumentMoniker": "LuluSPA\\LuluSPA.csproj",
-              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA\\LuluSPA.csproj",
-              "RelativeToolTip": "LuluSPA\\LuluSPA.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-02-11T09:38:17.533Z",
+              "WhenOpened": "2025-02-11T14:06:15.621Z",
               "EditorCaption": ""
             },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA.Data\\Models\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "LuluSPA.Data\\Models\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\tnqt3\\OneDrive\\M\u00E1y t\u00EDnh\\Github\\BE\\LuluSPA\\LuluSPA.Data\\Models\\ApplicationDbContext.cs",
+              "RelativeToolTip": "LuluSPA.Data\\Models\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-11T14:05:07.984Z",
+              "EditorCaption": ""
             }
           ]
         }
