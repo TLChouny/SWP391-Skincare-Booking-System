@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LuluSPA")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6814cac1c54a57aad8893f65cef2e9aaf2c8f96b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bfb80e8e0e0c73dc5e9be91ed45162811fbe49fc")]
 [assembly: System.Reflection.AssemblyProductAttribute("LuluSPA")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LuluSPA")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

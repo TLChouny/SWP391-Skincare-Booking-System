@@ -1,9 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuluSPA", "LuluSPA\LuluSPA.csproj", "{1183E505-E09E-41D2-9998-D56B844ED886}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuluSPA.Data", "LuluSPA.Data\LuluSPA.Data.csproj", "{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuluSPA.Common", "LuluSPA.Common\LuluSPA.Common.csproj", "{06CEEE95-5126-4AD5-8A45-BAA2971CB230}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuluSPA.Repository", "LuluSPA.Repository\LuluSPA.Repository.csproj", "{000DEED6-2C6B-435C-8611-D8CCDB6BFED0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuluSPA.RepositoryContract", "LuluSPA.RepositoryContract\LuluSPA.RepositoryContract.csproj", "{B93C7620-9063-46CA-9E32-F7DC18F2F1B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuluSPA.Service", "LuluSPA.Service\LuluSPA.Service.csproj", "{D05C5436-1835-4A12-BF9E-BBF4F9E66EE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuluSPA.ServiceContract", "LuluSPA.ServiceContract\LuluSPA.ServiceContract.csproj", "{E84E9A80-6281-4780-86D9-2D172755F71A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +27,30 @@ Global
 		{1183E505-E09E-41D2-9998-D56B844ED886}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1183E505-E09E-41D2-9998-D56B844ED886}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1183E505-E09E-41D2-9998-D56B844ED886}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFA33F8C-DEA5-4DA0-A51D-1B495254FF1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06CEEE95-5126-4AD5-8A45-BAA2971CB230}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06CEEE95-5126-4AD5-8A45-BAA2971CB230}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06CEEE95-5126-4AD5-8A45-BAA2971CB230}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06CEEE95-5126-4AD5-8A45-BAA2971CB230}.Release|Any CPU.Build.0 = Release|Any CPU
+		{000DEED6-2C6B-435C-8611-D8CCDB6BFED0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{000DEED6-2C6B-435C-8611-D8CCDB6BFED0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{000DEED6-2C6B-435C-8611-D8CCDB6BFED0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{000DEED6-2C6B-435C-8611-D8CCDB6BFED0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B93C7620-9063-46CA-9E32-F7DC18F2F1B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B93C7620-9063-46CA-9E32-F7DC18F2F1B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B93C7620-9063-46CA-9E32-F7DC18F2F1B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B93C7620-9063-46CA-9E32-F7DC18F2F1B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D05C5436-1835-4A12-BF9E-BBF4F9E66EE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D05C5436-1835-4A12-BF9E-BBF4F9E66EE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D05C5436-1835-4A12-BF9E-BBF4F9E66EE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D05C5436-1835-4A12-BF9E-BBF4F9E66EE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E84E9A80-6281-4780-86D9-2D172755F71A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E84E9A80-6281-4780-86D9-2D172755F71A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E84E9A80-6281-4780-86D9-2D172755F71A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E84E9A80-6281-4780-86D9-2D172755F71A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
