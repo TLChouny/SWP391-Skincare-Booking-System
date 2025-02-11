@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Layout from "../../layout/Layout";
 
 const CheckoutPage: React.FC = () => {
   const [cart, setCart] = useState<any[]>([]);
@@ -41,6 +42,7 @@ const CheckoutPage: React.FC = () => {
   };
 
   return (
+    <Layout>
     <div className="container mx-auto py-16">
       <h2 className="text-4xl font-bold text-center mb-10">Checkout</h2>
 
@@ -74,6 +76,7 @@ const CheckoutPage: React.FC = () => {
         )}
       </div>
     </div>
+    </Layout>
   );
 };
 
