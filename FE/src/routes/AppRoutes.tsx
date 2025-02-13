@@ -6,7 +6,7 @@ import AdminDashboard from "../pages/admin/AdminDashboard";
 import Login from "../layout/Login";
 import Header from "../layout/Header";
 import Register from "../layout/Register";
-import ContactPage from "../pages/Home/ContactPage";
+import ContactPage from "../pages/Home/Contactpage";
 {
   /* Đảm bảo dùng đúng trang này */
 }
@@ -19,13 +19,15 @@ import ManageBlog from "../pages/admin/ManageBlog";
 import ManagePayment from "../pages/admin/ManagePayment";
 import ManageRating from "../pages/admin/ManageRating";
 import ManageQuestion from "../pages/admin/ManageQuestion";
-import CheckoutPage from "../pages/Home/CheckoutPage";
+import CheckoutPage from "../pages/Home/Checkoutpage";
+import SettingPage from "../pages/Home/Settingpage";
 
 const AppRoutes: React.FC = () => {
   return (
     <Router>
       <Routes>
         <Route path='/' element={<HomePage />} />
+        <Route path='/setting' element={<SettingPage />} />
         <Route path='/booking/:id' element={<BookingPage />} />
         <Route path='/checkout' element={<CheckoutPage />} />
         <Route path='/contact' element={<ContactPage />} />{" "}
