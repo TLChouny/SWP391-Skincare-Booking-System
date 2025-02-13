@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LuluSPA.RepositoryContract")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bfb80e8e0e0c73dc5e9be91ed45162811fbe49fc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b44b643070ecd41f08041d8c5256c0dcdea3cfb3")]
 [assembly: System.Reflection.AssemblyProductAttribute("LuluSPA.RepositoryContract")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LuluSPA.RepositoryContract")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

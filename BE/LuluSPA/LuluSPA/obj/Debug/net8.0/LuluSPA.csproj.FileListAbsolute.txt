@@ -181,3 +181,5 @@ C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\Lu
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.Service.pdb
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.Common.pdb
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.RepositoryContract.pdb
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.ServiceContract.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA\bin\Debug\net8.0\LuluSPA.ServiceContract.pdb

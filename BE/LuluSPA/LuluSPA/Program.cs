@@ -1,4 +1,9 @@
 using LuluSPA.Data;
+using LuluSPA.Extensions;
+using LuluSPA.Repository;
+using LuluSPA.Service;
+using LuluSPA.Service.Services;
+using LuluSPA.ServiceContract.Interface;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddRepository().AddService();
 
 var app = builder.Build(); 
 

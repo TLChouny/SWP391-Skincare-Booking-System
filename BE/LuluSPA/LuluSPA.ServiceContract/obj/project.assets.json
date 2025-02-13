@@ -1037,6 +1037,21 @@
           "bin/placeholder/LuluSPA.Data.dll": {}
         }
       },
+      "LuluSPA.Repository/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "LuluSPA.Common": "1.0.0",
+          "LuluSPA.Data": "1.0.0",
+          "LuluSPA.RepositoryContract": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/LuluSPA.Repository.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/LuluSPA.Repository.dll": {}
+        }
+      },
       "LuluSPA.RepositoryContract/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
@@ -2851,6 +2866,11 @@
       "path": "../LuluSPA.Data/LuluSPA.Data.csproj",
       "msbuildProject": "../LuluSPA.Data/LuluSPA.Data.csproj"
     },
+    "LuluSPA.Repository/1.0.0": {
+      "type": "project",
+      "path": "../LuluSPA.Repository/LuluSPA.Repository.csproj",
+      "msbuildProject": "../LuluSPA.Repository/LuluSPA.Repository.csproj"
+    },
     "LuluSPA.RepositoryContract/1.0.0": {
       "type": "project",
       "path": "../LuluSPA.RepositoryContract/LuluSPA.RepositoryContract.csproj",
@@ -2860,6 +2880,7 @@
   "projectFileDependencyGroups": {
     "net8.0": [
       "LuluSPA.Data >= 1.0.0",
+      "LuluSPA.Repository >= 1.0.0",
       "LuluSPA.RepositoryContract >= 1.0.0"
     ]
   },
@@ -2901,6 +2922,9 @@
             },
             "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj": {
               "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj"
+            },
+            "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Repository\\LuluSPA.Repository.csproj": {
+              "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Repository\\LuluSPA.Repository.csproj"
             }
           }
         }
@@ -2939,5 +2963,13 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1900",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json."
+    }
+  ]
 }

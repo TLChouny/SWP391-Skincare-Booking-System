@@ -11,8 +11,4 @@
     <ProjectReference Include="..\LuluSPA.Data\LuluSPA.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Interface\" />
-  </ItemGroup>
-
 </Project>
