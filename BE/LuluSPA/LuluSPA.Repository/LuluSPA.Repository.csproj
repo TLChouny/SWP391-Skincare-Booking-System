@@ -12,8 +12,4 @@
     <ProjectReference Include="..\LuluSPA.RepositoryContract\LuluSPA.RepositoryContract.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Repository\" />
-  </ItemGroup>
-
 </Project>

@@ -9,10 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LuluSPA.Data\LuluSPA.Data.csproj" />
     <ProjectReference Include="..\LuluSPA.RepositoryContract\LuluSPA.RepositoryContract.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Interface\" />
+    <ProjectReference Include="..\LuluSPA.Repository\LuluSPA.Repository.csproj" />
   </ItemGroup>
 
 </Project>

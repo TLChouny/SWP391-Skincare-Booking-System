@@ -1755,16 +1755,30 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "LuluSPA.Common": "1.0.0",
-          "LuluSPA.Data": "1.0.0",
           "LuluSPA.Repository": "1.0.0",
-          "LuluSPA.RepositoryContract": "1.0.0"
+          "LuluSPA.RepositoryContract": "1.0.0",
+          "LuluSPA.ServiceContract": "1.0.0"
         },
         "compile": {
           "bin/placeholder/LuluSPA.Service.dll": {}
         },
         "runtime": {
           "bin/placeholder/LuluSPA.Service.dll": {}
+        }
+      },
+      "LuluSPA.ServiceContract/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "LuluSPA.Data": "1.0.0",
+          "LuluSPA.Repository": "1.0.0",
+          "LuluSPA.RepositoryContract": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/LuluSPA.ServiceContract.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/LuluSPA.ServiceContract.dll": {}
         }
       }
     }
@@ -5255,6 +5269,11 @@
       "type": "project",
       "path": "../LuluSPA.Service/LuluSPA.Service.csproj",
       "msbuildProject": "../LuluSPA.Service/LuluSPA.Service.csproj"
+    },
+    "LuluSPA.ServiceContract/1.0.0": {
+      "type": "project",
+      "path": "../LuluSPA.ServiceContract/LuluSPA.ServiceContract.csproj",
+      "msbuildProject": "../LuluSPA.ServiceContract/LuluSPA.ServiceContract.csproj"
     }
   },
   "projectFileDependencyGroups": {

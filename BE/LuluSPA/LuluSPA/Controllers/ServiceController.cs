@@ -1,6 +1,7 @@
-﻿using LuluSPA.Data;
-using Microsoft.AspNetCore.Http;
+﻿using LuluSPA.ServiceContract.Interface;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace LuluSPA.Controllers
 {
@@ -8,15 +9,18 @@ namespace LuluSPA.Controllers
     [ApiController]
     public class ServiceController : ControllerBase
     {
-        private readonly ApplicationDbContext dbContext;
-        public ServiceController(ApplicationDbContext dbContext)
+        private readonly IServiceSPA _serviceSPA;
+
+        public ServiceController(IServiceSPA serviceSPA)
         {
-            this.dbContext = dbContext;
+            _serviceSPA = serviceSPA ?? throw new ArgumentNullException(nameof(serviceSPA));
         }
-        [HttpGet]
-        public IActionResult GetAllServices()
+
+        // Lấy danh sách dịch vụ thông qua service layer (tốt hơn)
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllServicesAsync()
         {
-            var allServices = dbContext.Services.ToList();
+            var allServices = await _serviceSPA.GetAllService();
             return Ok(allServices);
         }
     }

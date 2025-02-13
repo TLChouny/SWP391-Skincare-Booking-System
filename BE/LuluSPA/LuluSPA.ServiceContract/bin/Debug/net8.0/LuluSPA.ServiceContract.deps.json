@@ -9,6 +9,7 @@
       "LuluSPA.ServiceContract/1.0.0": {
         "dependencies": {
           "LuluSPA.Data": "1.0.0",
+          "LuluSPA.Repository": "1.0.0",
           "LuluSPA.RepositoryContract": "1.0.0"
         },
         "runtime": {
@@ -637,6 +638,19 @@
           }
         }
       },
+      "LuluSPA.Repository/1.0.0": {
+        "dependencies": {
+          "LuluSPA.Common": "1.0.0",
+          "LuluSPA.Data": "1.0.0",
+          "LuluSPA.RepositoryContract": "1.0.0"
+        },
+        "runtime": {
+          "LuluSPA.Repository.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "LuluSPA.RepositoryContract/1.0.0": {
         "dependencies": {
           "LuluSPA.Common": "1.0.0",
@@ -1055,6 +1069,11 @@
       "sha512": ""
     },
     "LuluSPA.Data/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "LuluSPA.Repository/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

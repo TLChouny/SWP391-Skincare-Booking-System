@@ -20,3 +20,5 @@ C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Service\obj\Debug\n
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\refint\LuluSPA.Service.dll
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\LuluSPA.Service.pdb
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\ref\LuluSPA.Service.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.ServiceContract.dll
+C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.ServiceContract.pdb

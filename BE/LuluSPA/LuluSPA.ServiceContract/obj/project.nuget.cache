@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "A61IDTN+zac=",
+  "dgSpecHash": "UeFEKouJ2v8=",
   "success": true,
   "projectFilePath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.ServiceContract\\LuluSPA.ServiceContract.csproj",
   "expectedPackageFiles": [
@@ -61,5 +61,12 @@
     "C:\\Users\\tnqt3\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
     "C:\\Users\\tnqt3\\.nuget\\packages\\system.windows.extensions\\6.0.0\\system.windows.extensions.6.0.0.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1900",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json."
+    }
+  ]
 }

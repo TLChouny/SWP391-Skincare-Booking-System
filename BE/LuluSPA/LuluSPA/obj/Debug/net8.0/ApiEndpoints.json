@@ -1,8 +1,8 @@
 [
   {
     "ContainingType": "LuluSPA.Controllers.ServiceController",
-    "Method": "GetAllServices",
-    "RelativePath": "api/Service",
+    "Method": "GetAllServicesAsync",
+    "RelativePath": "api/Service/all",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,

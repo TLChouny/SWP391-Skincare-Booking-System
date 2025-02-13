@@ -1065,6 +1065,21 @@
         "runtime": {
           "bin/placeholder/LuluSPA.RepositoryContract.dll": {}
         }
+      },
+      "LuluSPA.ServiceContract/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "LuluSPA.Data": "1.0.0",
+          "LuluSPA.Repository": "1.0.0",
+          "LuluSPA.RepositoryContract": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/LuluSPA.ServiceContract.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/LuluSPA.ServiceContract.dll": {}
+        }
       }
     }
   },
@@ -2875,14 +2890,18 @@
       "type": "project",
       "path": "../LuluSPA.RepositoryContract/LuluSPA.RepositoryContract.csproj",
       "msbuildProject": "../LuluSPA.RepositoryContract/LuluSPA.RepositoryContract.csproj"
+    },
+    "LuluSPA.ServiceContract/1.0.0": {
+      "type": "project",
+      "path": "../LuluSPA.ServiceContract/LuluSPA.ServiceContract.csproj",
+      "msbuildProject": "../LuluSPA.ServiceContract/LuluSPA.ServiceContract.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "LuluSPA.Common >= 1.0.0",
-      "LuluSPA.Data >= 1.0.0",
       "LuluSPA.Repository >= 1.0.0",
-      "LuluSPA.RepositoryContract >= 1.0.0"
+      "LuluSPA.RepositoryContract >= 1.0.0",
+      "LuluSPA.ServiceContract >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -2918,17 +2937,14 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Common\\LuluSPA.Common.csproj": {
-              "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Common\\LuluSPA.Common.csproj"
-            },
-            "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Data\\LuluSPA.Data.csproj": {
-              "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Data\\LuluSPA.Data.csproj"
-            },
             "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj": {
               "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj"
             },
             "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Repository\\LuluSPA.Repository.csproj": {
               "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Repository\\LuluSPA.Repository.csproj"
+            },
+            "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.ServiceContract\\LuluSPA.ServiceContract.csproj": {
+              "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.ServiceContract\\LuluSPA.ServiceContract.csproj"
             }
           }
         }

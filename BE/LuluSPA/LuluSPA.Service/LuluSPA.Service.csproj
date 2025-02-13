@@ -7,14 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LuluSPA.Common\LuluSPA.Common.csproj" />
-    <ProjectReference Include="..\LuluSPA.Data\LuluSPA.Data.csproj" />
     <ProjectReference Include="..\LuluSPA.RepositoryContract\LuluSPA.RepositoryContract.csproj" />
     <ProjectReference Include="..\LuluSPA.Repository\LuluSPA.Repository.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Services\" />
+    <ProjectReference Include="..\LuluSPA.ServiceContract\LuluSPA.ServiceContract.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1137,13 +1137,25 @@
       },
       "LuluSPA.Service/1.0.0": {
         "dependencies": {
-          "LuluSPA.Common": "1.0.0",
+          "LuluSPA.Repository": "1.0.0",
+          "LuluSPA.RepositoryContract": "1.0.0",
+          "LuluSPA.ServiceContract": "1.0.0"
+        },
+        "runtime": {
+          "LuluSPA.Service.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "LuluSPA.ServiceContract/1.0.0": {
+        "dependencies": {
           "LuluSPA.Data": "1.0.0",
           "LuluSPA.Repository": "1.0.0",
           "LuluSPA.RepositoryContract": "1.0.0"
         },
         "runtime": {
-          "LuluSPA.Service.dll": {
+          "LuluSPA.ServiceContract.dll": {
             "assemblyVersion": "1.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -1773,6 +1785,11 @@
       "sha512": ""
     },
     "LuluSPA.Service/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "LuluSPA.ServiceContract/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
