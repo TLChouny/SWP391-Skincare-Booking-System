@@ -1,12 +1,11 @@
 {
   "Version": 1,
-  "Hash": "60699DHy1saXEWobAi8KRAAIJF5q/6tCPLhPO3DGamk=",
+  "Hash": "g88DBssUIsG3oH4biaEBkTauV0d1pK/qyuYAQ/Q5sGo=",
   "Source": "LuluSPA",
   "BasePath": "_content/LuluSPA",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": [],
-  "Endpoints": []
+  "Assets": []
 }

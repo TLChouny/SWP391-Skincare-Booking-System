@@ -2845,43 +2845,35 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\tnqt3\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Admin\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj",
+      "projectUniqueName": "D:\\LapTrinh\\SWP391\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj",
       "projectName": "LuluSPA.RepositoryContract",
-      "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj",
-      "packagesPath": "C:\\Users\\tnqt3\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\obj\\",
+      "projectPath": "D:\\LapTrinh\\SWP391\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj",
+      "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
+      "outputPath": "D:\\LapTrinh\\SWP391\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\tnqt3\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Common\\LuluSPA.Common.csproj": {
-              "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Common\\LuluSPA.Common.csproj"
+            "D:\\LapTrinh\\SWP391\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.Common\\LuluSPA.Common.csproj": {
+              "projectPath": "D:\\LapTrinh\\SWP391\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.Common\\LuluSPA.Common.csproj"
             },
-            "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Data\\LuluSPA.Data.csproj": {
-              "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Data\\LuluSPA.Data.csproj"
+            "D:\\LapTrinh\\SWP391\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.Data\\LuluSPA.Data.csproj": {
+              "projectPath": "D:\\LapTrinh\\SWP391\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.Data\\LuluSPA.Data.csproj"
             }
           }
         }
@@ -2895,8 +2887,7 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "9.0.100"
+      }
     },
     "frameworks": {
       "net8.0": {
@@ -2917,7 +2908,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.406/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

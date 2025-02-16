@@ -13,3 +13,18 @@ C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.pdb
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.genruntimeconfig.cache
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\ref\LuluSPA.Data.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\bin\Debug\net8.0\LuluSPA.Data.deps.json
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\bin\Debug\net8.0\LuluSPA.Data.runtimeconfig.json
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\bin\Debug\net8.0\LuluSPA.Data.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\bin\Debug\net8.0\LuluSPA.Data.pdb
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.csproj.AssemblyReference.cache
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.GeneratedMSBuildEditorConfig.editorconfig
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.AssemblyInfoInputs.cache
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.AssemblyInfo.cs
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.csproj.CoreCompileInputs.cache
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.sourcelink.json
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\refint\LuluSPA.Data.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.pdb
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\LuluSPA.Data.genruntimeconfig.cache
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Data\obj\Debug\net8.0\ref\LuluSPA.Data.dll

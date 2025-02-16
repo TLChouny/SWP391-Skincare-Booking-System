@@ -22,3 +22,27 @@ C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Service\obj\Debug\n
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\ref\LuluSPA.Service.dll
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.ServiceContract.dll
 C:\Users\tnqt3\OneDrive\Máy tính\Github\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.ServiceContract.pdb
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.Service.deps.json
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.Service.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.Service.pdb
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.Common.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.Data.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.Repository.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.RepositoryContract.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.ServiceContract.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.RepositoryContract.pdb
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.Repository.pdb
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.ServiceContract.pdb
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.Common.pdb
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\bin\Debug\net8.0\LuluSPA.Data.pdb
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\LuluSPA.Service.csproj.AssemblyReference.cache
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\LuluSPA.Service.GeneratedMSBuildEditorConfig.editorconfig
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\LuluSPA.Service.AssemblyInfoInputs.cache
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\LuluSPA.Service.AssemblyInfo.cs
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\LuluSPA.Service.csproj.CoreCompileInputs.cache
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\LuluSPA.Service.sourcelink.json
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\LuluSPA..D1F7BB50.Up2Date
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\LuluSPA.Service.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\refint\LuluSPA.Service.dll
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\LuluSPA.Service.pdb
+D:\LapTrinh\SWP391\SWP391-Skincare-Booking-System\BE\LuluSPA\LuluSPA.Service\obj\Debug\net8.0\ref\LuluSPA.Service.dll
