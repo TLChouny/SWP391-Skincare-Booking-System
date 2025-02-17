@@ -69,6 +69,7 @@ const ContactPage: React.FC = () => {
                   <button
                     type="submit"
                     className="py-2 px-4 bg-blue-500 text-white rounded-lg"
+                    onClick={handleSubmit}
                   > 
                     Submit
                   </button>

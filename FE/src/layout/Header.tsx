@@ -130,11 +130,11 @@ const Header: React.FC = () => {
 
       {/* Modal Contact */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div className="fixed  inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-8 rounded-lg shadow-lg w-1/2">
             <button
               onClick={handleCloseModal}
-              className="absolute top-4 right-4 text-2xl"
+              className=" text-2xl float-right"
             >
               ×
             </button>
