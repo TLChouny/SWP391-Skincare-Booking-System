@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getServices } from "../../api/apiService"; // Đảm bảo thay đúng đường dẫn tới tệp API
+import axios from "axios"; // Dùng axios để gọi API
 import Layout from "../../layout/Layout";
 
 const ServicePage: React.FC = () => {
@@ -11,12 +11,16 @@ const ServicePage: React.FC = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await getServices(); // Gọi API của bạn
-        setServices(response.data); // Lưu dữ liệu vào state
+        const response = await axios.get("http://localhost:5000/api/products/"); // Gọi API của bạn
+        const formattedData = response.data.map((service: any) => ({
+          ...service,
+          price: parseFloat(service.price.$numberDecimal), // Chuyển đổi price thành số
+        }));
+        setServices(formattedData); // Lưu dữ liệu vào state
       } catch (error) {
         console.error("Error fetching services:", error);
       } finally {
-        setLoading(false); // Khi gọi API xong, cập nhật loading thành false
+        setLoading(false);
       }
     };
 
@@ -34,14 +38,12 @@ const ServicePage: React.FC = () => {
 
   // Hàm chia mô tả thành các dòng có dấu gạch đầu dòng
   const splitDescription = (description: string) => {
-    // Tách mô tả thành các mục có dấu gạch đầu dòng
-    const lines = description.split("\n").map((line, index) => {
-      return (
-        <p key={index} className="text-lg text-gray-600 flex items-start">
-          <span className="mr-2 text-blue-500">•</span>{line}
-        </p>
-      );
-    });
+    const lines = description.split("\n").map((line, index) => (
+      <p key={index} className="text-lg text-gray-600 flex items-start">
+        <span className="mr-2 text-blue-500">•</span>
+        {line}
+      </p>
+    ));
     return lines;
   };
 
@@ -63,14 +65,23 @@ const ServicePage: React.FC = () => {
                 className="bg-white p-6 rounded-lg shadow-lg cursor-pointer transform transition-transform hover:scale-105 hover:shadow-xl hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white"
                 onClick={() => setSelectedService(service.name)}
               >
-                <h3 className="text-2xl font-semibold text-gray-800">{service.name}</h3>
+                <h3 className="text-2xl font-semibold text-gray-800">
+                  {service.name}
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Category: {service.category?.name || "N/A"}
+                </p>
                 <img
-                  className="mt-4 text-xl font-bold text-gray-900"
-                  src={service.image} // Đảm bảo rằng 'service.image' chứa URL hình ảnh
-                  alt={service.name} // Alt text cho hình ảnh
+                  className="mt-4 rounded-lg shadow-md object-cover h-40 w-full"
+                  src={service.image || "/default-image.jpg"} // Thêm fallback ảnh nếu không có ảnh
+                  alt={service.name}
                 />
-                {/* <p className="mt-4 text-gray-600">{service.description}</p> */}
-                <p className="mt-4 text-xl font-bold text-gray-900">{service.price}</p>
+                <p className="mt-4 text-lg font-bold text-gray-900">
+                  ${service.price.toFixed(2)}
+                </p>
+                <p className="text-gray-600 text-sm">
+                  Duration: {service.duration} min
+                </p>
               </div>
             ))
           )}
@@ -89,12 +100,23 @@ const ServicePage: React.FC = () => {
               <h3 className="text-4xl font-semibold text-gray-800 mb-6">
                 {selectedServiceDetails.name}
               </h3>
-              <p className="text-xl text-gray-700 mb-6">{selectedServiceDetails.price}</p>
+              <p className="text-xl text-gray-700 mb-2">
+                <strong>Price:</strong> $
+                {selectedServiceDetails.price.toFixed(2)}
+              </p>
+              <p className="text-gray-600 text-sm">
+                <strong>Category:</strong>{" "}
+                {selectedServiceDetails.category?.name || "N/A"}
+              </p>
+              <p className="text-gray-600 text-sm">
+                <strong>Duration:</strong> {selectedServiceDetails.duration} min
+              </p>
 
               {/* Chia mô tả thành các dòng có dấu gạch đầu dòng */}
               <div className="mb-6">
-                <h4 className="text-2xl font-semibold text-gray-800 mb-4">Description</h4>
-                {/* Hiển thị mô tả theo từng dòng với dấu gạch đầu dòng */}
+                <h4 className="text-2xl font-semibold text-gray-800 mb-4">
+                  Description
+                </h4>
                 <div className="space-y-4">
                   {splitDescription(selectedServiceDetails.description)}
                 </div>
@@ -102,8 +124,8 @@ const ServicePage: React.FC = () => {
 
               {/* Hình ảnh dịch vụ */}
               <img
-                src={selectedServiceDetails.image}  // Sử dụng giá trị image từ API
-                alt={selectedServiceDetails.name}   // Alt text cho hình ảnh
+                src={selectedServiceDetails.image || "/default-image.jpg"}
+                alt={selectedServiceDetails.name}
                 className="rounded-lg shadow-lg w-full h-auto object-cover mb-6 transition-transform duration-500 ease-in-out transform hover:scale-105"
               />
 

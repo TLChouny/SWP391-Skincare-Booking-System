@@ -1,0 +1,4 @@
+Login: http://localhost:5000/api/auth/login
+Register: http://localhost:5000/api/auth/register
+Category: http://localhost:5000/api/categories/
+Product: http://localhost:5000/api/products/
