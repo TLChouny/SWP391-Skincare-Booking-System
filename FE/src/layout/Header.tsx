@@ -1,10 +1,12 @@
-import React, { useState } from "react";
-import '../../src/index.css';
-import logo from '../assets/logo7.png';
-import { Link } from "react-router-dom";
-import { Divider } from 'antd';
+import React, { useState, useEffect } from "react";
+import "../../src/index.css";
+import logo from "../assets/logo7.png";
+import { Link, useNavigate } from "react-router-dom";
+import { Divider } from "antd";
 
 const Header: React.FC = () => {
+  const [user, setUser] = useState<{ username: string } | null>(null);
+  const navigate = useNavigate();
   // State để mở/đóng modal
   const [showModal, setShowModal] = useState(false);
 
@@ -16,6 +18,18 @@ const Header: React.FC = () => {
   // Hàm đóng modal
   const handleCloseModal = () => {
     setShowModal(false);
+  };
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/");
   };
 
   return (
@@ -64,15 +78,6 @@ const Header: React.FC = () => {
                 Booking
               </Link>
             </li>
-            {/* Thay đổi liên kết thành hành động mở modal */}
-            <li>
-              <button
-                onClick={handleOpenModal}
-                className="hover:text-yellow-300 transition duration-300 ease-in-out"
-              >
-                Contact
-              </button>
-            </li>
             <li>
               <Link
                 to="/blog"
@@ -80,6 +85,14 @@ const Header: React.FC = () => {
               >
                 Blog
               </Link>
+            </li>
+            <li>
+              <button
+                onClick={handleOpenModal}
+                className="hover:text-yellow-300 transition duration-300 ease-in-out"
+              >
+                Contact
+              </button>
             </li>
           </ul>
         </nav>
@@ -91,16 +104,26 @@ const Header: React.FC = () => {
           >
             Book Now
           </button>
+
           <div className="flex items-center space-x-2">
-            <Link to="/login" className="flex items-center space-x-2">
-              <span>Login</span>
-            </Link>
-            <Divider type="vertical" className="border-black mt-1 h-7"/>
-            <div>
-              <Link to="/register" className="flex items-center space-x-2">
-                <span>Signup</span>
-              </Link>
-            </div>
+            {user ? (
+              <>
+                <span className="font-medium">Welcome, {user.username}</span>
+                <button onClick={handleLogout} className="ml-4 text-red-500">
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <span>Login</span>
+                </Link>
+                <Divider type="vertical" className="border-black mt-1 h-7" />
+                <Link to="/register">
+                  <span>Signup</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -109,8 +132,15 @@ const Header: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-8 rounded-lg shadow-lg w-1/2">
-            <button onClick={handleCloseModal} className="absolute top-4 right-4 text-2xl">×</button>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Contact Information</h3>
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 text-2xl"
+            >
+              ×
+            </button>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">
+              Contact Information
+            </h3>
             <form>
               <input
                 type="text"
@@ -122,13 +152,17 @@ const Header: React.FC = () => {
                 placeholder="Phone Number"
                 className="mb-4 p-2 border w-full"
               />
-              <button className="py-2 px-4 bg-blue-500 text-white rounded-lg mt-4">Submit</button>
+              <button className="py-2 px-4 bg-blue-500 text-white rounded-lg mt-4">
+                Submit
+              </button>
             </form>
             <div className="mt-6">
               <p className="text-gray-600">Store Name: LuLuSpa</p>
               <p className="text-gray-600">Phone: 123-456-789</p>
               <p className="text-gray-600">Email: info@luluspa.com</p>
-              <a href="https://facebook.com/luluspa" className="text-blue-600">Facebook</a>
+              <a href="https://facebook.com/luluspa" className="text-blue-600">
+                Facebook
+              </a>
             </div>
           </div>
         </div>

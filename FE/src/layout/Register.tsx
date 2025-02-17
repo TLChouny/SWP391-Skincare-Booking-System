@@ -61,7 +61,7 @@ const Register: React.FC = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: formData.username,
+          username: formData.username,
           email: formData.email,
           password: formData.password,
           role: "user",

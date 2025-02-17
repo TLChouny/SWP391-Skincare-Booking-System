@@ -31,7 +31,6 @@ const Login: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetch("http://localhost:5000/api/auth/login", {
-        // Cập nhật API endpoint
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,8 +47,14 @@ const Login: React.FC = () => {
       const data = await response.json();
       toast.success("Login successful");
 
+      // Lưu username vào localStorage
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ username: data.username, role: data.role })
+      );
+
       if (data.role === "user") {
-        navigate("/setting");
+        navigate("/");
       } else if (data.role === "admin") {
         navigate("/admin/user-management");
       }
@@ -60,6 +65,8 @@ const Login: React.FC = () => {
       setLoading(false);
     }
   };
+
+
 
   return (
     <div className="h-[86vh] flex items-center justify-center px-5 lg:px-0">
