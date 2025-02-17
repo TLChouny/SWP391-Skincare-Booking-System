@@ -61,7 +61,7 @@ const HomePage: React.FC = () => {
             animate={{ opacity: [0, 1, 0], y: [0, -10, 0] }}
             transition={{ duration: 3, repeat: Infinity }}
           >
-            Discover the Magic of LuLuSpa
+            Discover the Magic of LuLuSpaspa
           </motion.h1>
           <motion.p 
             className="text-xl"
