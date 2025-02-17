@@ -13,9 +13,7 @@ const ServicePage: React.FC = () => {
         const response = await axios.get("http://localhost:5000/api/products/");
         const formattedData = response.data.map((service: any) => ({
           ...service,
-          price: `${parseFloat(service.price.$numberDecimal).toLocaleString(
-            "vi-VN"
-          )} VNĐ`,
+          price: formatPrice(service.price), // Format giá tiền
         }));
         setServices(formattedData);
       } catch (error) {
@@ -28,6 +26,21 @@ const ServicePage: React.FC = () => {
     fetchServices();
   }, []);
 
+  // Hàm format giá tiền thành dạng "100.000 VNĐ"
+  const formatPrice = (price: any) => {
+    let priceValue = 0;
+
+    if (typeof price === "object" && price.$numberDecimal) {
+      priceValue = parseFloat(price.$numberDecimal);
+    } else if (typeof price === "number") {
+      priceValue = price;
+    } else if (typeof price === "string") {
+      priceValue = parseFloat(price.replace(/\./g, ""));
+    }
+
+    return `${priceValue.toLocaleString("vi-VN")} VNĐ`;
+  };
+
   const selectedServiceDetails = services.find(
     (service) => service.name === selectedService
   );
@@ -37,13 +50,12 @@ const ServicePage: React.FC = () => {
   };
 
   const splitDescription = (description: string) => {
-    const lines = description.split("\n").map((line, index) => (
+    return description.split("\n").map((line, index) => (
       <p key={index} className="text-lg text-gray-600 flex items-start">
         <span className="mr-2 text-blue-500">•</span>
         {line}
       </p>
     ));
-    return lines;
   };
 
   return (
