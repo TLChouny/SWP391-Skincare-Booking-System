@@ -13,7 +13,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
 
   const validateEmail = (email: string): boolean => email.trim() !== "";
-  const validatePassword = (password: string): boolean => password.length >= 6;
+  const validatePassword = (password: string): boolean => password.length >= 8;
 
   const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
