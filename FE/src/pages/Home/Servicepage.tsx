@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios"; // Dùng axios để gọi API
+import axios from "axios";
 import Layout from "../../layout/Layout";
 
 const ServicePage: React.FC = () => {
@@ -11,12 +11,14 @@ const ServicePage: React.FC = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/products/"); // Gọi API của bạn
+        const response = await axios.get("http://localhost:5000/api/products/");
         const formattedData = response.data.map((service: any) => ({
           ...service,
-          price: parseFloat(service.price.$numberDecimal), // Chuyển đổi price thành số
+          price: `${parseFloat(service.price.$numberDecimal).toLocaleString(
+            "vi-VN"
+          )} VNĐ`, // Hiển thị VNĐ
         }));
-        setServices(formattedData); // Lưu dữ liệu vào state
+        setServices(formattedData);
       } catch (error) {
         console.error("Error fetching services:", error);
       } finally {
@@ -73,11 +75,11 @@ const ServicePage: React.FC = () => {
                 </p>
                 <img
                   className="mt-4 rounded-lg shadow-md object-cover h-40 w-full"
-                  src={service.image || "/default-image.jpg"} // Thêm fallback ảnh nếu không có ảnh
+                  src={service.image || "/default-image.jpg"}
                   alt={service.name}
                 />
                 <p className="mt-4 text-lg font-bold text-gray-900">
-                  ${service.price.toFixed(2)}
+                  {service.price}
                 </p>
                 <p className="text-gray-600 text-sm">
                   Duration: {service.duration} min
@@ -101,8 +103,7 @@ const ServicePage: React.FC = () => {
                 {selectedServiceDetails.name}
               </h3>
               <p className="text-xl text-gray-700 mb-2">
-                <strong>Price:</strong> $
-                {selectedServiceDetails.price.toFixed(2)}
+                <strong>Price:</strong> {selectedServiceDetails.price}
               </p>
               <p className="text-gray-600 text-sm">
                 <strong>Category:</strong>{" "}
