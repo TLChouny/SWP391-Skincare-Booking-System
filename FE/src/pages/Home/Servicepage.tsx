@@ -7,7 +7,6 @@ const ServicePage: React.FC = () => {
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Gọi API khi component được render
   useEffect(() => {
     const fetchServices = async () => {
       try {
@@ -16,7 +15,7 @@ const ServicePage: React.FC = () => {
           ...service,
           price: `${parseFloat(service.price.$numberDecimal).toLocaleString(
             "vi-VN"
-          )} VNĐ`, // Hiển thị VNĐ
+          )} VNĐ`,
         }));
         setServices(formattedData);
       } catch (error) {
@@ -29,7 +28,6 @@ const ServicePage: React.FC = () => {
     fetchServices();
   }, []);
 
-  // Tìm dịch vụ được chọn từ mảng services
   const selectedServiceDetails = services.find(
     (service) => service.name === selectedService
   );
@@ -38,7 +36,6 @@ const ServicePage: React.FC = () => {
     setSelectedService(null);
   };
 
-  // Hàm chia mô tả thành các dòng có dấu gạch đầu dòng
   const splitDescription = (description: string) => {
     const lines = description.split("\n").map((line, index) => (
       <p key={index} className="text-lg text-gray-600 flex items-start">
