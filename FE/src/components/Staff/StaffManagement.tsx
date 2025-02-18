@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { PieChartOutlined } from "@ant-design/icons";
+import {
+  ClockCircleOutlined,
+  HistoryOutlined,
+  ScheduleOutlined,
+} from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu, theme } from "antd";
 import { Link, Outlet } from "react-router-dom";
@@ -23,27 +27,13 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("UserManagement", "/admin/user-management", <PieChartOutlined />),
-  getItem(
-    "CategoryManagement",
-    "/admin/category-management",
-    <PieChartOutlined />
-  ),
-  getItem("BlogManagement", "/admin/blog-management", <PieChartOutlined />),
-  getItem(
-    "PaymentManagement",
-    "/admin/payment-management",
-    <PieChartOutlined />
-  ),
-  getItem("RatingManagement", "/admin/rating-management", <PieChartOutlined />),
-  getItem(
-    "QuestionManagement",
-    "/admin/question-management",
-    <PieChartOutlined />
-  ),
+  getItem("StaffBooking", "/staff/staffBooking", <ScheduleOutlined />),
+
+  getItem("StaffPayment", "/staff/staffPayment", <ClockCircleOutlined />),
+  getItem("StaffService", "/staff/staffService", <HistoryOutlined />),
 ];
 
-const Dashboard: React.FC = () => {
+const StaffManagement: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -73,11 +63,11 @@ const Dashboard: React.FC = () => {
           </div>
         </Content>
         <Footer style={{ textAlign: "center" }}>
-          Ant Design ©{new Date().getFullYear()} Created by Ant UED
+          LuLuSpa ©{new Date().getFullYear()} Created by Ant UED
         </Footer>
       </Layout>
     </Layout>
   );
 };
 
-export default Dashboard;
+export default StaffManagement;

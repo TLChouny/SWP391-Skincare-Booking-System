@@ -2,11 +2,9 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "../pages/Home/Homepage";
 import BookingPage from "../pages/Home/Bookingpage";
-import AdminDashboard from "../pages/admin/AdminDashboard";
 import Login from "../layout/Login";
 import Header from "../layout/Header";
 import Register from "../layout/Register";
-import ContactPage from "../pages/Home/Contactpage";
 {
   /* Đảm bảo dùng đúng trang này */
 }
@@ -19,8 +17,20 @@ import ManageBlog from "../pages/admin/ManageBlog";
 import ManagePayment from "../pages/admin/ManagePayment";
 import ManageRating from "../pages/admin/ManageRating";
 import ManageQuestion from "../pages/admin/ManageQuestion";
-import CheckoutPage from "../pages/Home/Checkoutpage";
 import SettingPage from "../pages/Home/Settingpage";
+import TherapistManagement from "../components/Therapist/TherapistManagement";
+import TherapistSchedule from "../pages/Therapist/TherapistSchedule";
+import TherapistAppointments from "../pages/Therapist/TherapistAppointments";
+import ServiceHistory from "../pages/Therapist/ServiceHistory";
+import ServiceExecution from "../pages/Therapist/ServiceExecution";
+import CustomerRecords from "../pages/Therapist/CustomerRecords";
+import TherapistProfile from "../pages/Therapist/TherapistProfile";
+import StaffManagement from "../components/Staff/StaffManagement";
+import StaffBooking from "../pages/Staff/StaffBooking";
+import StaffPayment from "../pages/Staff/StaffPayment";
+import StaffService from "../pages/Staff/StaffService";
+import CheckoutPage from "../pages/Home/CheckoutPage";
+import ContactPage from "../pages/Home/ContactPage";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -42,6 +52,25 @@ const AppRoutes: React.FC = () => {
           <Route path='payment-management' element={<ManagePayment />} />
           <Route path='rating-management' element={<ManageRating />} />
           <Route path='question-management' element={<ManageQuestion />} />
+        </Route>
+        {/* The therapist router */}
+        <Route path='/therapist' element={<TherapistManagement />}>
+          <Route path='therapistSchedule' element={<TherapistSchedule />} />
+          <Route
+            path='therapistAppointments'
+            element={<TherapistAppointments />}
+          />
+          <Route path='therapistProfile' element={<TherapistProfile />} />
+
+          <Route path='serviceHistory' element={<ServiceHistory />} />
+          <Route path='serviceExecution' element={<ServiceExecution />} />
+          <Route path='customerRecords' element={<CustomerRecords />} />
+        </Route>
+        {/* Staff router */}
+        <Route path='/staff' element={<StaffManagement />}>
+          <Route path='staffBooking' element={<StaffBooking />} />
+          <Route path='staffPayment' element={<StaffPayment />} />
+          <Route path='staffService' element={<StaffService />} />
         </Route>
         <Route
           path='/login'
