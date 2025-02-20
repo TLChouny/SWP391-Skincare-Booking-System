@@ -24,12 +24,12 @@ JSON:
 
 Product: 
 {
-  "name": "Massage toàn thân",
-  "description": "Massage thư giãn toàn thân trong 60 phút",
-  "price": 299.99,
-  "duration": 60,
-  "category": "67b2c2b2b6ebc9dae542baa5", //id category
-  "image": "https://edbeauty.vn/wp-content/uploads/2024/11/Kem-chong-nang-Image-Skincare-Daily-Prevention-Pure-Meniral-Hydrating-Moisturizer-SPF30-4.png"
+    "name": "Massage toàn thân",
+    "description": "Massage thư giãn toàn thân trong 60 phút",
+    "price": "150.000",
+    "duration": 60,
+    "category": "67b2ff4705c3d1c759d51010",
+    "image": "https://edbeauty.vn/wp-content/uploads/2024/11/Kem-chong-nang-Image-Skincare-Daily-Prevention-Pure-Meniral-Hydrating-Moisturizer-SPF30-4.png"
 }
 
 JSON:

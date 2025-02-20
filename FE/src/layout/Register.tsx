@@ -33,7 +33,7 @@ const Register: React.FC = () => {
     }
 
     if (!validatePassword(formData.password)) {
-      toast.error("Password must be at least 6 characters long");
+      toast.error("Password must be at least 8 characters long");
       return false;
     }
 

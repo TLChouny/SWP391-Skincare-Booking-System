@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { PieChartOutlined } from "@ant-design/icons";
+import {
+  CheckOutlined,
+  ClockCircleOutlined,
+  CustomerServiceOutlined,
+  HistoryOutlined,
+  ScheduleOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu, theme } from "antd";
 import { Link, Outlet } from "react-router-dom";
@@ -23,27 +30,28 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("UserManagement", "/admin/user-management", <PieChartOutlined />),
   getItem(
-    "CategoryManagement",
-    "/admin/category-management",
-    <PieChartOutlined />
+    "TherapistSchedule",
+    "/therapist/therapistSchedule",
+    <ScheduleOutlined />
   ),
-  getItem("BlogManagement", "/admin/blog-management", <PieChartOutlined />),
+
   getItem(
-    "PaymentManagement",
-    "/admin/payment-management",
-    <PieChartOutlined />
+    "TherapistAppointments",
+    "/therapist/therapistAppointments",
+    <ClockCircleOutlined />
   ),
-  getItem("RatingManagement", "/admin/rating-management", <PieChartOutlined />),
+  getItem("ServiceHistory", "/therapist/serviceHistory", <HistoryOutlined />),
+  getItem("ServiceExecution", "/therapist/serviceExecution", <CheckOutlined />),
   getItem(
-    "QuestionManagement",
-    "/admin/question-management",
-    <PieChartOutlined />
+    "CustomerRecords",
+    "/therapist/customerRecords",
+    <CustomerServiceOutlined />
   ),
+  getItem("TherapistProfile", "/therapist/therapistProfile", <UserOutlined />),
 ];
 
-const Dashboard: React.FC = () => {
+const TherapistManagement: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -73,11 +81,11 @@ const Dashboard: React.FC = () => {
           </div>
         </Content>
         <Footer style={{ textAlign: "center" }}>
-          Ant Design ©{new Date().getFullYear()} Created by Ant UED
+          LuLuSpa ©{new Date().getFullYear()} Created by Ant UED
         </Footer>
       </Layout>
     </Layout>
   );
 };
 
-export default Dashboard;
+export default TherapistManagement;
