@@ -8,7 +8,10 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "noEmitOnError": true,
+    "outDir": "./dist",
   },
     "include": ["src", "react-slick.d.ts"]
 }

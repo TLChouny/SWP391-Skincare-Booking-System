@@ -29,7 +29,7 @@ import StaffManagement from "../components/Staff/StaffManagement";
 import StaffBooking from "../pages/Staff/StaffBooking";
 import StaffPayment from "../pages/Staff/StaffPayment";
 import StaffService from "../pages/Staff/StaffService";
-import CheckoutPage from "../pages/Home/CheckoutPage";
+import CheckoutPage from "../pages/Home/Checkoutpage";
 import ContactPage from "../pages/Home/ContactPage";
 
 const AppRoutes: React.FC = () => {
