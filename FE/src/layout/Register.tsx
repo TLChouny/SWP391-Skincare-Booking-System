@@ -13,6 +13,8 @@ const Register: React.FC = () => {
     password: "",
     email: "",
   });
+  const [otp, setOtp] = useState("");
+  const [showOtpModal, setShowOtpModal] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -55,7 +57,6 @@ const Register: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetch("http://localhost:5000/api/auth/register", {
-        // API endpoint
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,18 +71,50 @@ const Register: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        toast.error(errorData.msg || "Registration failed"); // Xử lý lỗi từ backend
+        toast.error(errorData.msg || "Registration failed");
         return;
       }
 
-      const data = await response.json();
-      toast.success("Registration successful");
-
-
-      navigate("/login");
+      // Giả sử API trả về success và gửi OTP qua email
+      await response.json();
+      setShowOtpModal(true); // Hiển thị modal OTP sau khi đăng ký thành công
+      toast.success("OTP has been sent to your email");
     } catch (error) {
       console.error("Network Error:", error);
       toast.error("Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOtpSubmit = async (e: FormEvent): Promise<void> => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      // Gọi API để xác nhận OTP
+      const response = await fetch("http://localhost:5000/api/auth/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          otp: otp,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast.error(errorData.msg || "Invalid OTP");
+        return;
+      }
+
+      toast.success("Registration completed successfully");
+      setShowOtpModal(false);
+      navigate("/login");
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      toast.error("OTP verification failed");
     } finally {
       setLoading(false);
     }
@@ -136,11 +169,7 @@ const Register: React.FC = () => {
                     className="absolute text-gray-500 right-3 top-3"
                     onClick={() => setPasswordVisible(!passwordVisible)}
                   >
-                    {passwordVisible ? (
-                      <EyeInvisibleOutlined />
-                    ) : (
-                      <EyeOutlined />
-                    )}
+                    {passwordVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                   </button>
                 </div>
 
@@ -174,6 +203,43 @@ const Register: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* OTP Modal */}
+      {showOtpModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <h2 className="text-xl font-bold mb-4 text-center">Xác nhận OTP</h2>
+            <form onSubmit={handleOtpSubmit}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nhập mã OTP được gửi đến email của bạn
+                </label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  placeholder="Nhập OTP"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2 bg-blue-900 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                {loading ? "Đang xác nhận..." : "Xác nhận"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowOtpModal(false)}
+                className="w-full mt-2 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+              >
+                Hủy
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
