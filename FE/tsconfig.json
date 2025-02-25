@@ -6,11 +6,11 @@
     "strict": true,
     "moduleResolution": "Node",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "noEmitOnError": true,
-    "allowSyntheticDefaultImports": true,
     "outDir": "./dist"
   },
   "include": ["src", "react-slick.d.ts"]
