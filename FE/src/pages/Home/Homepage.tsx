@@ -8,6 +8,7 @@ import Layout from "../../layout/Layout"
 import { getServices } from "../../api/apiService"
 import video1 from "../../assets/video/invideo-ai-1080 Discover the Magic of LuLuSpa_ Your Skin 2025-01-10.mp4"
 
+
 interface Service {
   id: string
   name: string
