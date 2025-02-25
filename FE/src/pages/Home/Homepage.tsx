@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import Layout from "../../layout/Layout"
 import { getServices } from "../../api/apiService"
 import video1 from "../../assets/video/invideo-ai-1080 Discover the Magic of LuLuSpa_ Your Skin 2025-01-10.mp4"
-import logo1 from "../../assets/logo7.png"
 
 interface Service {
   id: string
