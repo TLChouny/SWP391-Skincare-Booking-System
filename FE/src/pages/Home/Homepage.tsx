@@ -8,12 +8,12 @@ import Layout from "../../layout/Layout"
 import { getServices } from "../../api/apiService"
 import video1 from "../../assets/video/invideo-ai-1080 Discover the Magic of LuLuSpa_ Your Skin 2025-01-10.mp4"
 
-
 interface Service {
   id: string
   name: string
   description: string
   image?: string
+  duration?: number  // Sửa lỗi chính tả từ "durrtaion" thành "duration"
   price?: number
 }
 
@@ -57,7 +57,6 @@ const HomePage: React.FC = () => {
           className="absolute top-0 left-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center text-center text-white px-6">
-      
           <motion.h1
             className="text-6xl font-extrabold mb-4 text-yellow-400"
             initial={{ opacity: 0, y: -50 }}
@@ -109,10 +108,15 @@ const HomePage: React.FC = () => {
                     <div className="p-8">
                       <h3 className="text-3xl font-semibold text-gray-800 mb-4">{service.name}</h3>
                       <p className="text-gray-600 mb-6">{service.description}</p>
-                      <div className="flex justify-between items-center">
-                        <span className="text-2xl font-bold text-yellow-500">
-                          {service.price ? `$${service.price}` : "Contact for Price"}
-                        </span>
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex flex-col">
+                          <span className="text-2xl font-bold text-yellow-500">
+                            {service.price ? `$${service.price}` : "Contact for Price"}
+                          </span>
+                          <span className="text-lg text-gray-600">
+                            {service.duration ? `${service.duration} minutes` : "Duration TBD"}
+                          </span>
+                        </div>
                         <button
                           onClick={() => handleBookNow(service.id)}
                           className="px-6 py-3 bg-yellow-400 text-gray-900 rounded-full font-semibold hover:bg-yellow-300 transition duration-300 ease-in-out transform hover:scale-105"
@@ -152,17 +156,17 @@ const HomePage: React.FC = () => {
               {
                 title: "The Science of Hydration",
                 description: "Discover the secrets to keeping your skin perfectly moisturized all day long.",
-                image: "/path-to-hydration-image.jpg", // Replace with actual image path
+                image: "/path-to-hydration-image.jpg",
               },
               {
                 title: "Anti-Aging Breakthroughs",
                 description: "Explore the latest innovations in anti-aging skincare technology.",
-                image: "/path-to-anti-aging-image.jpg", // Replace with actual image path
+                image: "/path-to-anti-aging-image.jpg",
               },
               {
                 title: "Natural Beauty Rituals",
                 description: "Learn about time-tested natural ingredients that can transform your skin.",
-                image: "/path-to-natural-beauty-image.jpg", // Replace with actual image path
+                image: "/path-to-natural-beauty-image.jpg",
               },
             ].map((blog, index) => (
               <motion.div
@@ -207,4 +211,3 @@ const HomePage: React.FC = () => {
 }
 
 export default HomePage
-

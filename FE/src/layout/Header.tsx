@@ -70,14 +70,14 @@ const Header: React.FC = () => {
                 Services
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 to="/booking"
                 className="hover:text-yellow-300 transition duration-300 ease-in-out"
               >
                 Booking
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link
                 to="/blog"
