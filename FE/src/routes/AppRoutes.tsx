@@ -5,12 +5,9 @@ import BookingPage from "../pages/Home/Bookingpage";
 import Login from "../layout/Login";
 import Header from "../layout/Header";
 import Register from "../layout/Register";
-{
-  /* Đảm bảo dùng đúng trang này */
-}
+
 import ServicePage from "../pages/Home/Servicepage";
 import BlogPage from "../pages/Home/Blogpage";
-import Dashboard from "../components/Dashboard/Dashboard";
 import ManageUser from "../pages/admin/ManageUser";
 import ManageCategory from "../pages/admin/ManageCategory";
 import ManageBlog from "../pages/admin/ManageBlog";
@@ -31,6 +28,8 @@ import StaffPayment from "../pages/Staff/StaffPayment";
 import StaffService from "../pages/Staff/StaffService";
 import CheckoutPage from "../pages/Home/Checkoutpage";
 import ContactPage from "../pages/Home/ContactPage";
+import AdminOverview from "../pages/admin/AdminOverview";
+import AdminDashboard from "../components/Admin/AdminDashboard";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -45,7 +44,8 @@ const AppRoutes: React.FC = () => {
         <Route path='/services' element={<ServicePage />} />
         <Route path='/blog' element={<BlogPage />} />
         {/* <Route path="/blog-details/:id" element={<BlogPage />} /> */}
-        <Route path='/admin' element={<Dashboard />}>
+        <Route path='/admin' element={<AdminDashboard />}>
+          <Route index element={<AdminOverview />} />
           <Route path='user-management' element={<ManageUser />} />
           <Route path='category-management' element={<ManageCategory />} />
           <Route path='blog-management' element={<ManageBlog />} />
@@ -72,6 +72,7 @@ const AppRoutes: React.FC = () => {
           <Route path='staffPayment' element={<StaffPayment />} />
           <Route path='staffService' element={<StaffService />} />
         </Route>
+        {/* Login */}
         <Route
           path='/login'
           element={
