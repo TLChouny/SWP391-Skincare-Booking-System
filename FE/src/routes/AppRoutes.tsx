@@ -16,20 +16,18 @@ import ManageRating from "../pages/admin/ManageRating";
 import ManageQuestion from "../pages/admin/ManageQuestion";
 import SettingPage from "../pages/Home/Settingpage";
 import TherapistManagement from "../components/Therapist/TherapistManagement";
-import TherapistSchedule from "../pages/Therapist/TherapistSchedule";
-import TherapistAppointments from "../pages/Therapist/TherapistAppointments";
 import ServiceHistory from "../pages/Therapist/ServiceHistory";
-import ServiceExecution from "../pages/Therapist/ServiceExecution";
-import CustomerRecords from "../pages/Therapist/CustomerRecords";
-import TherapistProfile from "../pages/Therapist/TherapistProfile";
 import StaffManagement from "../components/Staff/StaffManagement";
-import StaffBooking from "../pages/Staff/StaffBooking";
-import StaffPayment from "../pages/Staff/StaffPayment";
-import StaffService from "../pages/Staff/StaffService";
 import CheckoutPage from "../pages/Home/Checkoutpage";
 import ContactPage from "../pages/Home/ContactPage";
 import AdminOverview from "../pages/admin/AdminOverview";
 import AdminDashboard from "../components/Admin/AdminDashboard";
+import CheckIn from "../pages/Staff/CheckIn";
+import AssignSpecialists from "../pages/Staff/AssignSpecialists";
+import CheckOut from "../pages/Staff/CheckOut";
+import AppointmentSchedules from "../pages/Staff/AppointmentSchedules";
+import ListOfAssigned from "../pages/Therapist/ListOfAssigned";
+import PerformService from "../pages/Therapist/PerformService";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -55,22 +53,19 @@ const AppRoutes: React.FC = () => {
         </Route>
         {/* The therapist router */}
         <Route path='/therapist' element={<TherapistManagement />}>
-          <Route path='therapistSchedule' element={<TherapistSchedule />} />
-          <Route
-            path='therapistAppointments'
-            element={<TherapistAppointments />}
-          />
-          <Route path='therapistProfile' element={<TherapistProfile />} />
-
-          <Route path='serviceHistory' element={<ServiceHistory />} />
-          <Route path='serviceExecution' element={<ServiceExecution />} />
-          <Route path='customerRecords' element={<CustomerRecords />} />
+          <Route path='list-of-assigned' element={<ListOfAssigned />} />
+          <Route path='perfom-service' element={<PerformService />} />
+          <Route path='service-history' element={<ServiceHistory />} />
         </Route>
         {/* Staff router */}
         <Route path='/staff' element={<StaffManagement />}>
-          <Route path='staffBooking' element={<StaffBooking />} />
-          <Route path='staffPayment' element={<StaffPayment />} />
-          <Route path='staffService' element={<StaffService />} />
+          <Route path='check-in' element={<CheckIn />} />
+          <Route path='assign-specialists' element={<AssignSpecialists />} />
+          <Route path='check-out' element={<CheckOut />} />
+          <Route
+            path='appointment-schedules'
+            element={<AppointmentSchedules />}
+          />
         </Route>
         {/* Login */}
         <Route

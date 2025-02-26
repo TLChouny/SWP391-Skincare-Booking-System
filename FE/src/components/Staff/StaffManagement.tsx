@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   ClockCircleOutlined,
   HistoryOutlined,
-  ProfileOutlined,
   ScheduleOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
@@ -29,11 +28,19 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("StaffBooking", "/staff/staffBooking", <ScheduleOutlined />),
+  getItem("Check In", "/staff/check-in", <ScheduleOutlined />),
 
-  getItem("StaffPayment", "/staff/staffPayment", <ClockCircleOutlined />),
-  getItem("StaffService", "/staff/staffService", <HistoryOutlined />),
-  getItem("StaffProfile", "/staff/staffProfile", <ProfileOutlined />),
+  getItem(
+    "Assign Specialists",
+    "/staff/assign-specialists",
+    <ClockCircleOutlined />
+  ),
+  getItem("Check Out", "/staff/check-out", <HistoryOutlined />),
+  getItem(
+    "Appointment Schedules",
+    "/staff/appointment-schedules",
+    <HistoryOutlined />
+  ),
 ];
 
 const StaffManagement: React.FC = () => {
@@ -56,9 +63,6 @@ const StaffManagement: React.FC = () => {
           <Content style={{ margin: " 16px" }}>
             <Outlet />
           </Content>
-          <Footer style={{ textAlign: "center" }}>
-            LuLuSpa ©{new Date().getFullYear()} Created by Ant UED
-          </Footer>
         </Layout>
       </Layout>
     </Layout>

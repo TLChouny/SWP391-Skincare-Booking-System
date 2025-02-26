@@ -1,8 +1,13 @@
-import React from 'react';
-import { Layout, Avatar, Dropdown, Menu, Badge } from 'antd';
-import { UserOutlined, BellOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
-import logo from '../../assets/logo.png';
+import React from "react";
+import { Layout, Avatar, Dropdown, Menu, Badge } from "antd";
+import {
+  UserOutlined,
+  BellOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+} from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../../assets/logo.png";
 
 const { Header } = Layout;
 
@@ -13,25 +18,25 @@ const AdminHeader: React.FC = () => {
     <Menu
       items={[
         {
-          key: 'profile',
+          key: "profile",
           icon: <UserOutlined />,
-          label: 'Thông tin cá nhân',
+          label: "Thông tin cá nhân",
         },
         {
-          key: 'settings',
+          key: "settings",
           icon: <SettingOutlined />,
-          label: 'Cài đặt',
+          label: "Cài đặt",
         },
         {
-          type: 'divider',
+          type: "divider",
         },
         {
-          key: 'logout',
+          key: "logout",
           icon: <LogoutOutlined />,
-          label: 'Đăng xuất',
+          label: "Đăng xuất",
           onClick: () => {
-            localStorage.removeItem('user');
-            navigate('/login');
+            localStorage.removeItem("user");
+            navigate("/login");
           },
         },
       ]}
@@ -39,41 +44,42 @@ const AdminHeader: React.FC = () => {
   );
 
   return (
-    <Header 
-      style={{ 
-        background: '#fff', 
-        padding: '0 24px', 
-        position: 'fixed',
+    <Header
+      style={{
+        background: "#fff",
+        padding: "0 24px",
+        position: "fixed",
         zIndex: 1,
-        width: '100%',
-        height: '78px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-       
-      }}
-    >
-      <div className="flex items-center">
-        <Link to="/">
+        width: "100%",
+        height: "78px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}>
+      <div className='flex items-center'>
+        <Link to='/'>
           <img
             src={logo}
-            alt="LuLuSpa Logo"
-            className="w-16 h-16 rounded-full"
+            alt='LuLuSpa Logo'
+            className='w-16 h-16 rounded-full'
           />
         </Link>
-        <div className="text-xl font-semibold ml-4 p">
-          Welcome 
-        </div>
+        <div className='text-xl font-semibold ml-4 p'>Welcome</div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        <Badge count={5} size="small">
-          <BellOutlined style={{ fontSize: '20px', cursor: 'pointer' }} />
+      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+        <Badge count={5} size='small'>
+          <BellOutlined style={{ fontSize: "20px", cursor: "pointer" }} />
         </Badge>
-        <Dropdown overlay={userMenu} placement="bottomRight" arrow>
-          <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Dropdown overlay={userMenu} placement='bottomRight' arrow>
+          <div
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}>
             <Avatar icon={<UserOutlined />} />
-            <span>Admin</span>
           </div>
         </Dropdown>
       </div>

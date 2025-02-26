@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { PieChartOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Layout, Menu, theme } from "antd";
+import { Layout, Menu } from "antd";
 import { Link, Outlet } from "react-router-dom";
 import AdminHeader from "./AdminHeader";
 
-const { Content, Footer, Sider } = Layout;
+const { Content, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
 
@@ -65,9 +65,6 @@ const AdminDashboard: React.FC = () => {
           <Content style={{ margin: "16px" }}>
             <Outlet />
           </Content>
-          <Footer style={{ textAlign: "center" }}>
-            Ant Design ©{new Date().getFullYear()} Created by Ant UED
-          </Footer>
         </Layout>
       </Layout>
     </Layout>

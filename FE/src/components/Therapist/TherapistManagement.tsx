@@ -1,17 +1,15 @@
 import React, { useState } from "react";
 import {
-  CheckOutlined,
   ClockCircleOutlined,
-  CustomerServiceOutlined,
   HistoryOutlined,
   ScheduleOutlined,
-  UserOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Layout, Menu, theme } from "antd";
+import { Layout, Menu } from "antd";
 import { Link, Outlet } from "react-router-dom";
+import AdminHeader from "../Admin/AdminHeader";
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Content, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
 
@@ -31,58 +29,44 @@ function getItem(
 
 const items: MenuItem[] = [
   getItem(
-    "TherapistSchedule",
-    "/therapist/therapistSchedule",
+    "List of Assigned ",
+    "/therapist/list-of-assigned",
     <ScheduleOutlined />
   ),
 
   getItem(
-    "TherapistAppointments",
-    "/therapist/therapistAppointments",
+    "Perform Service",
+    "/therapist/perfom-service",
     <ClockCircleOutlined />
   ),
-  getItem("ServiceHistory", "/therapist/serviceHistory", <HistoryOutlined />),
-  getItem("ServiceExecution", "/therapist/serviceExecution", <CheckOutlined />),
   getItem(
-    "CustomerRecords",
-    "/therapist/customerRecords",
-    <CustomerServiceOutlined />
+    "Service History",
+    "/therapist/service-history ",
+    <HistoryOutlined />
   ),
-  getItem("TherapistProfile", "/therapist/therapistProfile", <UserOutlined />),
 ];
 
 const TherapistManagement: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider
-        theme='light'
-        collapsible
-        collapsed={collapsed}
-        onCollapse={(value) => setCollapsed(value)}>
-        <div className='demo-logo-vertical' />
-        <Menu defaultSelectedKeys={["1"]} mode='inline' items={items} />
-      </Sider>
-      <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }} />
-        <Content style={{ margin: "0 16px" }}>
-          <div
-            style={{
-              padding: 24,
-              minHeight: 360,
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-            }}>
+      <AdminHeader />
+      <Layout style={{ marginTop: "80px" }}>
+        <Sider
+          className='mt-5'
+          theme='light'
+          collapsible
+          collapsed={collapsed}
+          onCollapse={(value) => setCollapsed(value)}>
+          <div className='demo-logo-vertical' />
+          <Menu defaultSelectedKeys={["1"]} mode='inline' items={items} />
+        </Sider>
+        <Layout>
+          <Content style={{ margin: " 16px" }}>
             <Outlet />
-          </div>
-        </Content>
-        <Footer style={{ textAlign: "center" }}>
-          LuLuSpa ©{new Date().getFullYear()} Created by Ant UED
-        </Footer>
+          </Content>
+        </Layout>
       </Layout>
     </Layout>
   );

@@ -1,11 +1,7 @@
-import React from 'react';
+import React from "react";
 
-const ServiceHistory: React.FC = () => {
-  return (
-    <div>
-      <h1>Lịch sử dịch vụ</h1>
-    </div>
-  );
-};
+function ServiceHistory() {
+  return <div>ServiceHistory</div>;
+}
 
-export default ServiceHistory; 
+export default ServiceHistory;
