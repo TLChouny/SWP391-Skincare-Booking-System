@@ -5,29 +5,41 @@ import BookingPage from "../pages/Home/Bookingpage";
 import Login from "../layout/Login";
 import Header from "../layout/Header";
 import Register from "../layout/Register";
-
+//homepage
 import ServicePage from "../pages/Home/Servicepage";
+import SettingPage from "../pages/Home/Settingpage";
+import CheckoutPage from "../pages/Home/CheckoutPage";
+import ContactPage from "../pages/Home/ContactPage";
 import BlogPage from "../pages/Home/Blogpage";
+import TestPage from "../pages/Home/SkinAssessmentQuiz";
+
+//manager
 import ManageUser from "../pages/admin/ManageUser";
 import ManageCategory from "../pages/admin/ManageCategory";
 import ManageBlog from "../pages/admin/ManageBlog";
 import ManagePayment from "../pages/admin/ManagePayment";
 import ManageRating from "../pages/admin/ManageRating";
-import ManageQuestion from "../pages/admin/ManageQuestion";
-import SettingPage from "../pages/Home/Settingpage";
-import TherapistManagement from "../components/Therapist/TherapistManagement";
-import ServiceHistory from "../pages/Therapist/ServiceHistory";
-import StaffManagement from "../components/Staff/StaffManagement";
-import CheckoutPage from "../pages/Home/Checkoutpage";
-import ContactPage from "../pages/Home/ContactPage";
 import AdminOverview from "../pages/admin/AdminOverview";
 import AdminDashboard from "../components/Admin/AdminDashboard";
+import ManageQuestion from "../pages/admin/ManageQuestion";
+
+//staff
 import CheckIn from "../pages/Staff/CheckIn";
 import AssignSpecialists from "../pages/Staff/AssignSpecialists";
 import CheckOut from "../pages/Staff/CheckOut";
 import AppointmentSchedules from "../pages/Staff/AppointmentSchedules";
+import StaffManagement from "../components/Staff/StaffManagement";
+
+//therapist
+import ServiceHistory from "../pages/Therapist/ServiceHistory";
+import TherapistManagement from "../components/Therapist/TherapistManagement";
 import ListOfAssigned from "../pages/Therapist/ListOfAssigned";
 import PerformService from "../pages/Therapist/PerformService";
+
+//customer
+
+
+
 
 const AppRoutes: React.FC = () => {
   return (
@@ -41,6 +53,7 @@ const AppRoutes: React.FC = () => {
         {/* Modal sẽ hiện ra ở đây */}
         <Route path='/services' element={<ServicePage />} />
         <Route path='/blog' element={<BlogPage />} />
+        <Route path='/test' element={<TestPage />} />
         {/* <Route path="/blog-details/:id" element={<BlogPage />} /> */}
         <Route path='/admin' element={<AdminDashboard />}>
           <Route index element={<AdminOverview />} />

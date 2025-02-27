@@ -26,6 +26,15 @@ const Header: React.FC = () => {
     }
   }, []);
 
+  const handleBookNow = () => {
+    if (!user) {
+      alert("Bạn cần đăng nhập tài khoản trước khi book service!");
+      navigate("/login");
+    } else {
+      navigate("/booking"); // Hoặc điều hướng đến trang đặt lịch thực tế của bạn
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
@@ -70,14 +79,14 @@ const Header: React.FC = () => {
                 Services
               </Link>
             </li>
-            {/* <li>
+            <li>
               <Link
-                to="/booking"
+                to="/test"
                 className="hover:text-yellow-300 transition duration-300 ease-in-out"
               >
-                Booking
+                Test
               </Link>
-            </li> */}
+            </li>
             <li>
               <Link
                 to="/blog"
@@ -100,10 +109,12 @@ const Header: React.FC = () => {
         <div className="flex items-center space-x-4">
           <button
             title="Book your appointment now"
+            onClick={handleBookNow}
             className="hidden md:block bg-yellow-300 text-black py-2 px-6 rounded-lg shadow-md hover:bg-yellow-400 transition duration-300 ease-in-out"
           >
             Book Now
           </button>
+
 
           <div className="flex items-center space-x-2">
             {user ? (
