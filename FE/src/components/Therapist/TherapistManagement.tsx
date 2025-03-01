@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import {
-  ClockCircleOutlined,
   HistoryOutlined,
   ScheduleOutlined,
+  CustomerServiceOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
@@ -37,7 +37,7 @@ const items: MenuItem[] = [
   getItem(
     "Perform Service",
     "/therapist/perfom-service",
-    <ClockCircleOutlined />
+    <CustomerServiceOutlined />
   ),
   getItem(
     "Service History",

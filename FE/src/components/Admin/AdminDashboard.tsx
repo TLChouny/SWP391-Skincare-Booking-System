@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { PieChartOutlined } from "@ant-design/icons";
+import {
+  DashboardOutlined,
+  UserOutlined,
+  ReadOutlined,
+  InboxOutlined,
+  QrcodeOutlined,
+  StarOutlined,
+  QuestionOutlined,
+} from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
 import { Link, Outlet } from "react-router-dom";
@@ -24,24 +32,16 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("AdminOverview", "/admin", <PieChartOutlined />),
-  getItem("UserManagement", "/admin/user-management", <PieChartOutlined />),
-  getItem(
-    "CategoryManagement",
-    "/admin/category-management",
-    <PieChartOutlined />
-  ),
-  getItem("BlogManagement", "/admin/blog-management", <PieChartOutlined />),
-  getItem(
-    "PaymentManagement",
-    "/admin/payment-management",
-    <PieChartOutlined />
-  ),
-  getItem("RatingManagement", "/admin/rating-management", <PieChartOutlined />),
+  getItem("AdminOverview", "/admin", <DashboardOutlined />),
+  getItem("UserManagement", "/admin/user-management", <UserOutlined />),
+  getItem("CategoryManagement", "/admin/category-management", <ReadOutlined />),
+  getItem("BlogManagement", "/admin/blog-management", <InboxOutlined />),
+  getItem("PaymentManagement", "/admin/payment-management", <QrcodeOutlined />),
+  getItem("RatingManagement", "/admin/rating-management", <StarOutlined />),
   getItem(
     "QuestionManagement",
     "/admin/question-management",
-    <PieChartOutlined />
+    <QuestionOutlined />
   ),
 ];
 

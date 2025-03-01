@@ -22,7 +22,7 @@ function ManageTemplate({ columns, title, formItems }: ManageTemplateProps) {
   const fetchUser = async () => {
     try {
       const res = await api.get(
-        "https://666c0b8749dbc5d7145c5890.mockapi.io/api"
+        "https://6628fc3354afcabd0737b74a.mockapi.io/User"
       );
       setUsers(res.data);
     } catch (error) {

@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import {
-  ClockCircleOutlined,
   HistoryOutlined,
   ScheduleOutlined,
+  CheckOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
 import { Link, Outlet } from "react-router-dom";
 import AdminHeader from "../Admin/AdminHeader";
 
-const { Content, Footer, Sider } = Layout;
+const { Content, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
 
@@ -28,14 +29,14 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("Check In", "/staff/check-in", <ScheduleOutlined />),
+  getItem("Check In", "/staff/check-in", <CheckOutlined />),
 
   getItem(
     "Assign Specialists",
     "/staff/assign-specialists",
-    <ClockCircleOutlined />
+    <ScheduleOutlined />
   ),
-  getItem("Check Out", "/staff/check-out", <HistoryOutlined />),
+  getItem("Check Out", "/staff/check-out", <LogoutOutlined />),
   getItem(
     "Appointment Schedules",
     "/staff/appointment-schedules",
