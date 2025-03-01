@@ -31,7 +31,7 @@ const Header: React.FC = () => {
       alert("Bạn cần đăng nhập tài khoản trước khi book service!");
       navigate("/login");
     } else {
-      navigate("/booking"); // Hoặc điều hướng đến trang đặt lịch thực tế của bạn
+      navigate("/service"); // Hoặc điều hướng đến trang đặt lịch thực tế của bạn
     }
   };
 
