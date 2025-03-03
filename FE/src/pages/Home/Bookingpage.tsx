@@ -6,6 +6,8 @@ import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTherapists } from "../../api/apiService";
 import Layout from "../../layout/Layout";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Service {
   _id: string;
@@ -34,6 +36,8 @@ interface Booking {
   service: Service;
   customerName: string;
   customerPhone: string;
+  customerEmail: string;
+  notes?: string;
   selectedDate: string;
   selectedSlot: string;
   selectedTherapist: Therapist | null;
@@ -48,6 +52,8 @@ const EnhancedBookingPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [customerName, setCustomerName] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
+  const [customerEmail, setCustomerEmail] = useState<string>("");
+  const [notes, setNotes] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
@@ -75,7 +81,7 @@ const EnhancedBookingPage: React.FC = () => {
         setTherapists(therapistsResponse.data);
       } catch (error) {
         console.error("Error fetching data:", error);
-        alert("Could not load services. Please try again later.");
+        toast.error("Không thể tải dịch vụ. Vui lòng thử lại sau.");
       } finally {
         setLoading(false);
       }
@@ -89,27 +95,68 @@ const EnhancedBookingPage: React.FC = () => {
 
   const generateTimeSlots = () => {
     const slots = [];
+    const now = new Date();
+    const today = getTodayDate();
+    const isToday = selectedDate === today;
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
     for (let hour = 9; hour < 18; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
-        slots.push(`${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`);
+        const slot = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+        if (isToday) {
+          const slotHour = parseInt(slot.split(":")[0]);
+          const slotMinute = parseInt(slot.split(":")[1]);
+          if (slotHour > currentHour || (slotHour === currentHour && slotMinute > currentMinute)) {
+            slots.push(slot);
+          }
+        } else {
+          slots.push(slot);
+        }
       }
     }
     return slots;
   };
 
+  const validateForm = (): boolean => {
+    const errors: string[] = [];
+
+    if (!customerName.trim()) {
+      errors.push("Tên khách hàng không được để trống.");
+    }
+    if (!customerPhone.trim() || !/^\d{10}$/.test(customerPhone)) {
+      errors.push("Số điện thoại phải là 10 chữ số hợp lệ.");
+    }
+    if (!customerEmail.trim() || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(customerEmail)) {
+      errors.push("Email phải có định dạng hợp lệ.");
+    }
+    if (!selectedDate) {
+      errors.push("Vui lòng chọn ngày đặt lịch.");
+    }
+    if (!selectedSlot) {
+      errors.push("Vui lòng chọn khung giờ.");
+    }
+
+    if (errors.length > 0) {
+      toast.error(errors[0]); // Chỉ hiển thị lỗi đầu tiên
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!customerName || !customerPhone || !selectedDate || !selectedSlot || !service) {
-      alert("Please fill in all required fields before booking.");
-      return;
-    }
+    if (!validateForm() || !service) return;
 
     const bookingData: Booking = {
       service,
       customerName,
       customerPhone,
+      customerEmail,
+      notes,
       selectedDate,
-      selectedSlot,
+      selectedSlot: selectedSlot as string,
       selectedTherapist,
       timestamp: Date.now(),
       status: "pending",
@@ -119,47 +166,53 @@ const EnhancedBookingPage: React.FC = () => {
     localStorage.setItem("cart", JSON.stringify(updatedCart));
     setCart(updatedCart);
     setShowCart(true);
+    setCustomerName("");
+    setCustomerPhone("");
+    setCustomerEmail("");
+    setNotes("");
+    setSelectedDate("");
+    setSelectedSlot(null);
+    setSelectedTherapist(null);
+    toast.success("Đã thêm dịch vụ vào giỏ hàng.");
   };
 
   const toggleCart = () => setShowCart(!showCart);
+
+  const handleRemoveFromCart = (index: number) => {
+    const updatedCart = cart.filter((_, i) => i !== index);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    setCart(updatedCart);
+    toast.success("Đã xóa dịch vụ khỏi giỏ hàng.");
+  };
 
   const handleCheckout = async () => {
     setShowCart(false);
     setShowCheckoutModal(true);
 
-    const totalAmount = calculateTotal() ;
+    const totalAmount = calculateTotal();
     const orderName = service?.name || "Unknown Service";
     let description = `Dịch vụ ${orderName.substring(0, 25)}`;
-
-
-    if (description.length > 25) {
-      description = description.substring(0, 25);
-    }
+    if (description.length > 25) description = description.substring(0, 25);
 
     const returnUrl = "http://localhost:5000/success.html";
     const cancelUrl = "http://localhost:5000/cancel.html";
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/payments/create",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount: totalAmount,
-            orderName,
-            description,
-            returnUrl,
-            cancelUrl,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/payments/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: totalAmount,
+          orderName,
+          description,
+          returnUrl,
+          cancelUrl,
+        }),
+      });
 
       const data = await response.json();
-      console.log("🔍 API Response:", data);
-
       if (!response.ok || data.error !== 0 || !data.data) {
         throw new Error(`API Error: ${data.message || "Unknown error"}`);
       }
@@ -168,19 +221,10 @@ const EnhancedBookingPage: React.FC = () => {
       setQrCode(data.data.qrCode);
     } catch (error: any) {
       console.error("❌ Error during checkout:", error);
-
-      let errorMessage = "Payment initiation failed.";
-      if (error.message.includes("API Error")) {
-        errorMessage += ` ${error.message}`;
-      } else {
-        errorMessage += " Please check your connection and try again.";
-      }
-
-      alert(errorMessage);
-      setShowCheckoutModal(false); // Đóng modal thanh toán nếu lỗi xảy ra
+      toast.error("Khởi tạo thanh toán thất bại. Vui lòng thử lại.");
+      setShowCheckoutModal(false);
     }
   };
-
 
   const handlePayment = () => {
     const updatedCart = cart.map((item) => ({ ...item, status: "completed" } as Booking));
@@ -190,14 +234,12 @@ const EnhancedBookingPage: React.FC = () => {
     setCart(updatedCart);
     setShowCheckoutModal(false);
     setShowCart(true);
+    toast.success("Thanh toán thành công!");
   };
 
   const getTodayDate = () => {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = (today.getMonth() + 1).toString().padStart(2, "0");
-    const day = today.getDate().toString().padStart(2, "0");
-    return `${year}-${month}-${day}`;
+    return `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
   };
 
   const formatPrice = (price: number | { $numberDecimal: string } | undefined): string => {
@@ -206,63 +248,40 @@ const EnhancedBookingPage: React.FC = () => {
       priceValue = Number.parseFloat(price.$numberDecimal);
     } else if (typeof price === "number") {
       priceValue = price;
-    } else if (typeof price === "string") {
-      // Phân tích chuỗi thủ công mà không dùng replace hoặc split
-      priceValue = parsePriceFromString(price); // Gọi hàm parsePriceFromString
-    } else {
-      priceValue = 0; // Giá trị mặc định nếu undefined
     }
     return `${priceValue.toLocaleString("vi-VN")} VNĐ`;
   };
 
   const calculateTotal = (): number => {
-    const total = cart
+    return cart
       .filter((item) => item.status === "confirmed")
       .reduce((sum, item) => {
-        const priceStr = formatPrice(item.service.price); // Đảm bảo luôn là string
-        if (priceStr) {
-          const priceValue = parsePriceFromString(priceStr); // Trích xuất số
-          return sum + (priceValue || 0);
-        }
-        return sum;
+        const priceValue = typeof item.service.price === "number" ? item.service.price : Number.parseFloat((item.service.price as { $numberDecimal: string })?.$numberDecimal || "0");
+        return sum + (priceValue || 0);
       }, 0);
-    return total; // Chia 100000 để đồng bộ với logic cũ nếu cần
-  };
-
-  // Hàm phụ trợ để trích xuất số từ chuỗi định dạng tiền tệ mà không dùng replace hoặc split
-  const parsePriceFromString = (priceStr: string): number => {
-    // Loại bỏ tất cả ký tự không phải số và "VNĐ"
-    const numMatch = priceStr.match(/\d+/g); // Lấy tất cả chuỗi số
-    if (numMatch && numMatch.length > 0) {
-      return Number.parseInt(numMatch.join(""), 10) || 0; // Chuyển chuỗi số thành số nguyên
-    }
-    return 0; // Giá trị mặc định nếu không tìm thấy số
   };
 
   const formatTotal = (): string => {
-    const totalValue = calculateTotal(); // Nhân lại để lấy giá trị gốc
+    const totalValue = calculateTotal();
     return `${totalValue.toLocaleString("vi-VN")} VNĐ`;
   };
 
-  const isAllServicesConfirmed = () => {
-    return cart.every((item) => item.status === "confirmed" || item.status === "completed");
-  };
-
-  const isAllServicesCompleted = () => {
-    return cart.every((item) => item.status === "completed");
-  };
+  const isAllServicesConfirmed = () => cart.every((item) => item.status === "confirmed" || item.status === "completed");
+  const isAllServicesCompleted = () => cart.every((item) => item.status === "completed");
 
   const simulateStaffConfirmation = (bookingIndex: number) => {
     const updatedCart = [...cart];
     updatedCart[bookingIndex].status = "confirmed";
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
+    toast.success("Xác nhận nhân viên thành công.");
   };
 
   const clearCart = () => {
     localStorage.removeItem("cart");
     setCart([]);
     setShowCart(false);
+    toast.success("Đã xóa toàn bộ giỏ hàng.");
   };
 
   const toggleExpand = (index: number) => {
@@ -277,15 +296,9 @@ const EnhancedBookingPage: React.FC = () => {
 
   return (
     <Layout>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="container mx-auto py-16 relative"
-      >
-        <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">
-          Book Your Service
-        </h2>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="container mx-auto py-16 relative">
+      <ToastContainer autoClose={3000} position="top-center" />
+        <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">Book Your Service</h2>
 
         <motion.button
           whileHover={{ scale: 1.1 }}
@@ -308,7 +321,7 @@ const EnhancedBookingPage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 100 }}
               transition={{ type: "spring", stiffness: 100, damping: 20 }}
-              className="fixed top-36 right-4 bg-white p-6 rounded-lg shadow-xl max-w-md w-80 md:w-96 h-[calc(100vh-160px)] z-10 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+              className="fixed top-36 right-4 bg-white p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-semibold text-gray-800">Your Cart</h3>
@@ -333,10 +346,7 @@ const EnhancedBookingPage: React.FC = () => {
                     transition={{ duration: 0.3 }}
                     className="mb-4 border-b pb-2"
                   >
-                    <div
-                      className="flex justify-between items-center cursor-pointer"
-                      onClick={() => toggleExpand(index)}
-                    >
+                    <div className="flex justify-between items-center cursor-pointer" onClick={() => toggleExpand(index)}>
                       <p className="font-semibold text-gray-800">{item.service.name}</p>
                       <span>{expandedItems.has(index) ? "−" : "+"}</span>
                     </div>
@@ -350,9 +360,9 @@ const EnhancedBookingPage: React.FC = () => {
                           className="mt-2 text-gray-600"
                         >
                           <p>Date: {item.selectedDate} - {item.selectedSlot}</p>
-                          {item.selectedTherapist && (
-                            <p>Therapist: {item.selectedTherapist.name}</p>
-                          )}
+                          <p>Email: {item.customerEmail}</p>
+                          {item.notes && <p>Notes: {item.notes}</p>}
+                          {item.selectedTherapist && <p>Therapist: {item.selectedTherapist.name}</p>}
                           <p
                             className={`${
                               item.status === "completed"
@@ -372,6 +382,12 @@ const EnhancedBookingPage: React.FC = () => {
                               Simulate Staff Confirmation
                             </button>
                           )}
+                          <button
+                            onClick={() => handleRemoveFromCart(index)}
+                            className="mt-2 ml-2 px-2 py-1 bg-red-500 text-white rounded-md text-sm"
+                          >
+                            Hủy
+                          </button>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -413,7 +429,7 @@ const EnhancedBookingPage: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20"
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 mt-16"
             >
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
@@ -421,9 +437,7 @@ const EnhancedBookingPage: React.FC = () => {
                 exit={{ scale: 0.9, opacity: 0 }}
                 className="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full"
               >
-                <h3 className="text-2xl font-semibold mb-6 text-gray-800">
-                  Confirm Payment
-                </h3>
+                <h3 className="text-2xl font-semibold mb-6 text-gray-800">Confirm Payment</h3>
                 <ul className="space-y-4">
                   {cart
                     .filter((item) => item.status === "confirmed")
@@ -440,9 +454,7 @@ const EnhancedBookingPage: React.FC = () => {
                       </li>
                     ))}
                 </ul>
-                <div className="text-right text-xl font-bold mt-6 text-gray-800">
-                  Total: {formatTotal()}
-                </div>
+                <div className="text-right text-xl font-bold mt-6 text-gray-800">Total: {formatTotal()}</div>
                 <div className="mt-6">
                   <p className="text-lg font-semibold mb-2">Scan QR Code to Pay:</p>
                   {/* <QRCode value={paymentUrl} size={200} className="mx-auto" /> */}
@@ -502,12 +514,8 @@ const EnhancedBookingPage: React.FC = () => {
                   <p className="text-gray-600 mb-6 line-clamp-3">{service.description}</p>
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <p className="text-xl font-semibold text-yellow-500">
-                        Price: {formatPrice(service.price)}
-                      </p>
-                      <p className="text-lg text-gray-600">
-                        Duration: {service.duration || "N/A"} minutes
-                      </p>
+                      <p className="text-xl font-semibold text-yellow-500">Price: {formatPrice(service.price)}</p>
+                      <p className="text-lg text-gray-600">Duration: {service.duration || "N/A"} minutes</p>
                     </div>
                   </div>
                 </div>
@@ -528,7 +536,7 @@ const EnhancedBookingPage: React.FC = () => {
             <h3 className="text-3xl font-bold mb-6 text-gray-800">Booking Form</h3>
             <form className="space-y-6 bg-white p-6 rounded-lg shadow-md" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Name</label>
+                <label className="block text-lg text-gray-700 mb-2">Name <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   value={customerName}
@@ -539,7 +547,7 @@ const EnhancedBookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Phone Number</label>
+                <label className="block text-lg text-gray-700 mb-2">Phone Number <span className="text-red-500">*</span></label>
                 <input
                   type="tel"
                   value={customerPhone}
@@ -550,7 +558,18 @@ const EnhancedBookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Choose Date</label>
+                <label className="block text-lg text-gray-700 mb-2">Email <span className="text-red-500">*</span></label>
+                <input
+                  type="email"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-lg text-gray-700 mb-2">Choose Date <span className="text-red-500">*</span></label>
                 <input
                   type="date"
                   value={selectedDate}
@@ -561,7 +580,7 @@ const EnhancedBookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Choose Time Slot</label>
+                <label className="block text-lg text-gray-700 mb-2">Choose Time Slot <span className="text-red-500">*</span></label>
                 <div className="grid grid-cols-4 gap-2">
                   {generateTimeSlots().map((slot) => (
                     <motion.button
@@ -596,6 +615,16 @@ const EnhancedBookingPage: React.FC = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className="block text-lg text-gray-700 mb-2">Notes (Optional)</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Enter any additional notes"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+                  rows={3}
+                />
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
