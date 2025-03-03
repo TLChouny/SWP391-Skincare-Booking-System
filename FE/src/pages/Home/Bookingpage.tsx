@@ -128,8 +128,9 @@ const EnhancedBookingPage: React.FC = () => {
     setShowCheckoutModal(true);
 
     const totalAmount = calculateTotal() ;
-    const orderName = `Booking_${Date.now()}`;
-    let description = `Dịch vụ ${orderName}`;
+    const orderName = service?.name || "Unknown Service";
+    let description = `Dịch vụ ${orderName.substring(0, 25)}`;
+
 
     if (description.length > 25) {
       description = description.substring(0, 25);
