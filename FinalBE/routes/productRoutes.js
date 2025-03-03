@@ -5,7 +5,6 @@ const Category = require("../models/Category");
 
 const router = express.Router();
 
-// Tạo sản phẩm mới
 router.post(
   "/",
   [
@@ -60,11 +59,12 @@ router.post(
     }
   }
 );
-
-// Lấy danh sách tất cả sản phẩm
 router.get("/", async (req, res) => {
   try {
-    const products = await Product.find().populate("category", "name description");
+    const products = await Product.find().populate(
+      "category",
+      "name description"
+    );
     res.json(products);
   } catch (err) {
     console.error(err.message);
@@ -72,37 +72,12 @@ router.get("/", async (req, res) => {
   }
 });
 
-// API lọc sản phẩm theo category
-router.get("/filter", async (req, res) => {
-  const { categoryName } = req.query;
-
-  try {
-    // Kiểm tra nếu categoryName không được cung cấp
-    if (!categoryName) {
-      return res.status(400).json({ msg: "Vui lòng cung cấp categoryName" });
-    }
-
-    // Tìm category theo tên
-    const category = await Category.findOne({ name: categoryName });
-
-    if (!category) {
-      return res.status(404).json({ msg: "Danh mục không tồn tại!" });
-    }
-
-    // Tìm tất cả sản phẩm thuộc category đó
-    const products = await Product.find({ category: category._id });
-
-    res.json(products);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi máy chủ");
-  }
-});
-
-// Lấy sản phẩm theo ID
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate("category", "name description");
+    const product = await Product.findById(req.params.id).populate(
+      "category",
+      "name description"
+    );
     if (!product) {
       return res.status(404).json({ msg: "Sản phẩm không tồn tại" });
     }
@@ -112,8 +87,6 @@ router.get("/:id", async (req, res) => {
     res.status(500).send("Lỗi máy chủ");
   }
 });
-
-// Cập nhật sản phẩm
 router.put("/:id", async (req, res) => {
   const { name, description, price, duration, category, image } = req.body;
 
@@ -145,7 +118,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Xóa sản phẩm
 router.delete("/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
