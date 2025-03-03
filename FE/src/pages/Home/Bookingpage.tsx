@@ -135,8 +135,8 @@ const EnhancedBookingPage: React.FC = () => {
       description = description.substring(0, 25);
     }
 
-    const returnUrl = "http://localhost:3000/payment-success";
-    const cancelUrl = "http://localhost:3000/payment-cancel";
+    const returnUrl = "http://localhost:5000/success.html";
+    const cancelUrl = "http://localhost:5000/cancel.html";
 
     try {
       const response = await fetch(
