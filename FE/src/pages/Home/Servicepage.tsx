@@ -1,16 +1,36 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import Layout from "../../layout/Layout";
 
+interface Service {
+  _id: string;
+  service_id: number;
+  name: string;
+  description: string;
+  image?: string;
+  duration?: number;
+  price?: number | { $numberDecimal: string };
+  category: {
+    _id: string;
+    name: string;
+    description: string;
+  };
+  createDate?: string;
+  isRecommended?: boolean;
+}
+
 const ServicePage: React.FC = () => {
-  const [selectedService, setSelectedService] = useState<null | string>(null);
-  const [services, setServices] = useState<any[]>([]);
+  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [recommendedType, setRecommendedType] = useState<string | null>(null);
+  const [hoveredService, setHoveredService] = useState<string | null>(null);
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -32,39 +52,14 @@ const ServicePage: React.FC = () => {
   }, [location.search]);
 
   useEffect(() => {
-    const state = location.state as { suggestedServices?: any[] } | undefined;
-
-    // Nếu có dịch vụ từ bài test, dùng luôn mà không gọi API
-    if (state?.suggestedServices && state.suggestedServices.length > 0) {
-      setServices(formatServices(state.suggestedServices, true));
-      setLoading(false);
-    } else {
-      fetchServices();
-    }
-  }, [location.state, recommendedType]);
+    fetchServices();
+  }, [recommendedType]);
 
   const fetchServices = async () => {
-    if (services.length > 0) return; // Tránh gọi API nếu đã có dữ liệu
-
     setLoading(true);
     try {
-      let response;
-      // if (recommendedType) {
-      //   try {
-      //     response = await axios.get(
-      //       `http://localhost:5000/api/recommended-services/${recommendedType}`
-      //     );
-      //     if (response.data.success && response.data.data.length > 0) {
-      //       setServices(formatServices(response.data.data, true));
-      //       return;
-      //     }
-      //   } catch (error) {
-      //     console.error("Error fetching recommended services:", error);
-      //   }
-      // }
-
-      response = await axios.get("http://localhost:5000/api/products/");
-      setServices(formatServices(response.data, false));
+      const response = await axios.get("http://localhost:5000/api/products/");
+      setServices(formatServices(response.data));
     } catch (error) {
       console.error("Error fetching services:", error);
     } finally {
@@ -72,20 +67,19 @@ const ServicePage: React.FC = () => {
     }
   };
 
-  const formatServices = (data: any[], isRecommended: boolean) => {
+  const formatServices = (data: any[]) => {
     return data.map((service) => ({
       ...service,
       price: formatPrice(service.price),
-      isRecommended:
-        isRecommended ||
-        (recommendedType &&
-          service.category?.name.toLowerCase().includes(recommendedType)),
+      isRecommended: recommendedType
+        ? service.category?.name.toLowerCase().includes(recommendedType)
+        : false,
     }));
   };
 
-  const formatPrice = (price: any) => {
+  const formatPrice = (price: any): string => {
     let priceValue = 0;
-    if (typeof price === "object" && price.$numberDecimal) {
+    if (typeof price === "object" && price?.$numberDecimal) {
       priceValue = Number.parseFloat(price.$numberDecimal);
     } else if (typeof price === "number") {
       priceValue = price;
@@ -93,6 +87,10 @@ const ServicePage: React.FC = () => {
       priceValue = Number.parseFloat(price.replace(/\./g, ""));
     }
     return `${priceValue.toLocaleString("vi-VN")} VNĐ`;
+  };
+
+  const handleServiceClick = (serviceId: string) => {
+    navigate(`/booking/${serviceId}`);
   };
 
   return (
@@ -104,8 +102,7 @@ const ServicePage: React.FC = () => {
               Personalized Recommendation
             </h3>
             <p className="text-gray-700">
-              Based on your skin assessment, we've highlighted services for{" "}
-              {/* {recommendedType}*/} skin type. Let's do test 
+              Based on your skin assessment, we've highlighted services for your skin type.
             </p>
           </div>
         )}
@@ -119,33 +116,50 @@ const ServicePage: React.FC = () => {
               Loading services...
             </div>
           ) : (
-            services.map((service, index) => (
-              <div
-                key={index}
-                className={`bg-white p-6 rounded-lg shadow-lg cursor-pointer transform hover:scale-105 hover:shadow-xl hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 hover:text-white ${
-                  service.isRecommended
-                    ? "border-2 border-purple-500 relative"
-                    : ""
+            services.map((service) => (
+              <motion.div
+                key={service._id}
+                className={`relative bg-white p-6 rounded-lg shadow-lg overflow-hidden ${
+                  service.isRecommended ? "border-2 border-purple-500" : ""
                 }`}
-                onClick={() => setSelectedService(service.name)}
+                onClick={() => handleServiceClick(service._id)}
+                onMouseEnter={() => setHoveredService(service._id)}
+                onMouseLeave={() => setHoveredService(null)}
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
               >
                 {service.isRecommended && (
                   <div className="absolute -top-4 -right-4 bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">
                     Recommended
                   </div>
                 )}
-                <h3 className="text-2xl font-semibold text-gray-800">
-                  {service.name}
-                </h3>
+                <h3 className="text-2xl font-semibold text-gray-800 mb-4">{service.name}</h3>
                 <img
-                  className="mt-4 rounded-lg shadow-md object-cover h-40 w-full"
+                  className="w-full h-48 object-cover rounded-lg mb-4"
                   src={service.image || "/default-image.jpg"}
                   alt={service.name}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/default-image.jpg";
+                  }}
                 />
-                <p className="mt-4 text-lg font-bold text-gray-900">
-                  {service.price}
-                </p>
-              </div>
+                    <p className="text-lg font-bold text-gray-900 mb-2">{formatPrice(service.price)}</p>
+
+                {hoveredService === service._id && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute inset-0 bg-white bg-opacity-95 flex flex-col justify-center p-6 rounded-lg shadow-md"
+                  >
+                    <h3 className="text-2xl font-semibold text-gray-900 mb-2">{service.name}</h3>
+                    <p className="text-md text-gray-700">{service.description}</p>
+                    <p className="text-md">Duration: {service.duration || "N/A"} minutes</p>
+                    <p className="text-lg font-bold text-gray-900 mb-2">{formatPrice(service.price)}</p>
+
+                  </motion.div>
+                )}
+              </motion.div>
             ))
           )}
         </div>

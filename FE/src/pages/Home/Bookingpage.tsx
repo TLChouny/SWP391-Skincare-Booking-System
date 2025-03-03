@@ -1,89 +1,107 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { useParams } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
-import { getServices, getTherapists } from "../../api/apiService"
-import Layout from "../../layout/Layout"
-// import QRCode from "qrcode.react"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { getTherapists } from "../../api/apiService";
+import Layout from "../../layout/Layout";
 
 interface Service {
-  id: string
-  name: string
-  description: string
-  image?: string
-  duration?: number
-  price?: number
+  _id: string;
+  service_id: number;
+  name: string;
+  description: string;
+  image?: string;
+  duration?: number;
+  price?: number | { $numberDecimal: string };
+  category: {
+    _id: string;
+    name: string;
+    description: string;
+  };
+  createDate?: string;
+  __v?: number;
 }
 
 interface Therapist {
-  id: string
-  name: string
-  image?: string
+  id: string;
+  name: string;
+  image?: string;
 }
 
 interface Booking {
-  service: Service
-  customerName: string
-  customerPhone: string
-  selectedDate: string
-  selectedSlot: string
-  selectedTherapist: Therapist | null
-  timestamp: number
-  status: "pending" | "confirmed" | "completed"
+  service: Service;
+  customerName: string;
+  customerPhone: string;
+  selectedDate: string;
+  selectedSlot: string;
+  selectedTherapist: Therapist | null;
+  timestamp: number;
+  status: "pending" | "confirmed" | "completed";
 }
 
 const EnhancedBookingPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>()
-  const [service, setService] = useState<Service | null>(null)
-  const [therapists, setTherapists] = useState<Therapist[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [customerName, setCustomerName] = useState<string>("")
-  const [customerPhone, setCustomerPhone] = useState<string>("")
-  const [selectedDate, setSelectedDate] = useState<string>("")
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
-  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null)
-  const [showCart, setShowCart] = useState<boolean>(false)
-  const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false)
-  const [cart, setCart] = useState<Booking[]>([])
-  const [paymentUrl, setPaymentUrl] = useState<string>("")
+  const { id } = useParams<{ id: string }>();
+  const [service, setService] = useState<Service | null>(null);
+  const [therapists, setTherapists] = useState<Therapist[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [customerName, setCustomerName] = useState<string>("");
+  const [customerPhone, setCustomerPhone] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
+  const [showCart, setShowCart] = useState<boolean>(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
+  const [cart, setCart] = useState<Booking[]>([]);
+  const [paymentUrl, setPaymentUrl] = useState<string>("");
+  const [qrCode, setQrCode] = useState<string>("");
+  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [serviceResponse, therapistsResponse] = await Promise.all([getServices(), getTherapists()])
-        const foundService = serviceResponse.data.find((s: Service) => s.id === id)
-        setService(foundService || null)
-        setTherapists(therapistsResponse.data)
+        const productsResponse = await fetch("http://localhost:5000/api/products/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const productsData = await productsResponse.json();
+        const foundService = productsData.find((s: Service) => s._id === id);
+        setService(foundService || null);
+
+        const therapistsResponse = await getTherapists();
+        setTherapists(therapistsResponse.data);
       } catch (error) {
-        console.error("Error fetching data:", error)
+        console.error("Error fetching data:", error);
+        alert("Could not load services. Please try again later.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
+    fetchData();
 
-    const storedCart: Booking[] = JSON.parse(localStorage.getItem("cart") || "[]")
-    setCart(storedCart)
-  }, [id])
+    const storedCart: Booking[] = JSON.parse(localStorage.getItem("cart") || "[]");
+    setCart(storedCart);
+  }, [id]);
 
   const generateTimeSlots = () => {
-    const slots = []
+    const slots = [];
     for (let hour = 9; hour < 18; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
-        slots.push(`${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`)
+        slots.push(`${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`);
       }
     }
-    return slots
-  }
+    return slots;
+  };
 
   const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault()
+    event.preventDefault();
     if (!customerName || !customerPhone || !selectedDate || !selectedSlot || !service) {
-      alert("Please fill in all required fields before booking.")
-      return
+      alert("Please fill in all required fields before booking.");
+      return;
     }
 
     const bookingData: Booking = {
@@ -95,66 +113,153 @@ const EnhancedBookingPage: React.FC = () => {
       selectedTherapist,
       timestamp: Date.now(),
       status: "pending",
+    };
+
+    const updatedCart = [...cart, bookingData];
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    setCart(updatedCart);
+    setShowCart(true);
+  };
+
+  const toggleCart = () => setShowCart(!showCart);
+
+  const handleCheckout = async () => {
+    setShowCart(false);
+    setShowCheckoutModal(true);
+
+    const totalAmount = calculateTotal();
+    const orderName = `Booking_${Date.now()}`;
+    let description = `Dịch vụ ${orderName}`;
+
+    if (description.length > 25) {
+      description = description.substring(0, 25);
     }
 
-    const updatedCart = [...cart, bookingData]
-    localStorage.setItem("cart", JSON.stringify(updatedCart))
-    setCart(updatedCart)
-    setShowCart(true)
-  }
+    const returnUrl = "http://localhost:3000/payment-success";
+    const cancelUrl = "http://localhost:3000/payment-cancel";
 
-  const toggleCart = () => setShowCart(!showCart)
+    try {
+      const response = await fetch("http://localhost:5000/api/payments/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: totalAmount,
+          orderName,
+          description,
+          returnUrl,
+          cancelUrl,
+        }),
+      });
 
-  const handleCheckout = () => {
-    setShowCart(false)
-    setShowCheckoutModal(true)
-    // Generate payment URL (replace with actual PayOS integration)
-    const totalAmount = calculateTotal()
-    setPaymentUrl(`https://payos.example.com/pay?amount=${totalAmount}`)
-  }
+      const data = await response.json();
+      console.log("🔍 API Response:", data);
+
+      if (data.error !== 0 || !data.data) {
+        throw new Error(`API Error: ${data.message || "Unknown error"}`);
+      }
+
+      setPaymentUrl(data.data.checkoutUrl);
+      setQrCode(data.data.qrCode);
+    } catch (error: any) {
+      console.error("❌ Error during checkout:", error);
+      alert(`Payment initiation failed. Error: ${error.message}`);
+    }
+  };
 
   const handlePayment = () => {
-    const updatedCart = cart.map((item) => ({ ...item, status: "completed" }) as Booking)
-
-    const bookingHistory: Booking[] = JSON.parse(localStorage.getItem("bookingHistory") || "[]")
-    localStorage.setItem("bookingHistory", JSON.stringify([...bookingHistory, ...updatedCart]))
-
-    localStorage.setItem("cart", JSON.stringify(updatedCart))
-    setCart(updatedCart)
-    setShowCheckoutModal(false)
-    setShowCart(true)
-  }
+    const updatedCart = cart.map((item) => ({ ...item, status: "completed" } as Booking));
+    const bookingHistory: Booking[] = JSON.parse(localStorage.getItem("bookingHistory") || "[]");
+    localStorage.setItem("bookingHistory", JSON.stringify([...bookingHistory, ...updatedCart]));
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    setCart(updatedCart);
+    setShowCheckoutModal(false);
+    setShowCart(true);
+  };
 
   const getTodayDate = () => {
-    const today = new Date()
-    const year = today.getFullYear()
-    const month = (today.getMonth() + 1).toString().padStart(2, "0")
-    const day = today.getDate().toString().padStart(2, "0")
-    return `${year}-${month}-${day}`
-  }
-
-  const calculateTotal = () => {
-    return cart
-      .filter((item) => item.status === "confirmed")
-      .reduce((sum, item) => sum + Number(item.service.price || 0), 0);
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, "0");
+    const day = today.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
-  
+
+  const formatPrice = (price: number | { $numberDecimal: string } | undefined): string => {
+    let priceValue = 0;
+    if (typeof price === "object" && price?.$numberDecimal) {
+      priceValue = Number.parseFloat(price.$numberDecimal);
+    } else if (typeof price === "number") {
+      priceValue = price;
+    } else if (typeof price === "string") {
+      // Phân tích chuỗi thủ công mà không dùng replace hoặc split
+      priceValue = parsePriceFromString(price); // Gọi hàm parsePriceFromString
+    } else {
+      priceValue = 0; // Giá trị mặc định nếu undefined
+    }
+    return `${priceValue.toLocaleString("vi-VN")} VNĐ`;
+  };
+
+  const calculateTotal = (): number => {
+    const total = cart
+      .filter((item) => item.status === "confirmed")
+      .reduce((sum, item) => {
+        const priceStr = formatPrice(item.service.price); // Đảm bảo luôn là string
+        if (priceStr) {
+          const priceValue = parsePriceFromString(priceStr); // Trích xuất số
+          return sum + (priceValue || 0);
+        }
+        return sum;
+      }, 0);
+    return total / 100000; // Chia 100000 để đồng bộ với logic cũ nếu cần
+  };
+
+  // Hàm phụ trợ để trích xuất số từ chuỗi định dạng tiền tệ mà không dùng replace hoặc split
+  const parsePriceFromString = (priceStr: string): number => {
+    // Loại bỏ tất cả ký tự không phải số và "VNĐ"
+    const numMatch = priceStr.match(/\d+/g); // Lấy tất cả chuỗi số
+    if (numMatch && numMatch.length > 0) {
+      return Number.parseInt(numMatch.join(""), 10) || 0; // Chuyển chuỗi số thành số nguyên
+    }
+    return 0; // Giá trị mặc định nếu không tìm thấy số
+  };
+
+  const formatTotal = (): string => {
+    const totalValue = calculateTotal() * 100000; // Nhân lại để lấy giá trị gốc
+    return `${totalValue.toLocaleString("vi-VN")} VNĐ`;
+  };
 
   const isAllServicesConfirmed = () => {
-    return cart.every((item) => item.status === "confirmed" || item.status === "completed")
-  }
+    return cart.every((item) => item.status === "confirmed" || item.status === "completed");
+  };
 
   const isAllServicesCompleted = () => {
-    return cart.every((item) => item.status === "completed")
-  }
+    return cart.every((item) => item.status === "completed");
+  };
 
-  // Simulating staff confirmation (replace with actual API call)
   const simulateStaffConfirmation = (bookingIndex: number) => {
-    const updatedCart = [...cart]
-    updatedCart[bookingIndex].status = "confirmed"
-    setCart(updatedCart)
-    localStorage.setItem("cart", JSON.stringify(updatedCart))
-  }
+    const updatedCart = [...cart];
+    updatedCart[bookingIndex].status = "confirmed";
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
+
+  const clearCart = () => {
+    localStorage.removeItem("cart");
+    setCart([]);
+    setShowCart(false);
+  };
+
+  const toggleExpand = (index: number) => {
+    const newExpandedItems = new Set(expandedItems);
+    if (newExpandedItems.has(index)) {
+      newExpandedItems.delete(index);
+    } else {
+      newExpandedItems.add(index);
+    }
+    setExpandedItems(newExpandedItems);
+  };
 
   return (
     <Layout>
@@ -164,7 +269,9 @@ const EnhancedBookingPage: React.FC = () => {
         exit={{ opacity: 0 }}
         className="container mx-auto py-16 relative"
       >
-        <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">Book Your Service</h2>
+        <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">
+          Book Your Service
+        </h2>
 
         <motion.button
           whileHover={{ scale: 1.1 }}
@@ -183,47 +290,77 @@ const EnhancedBookingPage: React.FC = () => {
         <AnimatePresence>
           {showCart && (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="fixed top-36 right-4 bg-white p-6 rounded-lg shadow-xl max-w-sm z-10"
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ type: "spring", stiffness: 100, damping: 20 }}
+              className="fixed top-36 right-4 bg-white p-6 rounded-lg shadow-xl max-w-md w-80 md:w-96 h-[calc(100vh-160px)] z-10 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
             >
-              <h3 className="text-xl font-semibold mb-4 text-gray-800">Your Cart</h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-gray-800">Your Cart</h3>
+                {cart.length > 0 && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={clearCart}
+                    className="text-red-500 text-sm hover:text-red-700"
+                  >
+                    Clear Cart
+                  </motion.button>
+                )}
+              </div>
               {cart.length > 0 ? (
                 cart.map((item, index) => (
                   <motion.div
                     key={index}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="mb-4 border-b pb-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="mb-4 border-b pb-2"
                   >
-                    <p className="font-semibold text-gray-800">{item.service.name}</p>
-                    <p className="text-gray-600">
-                      {item.selectedDate} - {item.selectedSlot}
-                    </p>
-                    {item.selectedTherapist && (
-                      <p className="text-gray-600">Therapist: {item.selectedTherapist.name}</p>
-                    )}
-                    <p
-                      className={`${
-                        item.status === "completed"
-                          ? "text-green-500"
-                          : item.status === "confirmed"
-                            ? "text-blue-500"
-                            : "text-yellow-500"
-                      }`}
+                    <div
+                      className="flex justify-between items-center cursor-pointer"
+                      onClick={() => toggleExpand(index)}
                     >
-                      Status: {item.status}
-                    </p>
-                    {item.status === "pending" && (
-                      <button
-                        onClick={() => simulateStaffConfirmation(index)}
-                        className="mt-2 px-2 py-1 bg-blue-500 text-white rounded-md text-sm"
-                      >
-                        Simulate Staff Confirmation
-                      </button>
-                    )}
+                      <p className="font-semibold text-gray-800">{item.service.name}</p>
+                      <span>{expandedItems.has(index) ? "−" : "+"}</span>
+                    </div>
+                    <AnimatePresence>
+                      {expandedItems.has(index) && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="mt-2 text-gray-600"
+                        >
+                          <p>Date: {item.selectedDate} - {item.selectedSlot}</p>
+                          {item.selectedTherapist && (
+                            <p>Therapist: {item.selectedTherapist.name}</p>
+                          )}
+                          <p
+                            className={`${
+                              item.status === "completed"
+                                ? "text-green-500"
+                                : item.status === "confirmed"
+                                ? "text-blue-500"
+                                : "text-yellow-500"
+                            }`}
+                          >
+                            Status: {item.status}
+                          </p>
+                          {item.status === "pending" && (
+                            <button
+                              onClick={() => simulateStaffConfirmation(index)}
+                              className="mt-2 px-2 py-1 bg-blue-500 text-white rounded-md text-sm"
+                            >
+                              Simulate Staff Confirmation
+                            </button>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 ))
               ) : (
@@ -270,7 +407,9 @@ const EnhancedBookingPage: React.FC = () => {
                 exit={{ scale: 0.9, opacity: 0 }}
                 className="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full"
               >
-                <h3 className="text-2xl font-semibold mb-6 text-gray-800">Confirm Payment</h3>
+                <h3 className="text-2xl font-semibold mb-6 text-gray-800">
+                  Confirm Payment
+                </h3>
                 <ul className="space-y-4">
                   {cart
                     .filter((item) => item.status === "confirmed")
@@ -278,18 +417,18 @@ const EnhancedBookingPage: React.FC = () => {
                       <li key={index} className="flex justify-between py-2 border-b">
                         <div>
                           <p className="font-semibold text-gray-800">{item.service.name}</p>
-                          <p className="text-gray-600">
-                            {item.selectedDate} - {item.selectedSlot}
-                          </p>
+                          <p className="text-gray-600">{item.selectedDate} - {item.selectedSlot}</p>
                           {item.selectedTherapist && (
                             <p className="text-gray-600">Therapist: {item.selectedTherapist.name}</p>
                           )}
                         </div>
-                        <span className="font-bold text-gray-800">${item.service.price}</span>
+                        <span className="font-bold text-gray-800">{formatPrice(item.service.price)}</span>
                       </li>
                     ))}
                 </ul>
-                <div className="text-right text-xl font-bold mt-6 text-gray-800">Total: ${calculateTotal()}</div>
+                <div className="text-right text-xl font-bold mt-6 text-gray-800">
+                  Total: {formatTotal()}
+                </div>
                 <div className="mt-6">
                   <p className="text-lg font-semibold mb-2">Scan QR Code to Pay:</p>
                   {/* <QRCode value={paymentUrl} size={200} className="mx-auto" /> */}
@@ -326,31 +465,54 @@ const EnhancedBookingPage: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
             className="w-full lg:w-1/3 px-4 mb-8 lg:mb-0"
           >
             {loading ? (
-              <p className="text-lg text-gray-600">Loading service details...</p>
+              <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
+                <p className="text-lg text-gray-600">Loading service details...</p>
+              </div>
             ) : service ? (
-              <>
-                <h3 className="text-2xl font-semibold mb-4 text-gray-800">{service.name}</h3>
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                 <motion.img
                   whileHover={{ scale: 1.05 }}
-                  src={service.image}
+                  src={service.image || "/default-service.jpg"}
                   alt={service.name}
-                  className="w-full h-auto rounded-lg shadow-xl mb-6 object-cover"
+                  className="w-full h-64 object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/default-service.jpg";
+                  }}
                 />
-                <p className="text-lg text-gray-600 mb-4">{service.description}</p>
-                <p className="text-xl font-bold text-gray-800">Price: ${service.price}</p>
-                <p className="text-lg text-gray-600">Duration: {service.duration} minutes</p>
-              </>
+                <div className="p-6">
+                  <h3 className="text-3xl font-bold text-gray-800 mb-4">{service.name}</h3>
+                  <p className="text-gray-600 mb-6 line-clamp-3">{service.description}</p>
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <p className="text-xl font-semibold text-yellow-500">
+                        Price: {formatPrice(service.price)}
+                      </p>
+                      <p className="text-lg text-gray-600">
+                        Duration: {service.duration || "N/A"} minutes
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ) : (
-              <p className="text-lg text-red-600">Service not found. Please try again.</p>
+              <div className="flex items-center justify-center h-64 bg-red-100 rounded-lg">
+                <p className="text-lg text-red-600">Service not found. Please try again.</p>
+              </div>
             )}
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="w-full lg:w-2/3 px-4">
-            <h3 className="text-2xl font-semibold mb-6 text-gray-800">Booking Form</h3>
-            <form className="space-y-6" onSubmit={handleSubmit}>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="w-full lg:w-2/3 px-4"
+          >
+            <h3 className="text-3xl font-bold mb-6 text-gray-800">Booking Form</h3>
+            <form className="space-y-6 bg-white p-6 rounded-lg shadow-md" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-lg text-gray-700 mb-2">Name</label>
                 <input
@@ -408,8 +570,8 @@ const EnhancedBookingPage: React.FC = () => {
                 <select
                   value={selectedTherapist ? selectedTherapist.id : ""}
                   onChange={(e) => {
-                    const therapist = therapists.find((t) => t.id === e.target.value)
-                    setSelectedTherapist(therapist || null)
+                    const therapist = therapists.find((t) => t.id === e.target.value);
+                    setSelectedTherapist(therapist || null);
                   }}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
                 >
@@ -437,8 +599,7 @@ const EnhancedBookingPage: React.FC = () => {
         </div>
       </motion.div>
     </Layout>
-  )
-}
+  );
+};
 
-export default EnhancedBookingPage
-
+export default EnhancedBookingPage;
