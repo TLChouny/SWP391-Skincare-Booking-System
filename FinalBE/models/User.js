@@ -5,14 +5,22 @@ const UserSchema = new mongoose.Schema(
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String },
+    phone_number: { type: String },
+    gender: {
+      type: String,
+      enum: ["male", "female"],
+      default: "other",
+    },
+    address: { type: String },
     role: {
       type: String,
-      enum: ["user", "admin", "moderator", "manager", "staff"],
+      enum: ["user", "admin", "skincare_staff", "manager", "staff"],
       default: "user",
     },
-    otp: { type: String }, // Lưu mã OTP
-    otpExpires: { type: Date }, // Thời gian hết hạn OTP
-    isVerified: { type: Boolean, default: false }, // Xác thực email hay chưa
+    avatar: { type: String, default: "default-avatar.png" },
+    otp: { type: String },
+    otpExpires: { type: Date },
+    isVerified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
