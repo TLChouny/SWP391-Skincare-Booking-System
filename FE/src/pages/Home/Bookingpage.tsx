@@ -127,7 +127,7 @@ const EnhancedBookingPage: React.FC = () => {
     setShowCart(false);
     setShowCheckoutModal(true);
 
-    const totalAmount = calculateTotal();
+    const totalAmount = calculateTotal() ;
     const orderName = `Booking_${Date.now()}`;
     let description = `Dịch vụ ${orderName}`;
 
@@ -139,24 +139,27 @@ const EnhancedBookingPage: React.FC = () => {
     const cancelUrl = "http://localhost:3000/payment-cancel";
 
     try {
-      const response = await fetch("http://localhost:5000/api/payments/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: totalAmount,
-          orderName,
-          description,
-          returnUrl,
-          cancelUrl,
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/payments/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            amount: totalAmount,
+            orderName,
+            description,
+            returnUrl,
+            cancelUrl,
+          }),
+        }
+      );
 
       const data = await response.json();
       console.log("🔍 API Response:", data);
 
-      if (data.error !== 0 || !data.data) {
+      if (!response.ok || data.error !== 0 || !data.data) {
         throw new Error(`API Error: ${data.message || "Unknown error"}`);
       }
 
@@ -164,9 +167,19 @@ const EnhancedBookingPage: React.FC = () => {
       setQrCode(data.data.qrCode);
     } catch (error: any) {
       console.error("❌ Error during checkout:", error);
-      alert(`Payment initiation failed. Error: ${error.message}`);
+
+      let errorMessage = "Payment initiation failed.";
+      if (error.message.includes("API Error")) {
+        errorMessage += ` ${error.message}`;
+      } else {
+        errorMessage += " Please check your connection and try again.";
+      }
+
+      alert(errorMessage);
+      setShowCheckoutModal(false); // Đóng modal thanh toán nếu lỗi xảy ra
     }
   };
+
 
   const handlePayment = () => {
     const updatedCart = cart.map((item) => ({ ...item, status: "completed" } as Booking));
@@ -212,7 +225,7 @@ const EnhancedBookingPage: React.FC = () => {
         }
         return sum;
       }, 0);
-    return total / 100000; // Chia 100000 để đồng bộ với logic cũ nếu cần
+    return total; // Chia 100000 để đồng bộ với logic cũ nếu cần
   };
 
   // Hàm phụ trợ để trích xuất số từ chuỗi định dạng tiền tệ mà không dùng replace hoặc split
@@ -226,7 +239,7 @@ const EnhancedBookingPage: React.FC = () => {
   };
 
   const formatTotal = (): string => {
-    const totalValue = calculateTotal() * 100000; // Nhân lại để lấy giá trị gốc
+    const totalValue = calculateTotal(); // Nhân lại để lấy giá trị gốc
     return `${totalValue.toLocaleString("vi-VN")} VNĐ`;
   };
 
