@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
+const questionRoutes = require("./routes/questionRoutes");
 const authRoutes = require("./routes/auth");
 const voucherRoutes = require("./routes/voucherRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -44,9 +45,13 @@ app.post("/create-payment-link", async (req, res) => {
 //user
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+
 //product
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
+
+//question
+app.use("/api/questions", questionRoutes);
 
 //voucher
 app.use("/api/vouchers", voucherRoutes);

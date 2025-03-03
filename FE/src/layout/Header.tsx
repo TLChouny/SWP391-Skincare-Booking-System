@@ -3,11 +3,12 @@ import "../../src/index.css";
 import logo from "../assets/logo7.png";
 import { Link, useNavigate } from "react-router-dom";
 import { Divider } from "antd";
+import { ToastContainer, toast } from "react-toastify"; // Import ToastContainer và toast
+import "react-toastify/dist/ReactToastify.css"; // Import CSS cho toast
 
 const Header: React.FC = () => {
   const [user, setUser] = useState<{ username: string } | null>(null);
   const navigate = useNavigate();
-  // State để mở/đóng modal
   const [showModal, setShowModal] = useState(false);
 
   // Hàm mở modal
@@ -19,6 +20,7 @@ const Header: React.FC = () => {
   const handleCloseModal = () => {
     setShowModal(false);
   };
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -28,8 +30,10 @@ const Header: React.FC = () => {
 
   const handleBookNow = () => {
     if (!user) {
-      alert("Bạn cần đăng nhập tài khoản trước khi book service!");
-      navigate("/login");
+      toast.error("Bạn cần đăng nhập tài khoản trước khi book service!"); // Sử dụng toast thay cho alert
+      setTimeout(() => {
+        // navigate("/login");
+      }, 500); // Chuyển hướng sau 2 giây để người dùng thấy thông báo
     } else {
       navigate("/services"); // Hoặc điều hướng đến trang đặt lịch thực tế của bạn
     }
@@ -110,11 +114,10 @@ const Header: React.FC = () => {
           <button
             title="Book your appointment now"
             onClick={handleBookNow}
-            className="hidden md:block bg-yellow-300 text-black py-2 px-6 rounded-lg shadow-md hover:bg-yellow-400 transition duration-300 ease-in-out"
+            className="hidden md:block bg-yellow-300 text-black py-2 px-6 rounded-lg shadow-md hover:bg-yellow-400 transition duration-100 ease-in-out"
           >
             Book Now
           </button>
-
 
           <div className="flex items-center space-x-2">
             {user ? (
@@ -141,12 +144,9 @@ const Header: React.FC = () => {
 
       {/* Modal Contact */}
       {showModal && (
-        <div className="fixed  inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-8 rounded-lg shadow-lg w-1/2">
-            <button
-              onClick={handleCloseModal}
-              className=" text-2xl float-right"
-            >
+            <button onClick={handleCloseModal} className="text-2xl float-right">
               ×
             </button>
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">
@@ -178,6 +178,9 @@ const Header: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Thêm ToastContainer vào cuối header */}
+      <ToastContainer />
     </header>
   );
 };

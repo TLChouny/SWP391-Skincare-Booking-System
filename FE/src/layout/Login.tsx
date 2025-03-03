@@ -52,11 +52,15 @@ const Login: React.FC = () => {
         "user",
         JSON.stringify({ username: data.username, role: data.role })
       );
-
+      
       if (data.role === "user") {
         navigate("/");
       } else if (data.role === "admin") {
-        navigate("/admin/user-management");
+        navigate("/admin");
+      }else if (data.role === "staff"){
+        navigate("/staff");
+      }else if (data.role === "therapist"){
+        navigate("/therapist");
       }
     } catch (error) {
       console.error("Login error:", error);
