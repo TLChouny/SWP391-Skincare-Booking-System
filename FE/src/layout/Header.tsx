@@ -1,10 +1,13 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import "../../src/index.css";
 import logo from "../assets/logo7.png";
 import { Link, useNavigate } from "react-router-dom";
-import { Divider } from "antd";
-import { ToastContainer, toast } from "react-toastify"; // Import ToastContainer và toast
-import "react-toastify/dist/ReactToastify.css"; // Import CSS cho toast
+import { Divider, Dropdown, Menu } from "antd"; // Thêm Dropdown và Menu từ antd
+import { UserOutlined } from "@ant-design/icons"; // Thêm icon User từ antd
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Header: React.FC = () => {
   const [user, setUser] = useState<{ username: string } | null>(null);
@@ -30,12 +33,12 @@ const Header: React.FC = () => {
 
   const handleBookNow = () => {
     if (!user) {
-      toast.error("Bạn cần đăng nhập tài khoản trước khi book service!"); // Sử dụng toast thay cho alert
+      toast.error("Bạn cần đăng nhập tài khoản trước khi book service!");
       setTimeout(() => {
         // navigate("/login");
-      }, 500); // Chuyển hướng sau 2 giây để người dùng thấy thông báo
+      }, 500); // Chờ 0.5 giây để người dùng thấy thông báo
     } else {
-      navigate("/services"); // Hoặc điều hướng đến trang đặt lịch thực tế của bạn
+      navigate("/services");
     }
   };
 
@@ -43,7 +46,23 @@ const Header: React.FC = () => {
     localStorage.removeItem("user");
     setUser(null);
     navigate("/");
+    toast.success("Đã đăng xuất thành công!");
   };
+
+  // Menu dropdown cho user
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="dashboard">
+        <Link to="/dashboard">My Profile</Link>
+      </Menu.Item>
+      <Menu.Item key="settings">
+        <Link to="/settings">Settings</Link>
+      </Menu.Item>
+      <Menu.Item key="logout" onClick={handleLogout}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <header
@@ -53,11 +72,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto flex justify-between items-center px-6">
         <div className="flex items-center space-x-3">
           <Link to="/">
-            <img
-              src={logo}
-              alt="LuLuSpa Logo"
-              className="w-16 h-16 rounded-full"
-            />
+            <img src={logo} alt="LuLuSpa Logo" className="w-16 h-16 rounded-full" />
           </Link>
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-wide">
             <span className="text-black-300">LuLu</span>
@@ -68,34 +83,22 @@ const Header: React.FC = () => {
         <nav>
           <ul className="hidden md:flex space-x-8 text-lg font-medium">
             <li>
-              <Link
-                to="/"
-                className="hover:text-yellow-300 transition duration-300 ease-in-out"
-              >
+              <Link to="/" className="hover:text-yellow-300 transition duration-300 ease-in-out">
                 Home
               </Link>
             </li>
             <li>
-              <Link
-                to="/services"
-                className="hover:text-yellow-300 transition duration-300 ease-in-out"
-              >
+              <Link to="/services" className="hover:text-yellow-300 transition duration-300 ease-in-out">
                 Services
               </Link>
             </li>
             <li>
-              <Link
-                to="/test"
-                className="hover:text-yellow-300 transition duration-300 ease-in-out"
-              >
+              <Link to="/test" className="hover:text-yellow-300 transition duration-300 ease-in-out">
                 Test
               </Link>
             </li>
             <li>
-              <Link
-                to="/blog"
-                className="hover:text-yellow-300 transition duration-300 ease-in-out"
-              >
+              <Link to="/blog" className="hover:text-yellow-300 transition duration-300 ease-in-out">
                 Blog
               </Link>
             </li>
@@ -121,12 +124,12 @@ const Header: React.FC = () => {
 
           <div className="flex items-center space-x-2">
             {user ? (
-              <>
-                <span className="font-medium">Welcome, {user.username}</span>
-                <button onClick={handleLogout} className="ml-4 text-red-500">
-                  Logout
-                </button>
-              </>
+              <Dropdown overlay={userMenu} trigger={["click"]}>
+                <div className="flex items-center cursor-pointer space-x-2">
+                  <UserOutlined className="text-xl text-gray-700" />
+                  <span className="font-medium text-gray-800">{user.username}</span>
+                </div>
+              </Dropdown>
             ) : (
               <>
                 <Link to="/login">
@@ -149,23 +152,11 @@ const Header: React.FC = () => {
             <button onClick={handleCloseModal} className="text-2xl float-right">
               ×
             </button>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">
-              Contact Information
-            </h3>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Contact Information</h3>
             <form>
-              <input
-                type="text"
-                placeholder="Name"
-                className="mb-4 p-2 border w-full"
-              />
-              <input
-                type="text"
-                placeholder="Phone Number"
-                className="mb-4 p-2 border w-full"
-              />
-              <button className="py-2 px-4 bg-blue-500 text-white rounded-lg mt-4">
-                Submit
-              </button>
+              <input type="text" placeholder="Name" className="mb-4 p-2 border w-full" />
+              <input type="text" placeholder="Phone Number" className="mb-4 p-2 border w-full" />
+              <button className="py-2 px-4 bg-blue-500 text-white rounded-lg mt-4">Submit</button>
             </form>
             <div className="mt-6">
               <p className="text-gray-600">Store Name: LuLuSpa</p>
@@ -179,8 +170,7 @@ const Header: React.FC = () => {
         </div>
       )}
 
-      {/* Thêm ToastContainer vào cuối header */}
-      <ToastContainer />
+      <ToastContainer autoClose={3000} />
     </header>
   );
 };
