@@ -4,8 +4,8 @@ import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
 function ManageUser() {
   const title = "user";
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Name", dataIndex: "name", key: "name" },
+    { title: "ID", dataIndex: "_id", key: "_id" },
+    { title: "Name", dataIndex: "username", key: "username" },
   ];
 
   const formItems = (
@@ -24,7 +24,12 @@ function ManageUser() {
 
   return (
     <div>
-      <ManageTemplate title={title} columns={columns} formItems={formItems} />
+      <ManageTemplate
+        title={title}
+        columns={columns}
+        formItems={formItems}
+        apiEndpoint='http://localhost:5000/api/users'
+      />
     </div>
   );
 }

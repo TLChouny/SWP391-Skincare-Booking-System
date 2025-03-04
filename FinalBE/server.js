@@ -25,7 +25,7 @@ app.use("/", express.static("public"));
 app.use("/api/payments/webhook", webhookRoutes);
 app.use("/api/payments", paymentRoutes);
 app.post("/create-payment-link", async (req, res) => {
-  const YOUR_DOMAIN = "http://localhost:5000";
+  const YOUR_DOMAIN = "http://localhost:5002";
   const body = {
     orderCode: Number(String(Date.now()).slice(-6)),
     amount: 1000,
@@ -69,5 +69,5 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));

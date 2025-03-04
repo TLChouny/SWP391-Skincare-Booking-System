@@ -4,15 +4,16 @@ import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
 function ManageCategory() {
   const title = "category";
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Category", dataIndex: "category", key: "category" },
+   
+    { title: "Name", dataIndex: "name", key: "name" },
+    { title: "Description", dataIndex: "description", key: "description" },
   ];
 
   const formItems = (
     <>
       <Form.Item
-        name='category'
-        label='Category'
+        name='name'
+        label='Name'
         rules={[{ required: true, message: "Please input category name" }]}>
         <Input />
       </Form.Item>
@@ -24,7 +25,12 @@ function ManageCategory() {
 
   return (
     <div>
-      <ManageTemplate title={title} columns={columns} formItems={formItems} />
+      <ManageTemplate
+        title={title}
+        columns={columns}
+        formItems={formItems}
+        apiEndpoint='http://localhost:5000/api/categories'
+      />
     </div>
   );
 }
