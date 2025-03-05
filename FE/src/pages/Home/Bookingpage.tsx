@@ -56,7 +56,9 @@ const EnhancedBookingPage: React.FC = () => {
   const [notes, setNotes] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
+  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(
+    null
+  );
   const [showCart, setShowCart] = useState<boolean>(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [cart, setCart] = useState<Booking[]>([]);
@@ -65,33 +67,84 @@ const EnhancedBookingPage: React.FC = () => {
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchService = async () => {
       try {
-        const productsResponse = await fetch("http://localhost:5000/api/products/", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const productsResponse = await fetch(
+          "http://localhost:5000/api/products/",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
         const productsData = await productsResponse.json();
         const foundService = productsData.find((s: Service) => s._id === id);
         setService(foundService || null);
-
-        const therapistsResponse = await getTherapists();
-        setTherapists(therapistsResponse.data);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching service data:", error);
         toast.error("Không thể tải dịch vụ. Vui lòng thử lại sau.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchService();
 
-    const storedCart: Booking[] = JSON.parse(localStorage.getItem("cart") || "[]");
+    const storedCart: Booking[] = JSON.parse(
+      localStorage.getItem("cart") || "[]"
+    );
     setCart(storedCart);
   }, [id]);
+
+  useEffect(() => {
+    const fetchTherapists = async () => {
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        toast.error("Bạn chưa đăng nhập. Vui lòng đăng nhập để tiếp tục.", {
+          toastId: "authError",
+        });
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/users/skincare-staff",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "x-auth-token": token,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Lỗi ${response.status}: ${await response.text()}`);
+        }
+
+        const data = await response.json();
+
+        setTherapists(
+          data.map((staff: any) => ({
+            id: staff._id,
+            name: staff.username,
+            image: staff.avatar || "/default-avatar.png",
+          }))
+        );
+      } catch (error: any) {
+        console.error("❌ Lỗi khi tải danh sách chuyên viên:", error.message);
+        toast.error(`Không thể tải danh sách chuyên viên: ${error.message}`, {
+          toastId: "fetchTherapistsError", // Ngăn hiển thị nhiều lần
+        });
+      }
+    };
+
+    fetchTherapists();
+  }, []);
+
 
   const generateTimeSlots = () => {
     const slots = [];
@@ -103,11 +156,16 @@ const EnhancedBookingPage: React.FC = () => {
 
     for (let hour = 9; hour < 18; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
-        const slot = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+        const slot = `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}`;
         if (isToday) {
           const slotHour = parseInt(slot.split(":")[0]);
           const slotMinute = parseInt(slot.split(":")[1]);
-          if (slotHour > currentHour || (slotHour === currentHour && slotMinute > currentMinute)) {
+          if (
+            slotHour > currentHour ||
+            (slotHour === currentHour && slotMinute > currentMinute)
+          ) {
             slots.push(slot);
           }
         } else {
@@ -127,7 +185,10 @@ const EnhancedBookingPage: React.FC = () => {
     if (!customerPhone.trim() || !/^\d{10}$/.test(customerPhone)) {
       errors.push("Số điện thoại phải là 10 chữ số hợp lệ.");
     }
-    if (!customerEmail.trim() || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(customerEmail)) {
+    if (
+      !customerEmail.trim() ||
+      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(customerEmail)
+    ) {
       errors.push("Email phải có định dạng hợp lệ.");
     }
     if (!selectedDate) {
@@ -138,7 +199,7 @@ const EnhancedBookingPage: React.FC = () => {
     }
 
     if (errors.length > 0) {
-      toast.error(errors[0]); // Chỉ hiển thị lỗi đầu tiên
+      toast.error(errors[0]);
       return false;
     }
 
@@ -198,19 +259,22 @@ const EnhancedBookingPage: React.FC = () => {
     const cancelUrl = "http://localhost:5000/cancel.html";
 
     try {
-      const response = await fetch("http://localhost:5000/api/payments/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: totalAmount,
-          orderName,
-          description,
-          returnUrl,
-          cancelUrl,
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/payments/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            amount: totalAmount,
+            orderName,
+            description,
+            returnUrl,
+            cancelUrl,
+          }),
+        }
+      );
 
       const data = await response.json();
       if (!response.ok || data.error !== 0 || !data.data) {
@@ -227,9 +291,16 @@ const EnhancedBookingPage: React.FC = () => {
   };
 
   const handlePayment = () => {
-    const updatedCart = cart.map((item) => ({ ...item, status: "completed" } as Booking));
-    const bookingHistory: Booking[] = JSON.parse(localStorage.getItem("bookingHistory") || "[]");
-    localStorage.setItem("bookingHistory", JSON.stringify([...bookingHistory, ...updatedCart]));
+    const updatedCart = cart.map(
+      (item) => ({ ...item, status: "completed" } as Booking)
+    );
+    const bookingHistory: Booking[] = JSON.parse(
+      localStorage.getItem("bookingHistory") || "[]"
+    );
+    localStorage.setItem(
+      "bookingHistory",
+      JSON.stringify([...bookingHistory, ...updatedCart])
+    );
     localStorage.setItem("cart", JSON.stringify(updatedCart));
     setCart(updatedCart);
     setShowCheckoutModal(false);
@@ -239,10 +310,14 @@ const EnhancedBookingPage: React.FC = () => {
 
   const getTodayDate = () => {
     const today = new Date();
-    return `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
+    return `${today.getFullYear()}-${(today.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
   };
 
-  const formatPrice = (price: number | { $numberDecimal: string } | undefined): string => {
+  const formatPrice = (
+    price: number | { $numberDecimal: string } | undefined
+  ): string => {
     let priceValue = 0;
     if (typeof price === "object" && price?.$numberDecimal) {
       priceValue = Number.parseFloat(price.$numberDecimal);
@@ -256,7 +331,13 @@ const EnhancedBookingPage: React.FC = () => {
     return cart
       .filter((item) => item.status === "confirmed")
       .reduce((sum, item) => {
-        const priceValue = typeof item.service.price === "number" ? item.service.price : Number.parseFloat((item.service.price as { $numberDecimal: string })?.$numberDecimal || "0");
+        const priceValue =
+          typeof item.service.price === "number"
+            ? item.service.price
+            : Number.parseFloat(
+                (item.service.price as { $numberDecimal: string })
+                  ?.$numberDecimal || "0"
+              );
         return sum + (priceValue || 0);
       }, 0);
   };
@@ -266,8 +347,12 @@ const EnhancedBookingPage: React.FC = () => {
     return `${totalValue.toLocaleString("vi-VN")} VNĐ`;
   };
 
-  const isAllServicesConfirmed = () => cart.every((item) => item.status === "confirmed" || item.status === "completed");
-  const isAllServicesCompleted = () => cart.every((item) => item.status === "completed");
+  const isAllServicesConfirmed = () =>
+    cart.every(
+      (item) => item.status === "confirmed" || item.status === "completed"
+    );
+  const isAllServicesCompleted = () =>
+    cart.every((item) => item.status === "completed");
 
   const simulateStaffConfirmation = (bookingIndex: number) => {
     const updatedCart = [...cart];
@@ -296,9 +381,15 @@ const EnhancedBookingPage: React.FC = () => {
 
   return (
     <Layout>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="container mx-auto py-16 relative">
-      <ToastContainer autoClose={3000} position="top-center" />
-        <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">Book Your Service</h2>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="container mx-auto py-16 relative"
+      >
+        <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">
+          Book Your Service
+        </h2>
 
         <motion.button
           whileHover={{ scale: 1.1 }}
@@ -324,7 +415,9 @@ const EnhancedBookingPage: React.FC = () => {
               className="fixed top-36 right-4 bg-white p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
             >
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-gray-800">Your Cart</h3>
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Your Cart
+                </h3>
                 {cart.length > 0 && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -346,8 +439,13 @@ const EnhancedBookingPage: React.FC = () => {
                     transition={{ duration: 0.3 }}
                     className="mb-4 border-b pb-2"
                   >
-                    <div className="flex justify-between items-center cursor-pointer" onClick={() => toggleExpand(index)}>
-                      <p className="font-semibold text-gray-800">{item.service.name}</p>
+                    <div
+                      className="flex justify-between items-center cursor-pointer"
+                      onClick={() => toggleExpand(index)}
+                    >
+                      <p className="font-semibold text-gray-800">
+                        {item.service.name}
+                      </p>
                       <span>{expandedItems.has(index) ? "−" : "+"}</span>
                     </div>
                     <AnimatePresence>
@@ -359,10 +457,14 @@ const EnhancedBookingPage: React.FC = () => {
                           transition={{ duration: 0.3 }}
                           className="mt-2 text-gray-600"
                         >
-                          <p>Date: {item.selectedDate} - {item.selectedSlot}</p>
+                          <p>
+                            Date: {item.selectedDate} - {item.selectedSlot}
+                          </p>
                           <p>Email: {item.customerEmail}</p>
                           {item.notes && <p>Notes: {item.notes}</p>}
-                          {item.selectedTherapist && <p>Therapist: {item.selectedTherapist.name}</p>}
+                          {item.selectedTherapist && (
+                            <p>Therapist: {item.selectedTherapist.name}</p>
+                          )}
                           <p
                             className={`${
                               item.status === "completed"
@@ -401,7 +503,9 @@ const EnhancedBookingPage: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleCheckout}
-                  disabled={!isAllServicesConfirmed() || isAllServicesCompleted()}
+                  disabled={
+                    !isAllServicesConfirmed() || isAllServicesCompleted()
+                  }
                   className={`w-full p-3 rounded-lg transition-colors duration-300 mt-4 ${
                     isAllServicesConfirmed() && !isAllServicesCompleted()
                       ? "bg-blue-600 text-white hover:bg-blue-700"
@@ -437,30 +541,51 @@ const EnhancedBookingPage: React.FC = () => {
                 exit={{ scale: 0.9, opacity: 0 }}
                 className="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full"
               >
-                <h3 className="text-2xl font-semibold mb-6 text-gray-800">Confirm Payment</h3>
+                <h3 className="text-2xl font-semibold mb-6 text-gray-800">
+                  Confirm Payment
+                </h3>
                 <ul className="space-y-4">
                   {cart
                     .filter((item) => item.status === "confirmed")
                     .map((item, index) => (
-                      <li key={index} className="flex justify-between py-2 border-b">
+                      <li
+                        key={index}
+                        className="flex justify-between py-2 border-b"
+                      >
                         <div>
-                          <p className="font-semibold text-gray-800">{item.service.name}</p>
-                          <p className="text-gray-600">{item.selectedDate} - {item.selectedSlot}</p>
+                          <p className="font-semibold text-gray-800">
+                            {item.service.name}
+                          </p>
+                          <p className="text-gray-600">
+                            {item.selectedDate} - {item.selectedSlot}
+                          </p>
                           {item.selectedTherapist && (
-                            <p className="text-gray-600">Therapist: {item.selectedTherapist.name}</p>
+                            <p className="text-gray-600">
+                              Therapist: {item.selectedTherapist.name}
+                            </p>
                           )}
                         </div>
-                        <span className="font-bold text-gray-800">{formatPrice(item.service.price)}</span>
+                        <span className="font-bold text-gray-800">
+                          {formatPrice(item.service.price)}
+                        </span>
                       </li>
                     ))}
                 </ul>
-                <div className="text-right text-xl font-bold mt-6 text-gray-800">Total: {formatTotal()}</div>
+                <div className="text-right text-xl font-bold mt-6 text-gray-800">
+                  Total: {formatTotal()}
+                </div>
                 <div className="mt-6">
-                  <p className="text-lg font-semibold mb-2">Scan QR Code to Pay:</p>
+                  <p className="text-lg font-semibold mb-2">
+                    Scan QR Code to Pay:
+                  </p>
                   {/* <QRCode value={paymentUrl} size={200} className="mx-auto" /> */}
                 </div>
                 <p className="mt-4 text-blue-600 text-center">
-                  <a href={paymentUrl} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={paymentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Click here to pay if QR code doesn't work
                   </a>
                 </p>
@@ -496,7 +621,9 @@ const EnhancedBookingPage: React.FC = () => {
           >
             {loading ? (
               <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
-                <p className="text-lg text-gray-600">Loading service details...</p>
+                <p className="text-lg text-gray-600">
+                  Loading service details...
+                </p>
               </div>
             ) : service ? (
               <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -510,19 +637,29 @@ const EnhancedBookingPage: React.FC = () => {
                   }}
                 />
                 <div className="p-6">
-                  <h3 className="text-3xl font-bold text-gray-800 mb-4">{service.name}</h3>
-                  <p className="text-gray-600 mb-6 line-clamp-3">{service.description}</p>
+                  <h3 className="text-3xl font-bold text-gray-800 mb-4">
+                    {service.name}
+                  </h3>
+                  <p className="text-gray-600 mb-6 line-clamp-3">
+                    {service.description}
+                  </p>
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <p className="text-xl font-semibold text-yellow-500">Price: {formatPrice(service.price)}</p>
-                      <p className="text-lg text-gray-600">Duration: {service.duration || "N/A"} minutes</p>
+                      <p className="text-xl font-semibold text-yellow-500">
+                        Price: {formatPrice(service.price)}
+                      </p>
+                      <p className="text-lg text-gray-600">
+                        Duration: {service.duration || "N/A"} minutes
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="flex items-center justify-center h-64 bg-red-100 rounded-lg">
-                <p className="text-lg text-red-600">Service not found. Please try again.</p>
+                <p className="text-lg text-red-600">
+                  Service not found. Please try again.
+                </p>
               </div>
             )}
           </motion.div>
@@ -533,10 +670,17 @@ const EnhancedBookingPage: React.FC = () => {
             transition={{ duration: 0.5 }}
             className="w-full lg:w-2/3 px-4"
           >
-            <h3 className="text-3xl font-bold mb-6 text-gray-800">Booking Form</h3>
-            <form className="space-y-6 bg-white p-6 rounded-lg shadow-md" onSubmit={handleSubmit}>
+            <h3 className="text-3xl font-bold mb-6 text-gray-800">
+              Booking Form
+            </h3>
+            <form
+              className="space-y-6 bg-white p-6 rounded-lg shadow-md"
+              onSubmit={handleSubmit}
+            >
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Name <span className="text-red-500">*</span></label>
+                <label className="block text-lg text-gray-700 mb-2">
+                  Name <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={customerName}
@@ -547,7 +691,9 @@ const EnhancedBookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Phone Number <span className="text-red-500">*</span></label>
+                <label className="block text-lg text-gray-700 mb-2">
+                  Phone Number <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="tel"
                   value={customerPhone}
@@ -558,7 +704,9 @@ const EnhancedBookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Email <span className="text-red-500">*</span></label>
+                <label className="block text-lg text-gray-700 mb-2">
+                  Email <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="email"
                   value={customerEmail}
@@ -569,7 +717,9 @@ const EnhancedBookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Choose Date <span className="text-red-500">*</span></label>
+                <label className="block text-lg text-gray-700 mb-2">
+                  Choose Date <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="date"
                   value={selectedDate}
@@ -580,7 +730,9 @@ const EnhancedBookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Choose Time Slot <span className="text-red-500">*</span></label>
+                <label className="block text-lg text-gray-700 mb-2">
+                  Choose Time Slot <span className="text-red-500">*</span>
+                </label>
                 <div className="grid grid-cols-4 gap-2">
                   {generateTimeSlots().map((slot) => (
                     <motion.button
@@ -590,7 +742,9 @@ const EnhancedBookingPage: React.FC = () => {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setSelectedSlot(slot)}
                       className={`p-2 border rounded-lg transition-colors duration-300 ${
-                        selectedSlot === slot ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200"
+                        selectedSlot === slot
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-100 hover:bg-gray-200"
                       }`}
                     >
                       {slot}
@@ -599,16 +753,25 @@ const EnhancedBookingPage: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Choose Therapist (Optional)</label>
+                <label className="block text-lg text-gray-700 mb-2">
+                  Choose Therapist (Optional)
+                </label>
                 <select
                   value={selectedTherapist ? selectedTherapist.id : ""}
                   onChange={(e) => {
-                    const therapist = therapists.find((t) => t.id === e.target.value);
+                    const therapist = therapists.find(
+                      (t) => t.id === e.target.value
+                    );
                     setSelectedTherapist(therapist || null);
                   }}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+                  disabled={therapists.length === 0}
                 >
-                  <option value="">Select a therapist (optional)</option>
+                  <option value="">
+                    {therapists.length > 0
+                      ? "Select a therapist"
+                      : "No available therapists"}
+                  </option>
                   {therapists.map((therapist) => (
                     <option key={therapist.id} value={therapist.id}>
                       {therapist.name}
@@ -616,8 +779,11 @@ const EnhancedBookingPage: React.FC = () => {
                   ))}
                 </select>
               </div>
+
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Notes (Optional)</label>
+                <label className="block text-lg text-gray-700 mb-2">
+                  Notes (Optional)
+                </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -636,11 +802,20 @@ const EnhancedBookingPage: React.FC = () => {
               </motion.button>
             </form>
             <p className="mt-6 text-gray-600 italic">
-              Note: If you don't select a therapist, one will be assigned to you upon check-in at our facility.
+              Note: If you don't select a therapist, one will be assigned to you
+              upon check-in at our facility.
             </p>
           </motion.div>
         </div>
       </motion.div>
+      <ToastContainer
+        autoClose={3000}
+        position="top-right"
+        hideProgressBar={false}
+        limit={1}
+        pauseOnFocusLoss={false}
+        closeOnClick
+      />  
     </Layout>
   );
 };
