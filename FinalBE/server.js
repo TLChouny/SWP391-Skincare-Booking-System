@@ -1,10 +1,9 @@
-require("dotenv").config();
+  require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
-const questionRoutes = require("./routes/questionRoutes");
 const authRoutes = require("./routes/auth");
 const voucherRoutes = require("./routes/voucherRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -13,6 +12,9 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const payOS = require("./utils/payos");
 const cartRoutes = require("./routes/cartRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const questionRoutes = require("./routes/questionRoutes");
+const ratingRoutes = require("./routes/ratingRoutes");
+const blogRoutes = require("./routes/blogRoutes");
 const app = express();
 
 // Middleware
@@ -25,7 +27,7 @@ app.use("/", express.static("public"));
 app.use("/api/payments/webhook", webhookRoutes);
 app.use("/api/payments", paymentRoutes);
 app.post("/create-payment-link", async (req, res) => {
-  const YOUR_DOMAIN = "http://localhost:5002";
+  const YOUR_DOMAIN = "http://localhost:5000";
   const body = {
     orderCode: Number(String(Date.now()).slice(-6)),
     amount: 1000,
@@ -45,13 +47,9 @@ app.post("/create-payment-link", async (req, res) => {
 //user
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-
 //product
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
-
-//question
-app.use("/api/questions", questionRoutes);
 
 //voucher
 app.use("/api/vouchers", voucherRoutes);
@@ -59,7 +57,17 @@ app.use("/api/vouchers", voucherRoutes);
 //cart
 app.use("/api/cart", cartRoutes);
 
+//review
 app.use("/api/reviews", reviewRoutes);
+
+//question
+app.use("/api/questions", questionRoutes);
+
+//blog
+app.use("/blogs", blogRoutes);
+
+//rating 
+app.use("/ratings", ratingRoutes);
 // Connect DB
 mongoose
   .connect(process.env.MONGO_URI, {
@@ -67,7 +75,8 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
+  .catch((err) => console.log("MongoDB Connection Error:", err));
 
-const PORT = process.env.PORT || 5002;
+
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
