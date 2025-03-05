@@ -64,10 +64,10 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/questions", questionRoutes);
 
 //blog
-app.use("/blogs", blogRoutes);
+app.use("/api/blogs", blogRoutes);
 
 //rating 
-app.use("/ratings", ratingRoutes);
+app.use("/api/ratings", ratingRoutes);
 // Connect DB
 mongoose
   .connect(process.env.MONGO_URI, {
