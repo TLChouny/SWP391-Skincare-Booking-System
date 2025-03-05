@@ -29,7 +29,7 @@ function ManageCategory() {
         title={title}
         columns={columns}
         formItems={formItems}
-        apiEndpoint='http://localhost:5000/api/categories'
+        apiEndpoint='/categories'
       />
     </div>
   );

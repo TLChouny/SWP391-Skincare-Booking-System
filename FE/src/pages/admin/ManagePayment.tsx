@@ -1,31 +1,64 @@
-import { Form, Input } from "antd";
+import { Form, Input, InputNumber, Select } from "antd";
 import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
 
 function ManagePayment() {
-  const title = "payment";
+  const title = "Payment";
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Payment", dataIndex: "payment", key: "payment" },
+    { title: "Order Code", dataIndex: "orderCode", key: "orderCode" },
+    { title: "Order Name", dataIndex: "orderName", key: "orderName" },
+    { title: "Amount", dataIndex: "amount", key: "amount" },
+    { title: "Status", dataIndex: "status", key: "status" },
   ];
 
   const formItems = (
     <>
       <Form.Item
-        name='payment'
-        label='Payment'
-        rules={[{ required: true, message: "Please input category name" }]}>
+        name='orderCode'
+        label='Order Code'
+        rules={[{ required: true, message: "Please enter order code" }]}>
         <Input />
+      </Form.Item>
+      <Form.Item
+        name='orderName'
+        label='Order Name'
+        rules={[{ required: true, message: "Please enter order name" }]}>
+        <Input />
+      </Form.Item>
+      <Form.Item
+        name='amount'
+        label='Amount'
+        rules={[{ required: true, message: "Please enter amount" }]}>
+        <InputNumber style={{ width: "100%" }} />
       </Form.Item>
       <Form.Item name='description' label='Description'>
         <Input.TextArea />
       </Form.Item>
+      <Form.Item name='status' label='Status' initialValue='pending'>
+        <Select>
+          <Select.Option value='pending'>Pending</Select.Option>
+          <Select.Option value='success'>Success</Select.Option>
+          <Select.Option value='failed'>Failed</Select.Option>
+          <Select.Option value='cancelled'>Cancelled</Select.Option>
+        </Select>
+      </Form.Item>
+      <Form.Item name='returnUrl' label='Return URL'>
+        <Input />
+      </Form.Item>
+      <Form.Item name='cancelUrl' label='Cancel URL'>
+        <Input />
+      </Form.Item>
     </>
   );
+ 
 
   return (
-    <div>
-      <ManageTemplate title={title} columns={columns} formItems={formItems} />
-    </div>
+    <ManageTemplate
+      title={title}
+      columns={columns}
+      formItems={formItems}
+      apiEndpoint='/payments'
+      mode='view-only'
+    />
   );
 }
 

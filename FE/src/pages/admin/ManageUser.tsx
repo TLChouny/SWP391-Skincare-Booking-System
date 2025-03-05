@@ -28,7 +28,7 @@ function ManageUser() {
         title={title}
         columns={columns}
         formItems={formItems}
-        apiEndpoint='http://localhost:5000/api/users'
+        apiEndpoint='/users'
       />
     </div>
   );

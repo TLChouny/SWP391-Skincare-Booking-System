@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/apiService";
 import { Button, Form, Modal, Table, Space, Popconfirm } from "antd";
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
 
 interface Columns {
@@ -13,8 +13,9 @@ interface Columns {
 interface ManageTemplateProps {
   title: string;
   columns: Columns[];
-  formItems: React.ReactElement;
+  formItems?: React.ReactElement;
   apiEndpoint: string;
+  mode?: 'full' | 'view-only';
 }
 
 function ManageTemplate({
@@ -22,8 +23,9 @@ function ManageTemplate({
   title,
   formItems,
   apiEndpoint,
+  mode = 'full',
 }: ManageTemplateProps) {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [form] = Form.useForm();
@@ -33,10 +35,17 @@ function ManageTemplate({
     try {
       setLoading(true);
       const res = await api.get(apiEndpoint);
-      setData(res.data);
+      const responseData = Array.isArray(res.data)
+        ? res.data
+        : res.data.data
+        ? res.data.data
+        : [];
+      setData(responseData);
     } catch (error) {
+      console.error("Fetch error:", error);
       toast.error(`Error fetching ${title}`);
-    } finally {   
+      setData([]);
+    } finally {
       setLoading(false);
     }
   };
@@ -46,6 +55,8 @@ function ManageTemplate({
   }, [apiEndpoint]);
 
   const handleCreate = async (values: any) => {
+    console.log("Creating with values:", values); // Thêm dòng này để kiểm tra dữ liệu
+
     try {
       await api.post(apiEndpoint, values);
       toast.success(`${title} created successfully`);
@@ -86,75 +97,72 @@ function ManageTemplate({
     setShowModal(true);
   };
 
-  // Add action column to the columns
-  const columnsWithActions = [
-    ...columns,
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record: any) => (
-        <Space>
-          <Button 
-            type="link" 
-            icon={<EditOutlined />}
-            onClick={() => startEdit(record)}
-          />
-          <Popconfirm
-            title={`Are you sure you want to delete this ${title}?`}
-            onConfirm={() => handleDelete(record._id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button 
-              type="link" 
-              danger 
-              icon={<DeleteOutlined />}
-            />
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ];
+  const columnsWithActions = mode === 'full' 
+    ? [
+        ...columns,
+        {
+          title: "Actions",
+          key: "actions",
+          render: (_, record: any) => (
+            <Space>
+              <Button
+                type='link'
+                icon={<EditOutlined />}
+                onClick={() => startEdit(record)}
+              />
+              <Popconfirm
+                title={`Are you sure you want to delete this ${title}?`}
+                onConfirm={() => handleDelete(record._id)}
+                okText='Yes'
+                cancelText='No'>
+                <Button type='link' danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+            </Space>
+          ),
+        },
+      ]
+    : columns;
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Button 
-        type="primary" 
-        onClick={() => {
-          setEditingId(null);
-          form.resetFields();
-          setShowModal(true);
-        }}
-        style={{ marginBottom: '16px' }}
-      >
-        Create new {title}
-      </Button>
+    <div style={{ padding: "24px" }}>
+      {mode === 'full' && (
+        <Button
+          type='primary'
+          onClick={() => {
+            setEditingId(null);
+            form.resetFields();
+            setShowModal(true);
+          }}
+          style={{ marginBottom: "16px" }}>
+          Create new {title}
+        </Button>
+      )}
 
-      <Table 
-        columns={columnsWithActions} 
+      <Table
+        columns={columnsWithActions}
         dataSource={data}
         loading={loading}
-        rowKey="_id"
+        rowKey='_id'
       />
 
-      <Modal 
-        title={editingId ? `Edit ${title}` : `Create new ${title}`}
-        open={showModal} 
-        onCancel={() => {
-          setShowModal(false);
-          setEditingId(null);
-          form.resetFields();
-        }}
-        onOk={() => form.submit()}
-      >
-        <Form 
-          form={form}
-          labelCol={{ span: 24 }}
-          onFinish={editingId ? handleEdit : handleCreate}
-        >
-          {formItems}
-        </Form>
-      </Modal>
+      {mode === 'full' && formItems && (
+        <Modal
+          title={editingId ? `Edit ${title}` : `Create new ${title}`}
+          open={showModal}
+          onCancel={() => {
+            setShowModal(false);
+            setEditingId(null);
+            form.resetFields();
+          }}
+          onOk={() => form.submit()}>
+          <Form
+            form={form}
+            labelCol={{ span: 24 }}
+            onFinish={editingId ? handleEdit : handleCreate}>
+            {formItems}
+          </Form>
+        </Modal>
+      )}
     </div>
   );
 }
