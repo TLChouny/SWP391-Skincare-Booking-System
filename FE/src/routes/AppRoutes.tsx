@@ -5,6 +5,7 @@ import BookingPage from "../pages/Home/Bookingpage";
 import Login from "../layout/Login";
 import Header from "../layout/Header";
 import Register from "../layout/Register";
+import { AuthProvider } from "../context/AuthContext";
 //homepage
 import ServicePage from "../pages/Home/Servicepage";
 import SettingPage from "../pages/Home/Settingpage";
@@ -35,72 +36,80 @@ import ServiceHistory from "../pages/Therapist/ServiceHistory";
 import TherapistManagement from "../components/Therapist/TherapistManagement";
 import ListOfAssigned from "../pages/Therapist/ListOfAssigned";
 import PerformService from "../pages/Therapist/PerformService";
+import Forgot_password from "../layout/Forgot_password";
 
 //customer
 
-
-
-
 const AppRoutes: React.FC = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path='/' element={<HomePage />} />
-        <Route path='/settings' element={<SettingPage />} />
-        <Route path='/booking/:id' element={<BookingPage />} />
-        <Route path='/checkout' element={<CheckoutPage />} />
-        <Route path='/contact' element={<ContactPage />} />{" "}
-        {/* Modal sẽ hiện ra ở đây */}
-        <Route path='/services' element={<ServicePage />} />
-        <Route path='/blog' element={<BlogPage />} />
-        <Route path='/test' element={<TestPage />} />
-        {/* <Route path="/blog-details/:id" element={<BlogPage />} /> */}
-        <Route path='/admin' element={<AdminDashboard />}>
-          <Route index element={<AdminOverview />} />
-          <Route path='user-management' element={<ManageUser />} />
-          <Route path='category-management' element={<ManageCategory />} />
-          <Route path='blog-management' element={<ManageBlog />} />
-          <Route path='payment-management' element={<ManagePayment />} />
-          <Route path='rating-management' element={<ManageRating />} />
-          <Route path='question-management' element={<ManageQuestion />} />
-        </Route>
-        {/* The therapist router */}
-        <Route path='/therapist' element={<TherapistManagement />}>
-          <Route path='list-of-assigned' element={<ListOfAssigned />} />
-          <Route path='perfom-service' element={<PerformService />} />
-          <Route path='service-history' element={<ServiceHistory />} />
-        </Route>
-        {/* Staff router */}
-        <Route path='/staff' element={<StaffManagement />}>
-          <Route path='check-in' element={<CheckIn />} />
-          <Route path='assign-specialists' element={<AssignSpecialists />} />
-          <Route path='check-out' element={<CheckOut />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
           <Route
-            path='appointment-schedules'
-            element={<AppointmentSchedules />}
+            path="/forgot-password"
+            element={
+              <>
+                <Header />
+                <Forgot_password />
+              </>
+            }
           />
-        </Route>
-        {/* Login */}
-        <Route
-          path='/login'
-          element={
-            <>
-              <Header />
-              <Login />
-            </>
-          }
-        />
-        <Route
-          path='/register'
-          element={
-            <>
-              <Header />
-              <Register />
-            </>
-          }
-        />
-      </Routes>
-    </Router>
+          <Route path="/settings" element={<SettingPage />} />
+          <Route path="/booking/:id" element={<BookingPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/contact" element={<ContactPage />} />{" "}
+          <Route path="/services" element={<ServicePage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/test" element={<TestPage />} />
+          {/* <Route path="/blog-details/:id" element={<BlogPage />} /> */}
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route index element={<AdminOverview />} />
+            <Route path="user-management" element={<ManageUser />} />
+            <Route path="category-management" element={<ManageCategory />} />
+            <Route path="blog-management" element={<ManageBlog />} />
+            <Route path="payment-management" element={<ManagePayment />} />
+            <Route path="rating-management" element={<ManageRating />} />
+            <Route path="question-management" element={<ManageQuestion />} />
+          </Route>
+          {/* The therapist router */}
+          <Route path="/therapist" element={<TherapistManagement />}>
+            <Route path="list-of-assigned" element={<ListOfAssigned />} />
+            <Route path="perfom-service" element={<PerformService />} />
+            <Route path="service-history" element={<ServiceHistory />} />
+          </Route>
+          {/* Staff router */}
+          <Route path="/staff" element={<StaffManagement />}>
+            <Route path="check-in" element={<CheckIn />} />
+            <Route path="assign-specialists" element={<AssignSpecialists />} />
+            <Route path="check-out" element={<CheckOut />} />
+            <Route
+              path="appointment-schedules"
+              element={<AppointmentSchedules />}
+            />
+          </Route>
+          {/* Login */}
+          <Route
+            path="/login"
+            element={
+              <>
+                <Header />
+                <Login />
+              </>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <>
+                <Header />
+                <Register />
+              </>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 };
 
