@@ -4,13 +4,14 @@ import React, { useState, useEffect } from "react";
 import "../../src/index.css";
 import logo from "../assets/logo7.png";
 import { Link, useNavigate } from "react-router-dom";
-import { Divider, Dropdown, Menu } from "antd"; // Thêm Dropdown và Menu từ antd
-import { UserOutlined } from "@ant-design/icons"; // Thêm icon User từ antd
+import { Divider, Dropdown, Menu } from "antd";
+import { UserOutlined } from "@ant-design/icons";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Header: React.FC = () => {
-  const [user, setUser] = useState<{ username: string } | null>(null);
+  const [user, setUser] = useState<{ username: string; role?: string } | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
@@ -24,10 +25,13 @@ const Header: React.FC = () => {
     setShowModal(false);
   };
 
+  // Lấy thông tin user và role từ localStorage khi component mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setRole(parsedUser.role || null); // Lấy role từ user, nếu không có thì để null
     }
   }, []);
 
@@ -35,25 +39,40 @@ const Header: React.FC = () => {
     if (!user) {
       toast.error("Bạn cần đăng nhập tài khoản trước khi book service!");
       setTimeout(() => {
-        // navigate("/login");
-      }, 500); // Chờ 0.5 giây để người dùng thấy thông báo
+        navigate("/login");
+      }, 3000);
     } else {
       navigate("/services");
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
+    localStorage.removeItem("user"); // Xóa user
+    localStorage.removeItem("authToken"); // Xóa authToken để đồng bộ với các trang
     setUser(null);
-    navigate("/");
+    setRole(null); // Reset role khi logout
+    navigate("/login");
     toast.success("Đã đăng xuất thành công!");
+  };
+
+  const getDashboardLink = () => {
+    switch (role) {
+      case "admin":
+        return "/admin-dashboard";
+      case "staff":
+        return "/staff/ch";
+      case "therapist":
+        return "/therapist";
+      default:
+        return "/dashboard"; // Mặc định cho user thường
+    }
   };
 
   // Menu dropdown cho user
   const userMenu = (
     <Menu>
       <Menu.Item key="dashboard">
-        <Link to="/dashboard">My Profile</Link>
+        <Link to={getDashboardLink()}>My Profile</Link>
       </Menu.Item>
       <Menu.Item key="settings">
         <Link to="/settings">Settings</Link>
@@ -145,7 +164,6 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal Contact */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-8 rounded-lg shadow-lg w-1/2">

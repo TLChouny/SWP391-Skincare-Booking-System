@@ -160,21 +160,23 @@ router.post(
         },
       };
 
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token, username: user.username, role: user.role });
-        }
-      );
+      // 🔥 Tạo token
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      // 🔥 Lưu token vào DB
+      user.token = token;
+      await user.save();
+
+      res.json({ token, username: user.username, role: user.role });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");
     }
   }
 );
+
 
 const authMiddleware = (req, res, next) => {
   const token = req.header("x-auth-token");
@@ -320,35 +322,31 @@ router.post(
         return res.status(400).json({ msg: "Email không tồn tại" });
       }
 
-      // Kiểm tra OTP hợp lệ
-      if (user.otp !== otp || user.otpExpires < new Date()) {
+      // Kiểm tra nếu OTP không tồn tại hoặc đã được sử dụng
+      if (!user.otp || user.otp !== otp || user.otpExpires < new Date()) {
         return res
           .status(400)
-          .json({ msg: "OTP không hợp lệ hoặc đã hết hạn" });
-      }
-
-      // Kiểm tra xác nhận mật khẩu mới
-      if (new_password !== confirm_password) {
-        return res.status(400).json({ msg: "Xác nhận mật khẩu không khớp" });
+          .json({ msg: "OTP không hợp lệ hoặc đã hết hạn!" });
       }
 
       // Băm mật khẩu mới
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(new_password, salt);
 
-      // Cập nhật mật khẩu mới và xóa OTP
+      // Cập nhật mật khẩu mới và XÓA OTP
       user.password = hashedPassword;
-      // user.otp = null;
-      // user.otpExpires = null;
+      user.otp = null; // Xóa OTP để không thể sử dụng lại
+      user.otpExpires = null; // Xóa thời gian hết hạn OTP
       await user.save();
 
-      res.status(200).json({ msg: "Mật khẩu đã được cập nhật thành công" });
+      res.status(200).json({ msg: "Mật khẩu đã được cập nhật thành công!" });
     } catch (err) {
-      console.error(err.message);
+      console.error("Lỗi Backend:", err.message);
       res.status(500).send("Lỗi máy chủ");
     }
   }
 );
+
 
 router.get("/auto-verify", async (req, res) => {
   const { token } = req.query;

@@ -1,13 +1,12 @@
 "use client";
 
-import type React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { getTherapists } from "../../api/apiService";
-import Layout from "../../layout/Layout";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Layout from "../../layout/Layout";
+import CartComponent from "../../components/Cart/CartComponent";
 
 interface Service {
   _id: string;
@@ -33,16 +32,21 @@ interface Therapist {
 }
 
 interface Booking {
-  service: Service;
+  CartID?: string;
+  service_id: number;
+  serviceName: string;
   customerName: string;
   customerPhone: string;
   customerEmail: string;
   notes?: string;
-  selectedDate: string;
-  selectedSlot: string;
-  selectedTherapist: Therapist | null;
-  timestamp: number;
-  status: "pending" | "confirmed" | "completed";
+  bookingDate: string;
+  startTime: string;
+  endTime?: string;
+  selectedTherapist?: Therapist | null;
+  Skincare_staff?: string;
+  totalPrice?: number;
+  status: "pending" | "checked-in" | "completed" | "cancelled"; // Đồng bộ với CartComponent và HomePage
+  action?: "checkin" | "checkout" | null; // Thêm action để đồng bộ
 }
 
 const EnhancedBookingPage: React.FC = () => {
@@ -56,95 +60,125 @@ const EnhancedBookingPage: React.FC = () => {
   const [notes, setNotes] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(
-    null
-  );
-  const [showCart, setShowCart] = useState<boolean>(false);
+  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [cart, setCart] = useState<Booking[]>([]);
   const [paymentUrl, setPaymentUrl] = useState<string>("");
   const [qrCode, setQrCode] = useState<string>("");
-  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
+  const API_BASE_URL = "http://localhost:5000/api";
+
+  // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
-    const fetchService = async () => {
-      try {
-        const productsResponse = await fetch(
-          "http://localhost:5000/api/products/",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const productsData = await productsResponse.json();
-        const foundService = productsData.find((s: Service) => s._id === id);
-        setService(foundService || null);
-      } catch (error) {
-        console.error("Error fetching service data:", error);
-        toast.error("Không thể tải dịch vụ. Vui lòng thử lại sau.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchService();
-
-    const storedCart: Booking[] = JSON.parse(
-      localStorage.getItem("cart") || "[]"
-    );
-    setCart(storedCart);
-  }, [id]);
-
-  useEffect(() => {
-    const fetchTherapists = async () => {
-      const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        toast.error("Bạn chưa đăng nhập. Vui lòng đăng nhập để tiếp tục.", {
-          toastId: "authError",
-        });
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          "http://localhost:5000/api/users/skincare-staff",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "x-auth-token": token,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Lỗi ${response.status}: ${await response.text()}`);
-        }
-
-        const data = await response.json();
-
-        setTherapists(
-          data.map((staff: any) => ({
-            id: staff._id,
-            name: staff.username,
-            image: staff.avatar || "/default-avatar.png",
-          }))
-        );
-      } catch (error: any) {
-        console.error("❌ Lỗi khi tải danh sách chuyên viên:", error.message);
-        toast.error(`Không thể tải danh sách chuyên viên: ${error.message}`, {
-          toastId: "fetchTherapistsError", // Ngăn hiển thị nhiều lần
-        });
-      }
-    };
-
-    fetchTherapists();
+    const storedUser = localStorage.getItem("user");
+    setIsLoggedIn(!!storedUser);
   }, []);
 
+  const fetchCart = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) return;
+      const response = await fetch(`${API_BASE_URL}/cart`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": token,
+        },
+      });
+      if (!response.ok) throw new Error(`Failed to fetch cart: ${response.status}`);
+      const data = await response.json();
+      console.log("Cart data from server:", data);
+      setCart(data);
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+      toast.error("Không thể tải giỏ hàng.");
+    }
+  };
+
+  const addToCart = async (bookingData: any) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error("Bạn cần đăng nhập để thêm vào giỏ hàng.");
+      }
+
+      console.log("Booking data gửi lên server:", JSON.stringify(bookingData, null, 2));
+
+      const response = await fetch(`${API_BASE_URL}/cart`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": token,
+        },
+        body: JSON.stringify(bookingData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          `Failed to add to cart: ${response.status} - ${errorData.message || "Bad Request"}`
+        );
+      }
+
+      const result = await response.json();
+      console.log("Response from add to cart:", result);
+      await fetchCart();
+      toast.success("Đã thêm dịch vụ vào giỏ hàng.");
+    } catch (error: any) {
+      console.error("Error adding to cart:", error.message);
+      toast.error(error.message || "Không thể thêm vào giỏ hàng.");
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const errors: string[] = [];
+
+    if (!customerName.trim()) errors.push("Tên khách hàng không được để trống.");
+    if (!customerPhone.trim() || !/^\d{10}$/.test(customerPhone))
+      errors.push("Số điện thoại phải là 10 chữ số hợp lệ.");
+    if (
+      !customerEmail.trim() ||
+      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(customerEmail)
+    )
+      errors.push("Email phải có định dạng hợp lệ.");
+    if (!selectedDate) errors.push("Vui lòng chọn ngày đặt lịch.");
+    if (!selectedSlot) errors.push("Vui lòng chọn khung giờ.");
+
+    if (errors.length > 0) {
+      toast.error(errors.join(" "));
+      return false;
+    }
+    return true;
+  };
+
+  const formatPrice = (price?: number | { $numberDecimal: string }): string => {
+    let priceValue = 0;
+    if (typeof price === "object" && price?.$numberDecimal) {
+      priceValue = Number.parseFloat(price.$numberDecimal);
+    } else if (typeof price === "number") {
+      priceValue = price;
+    }
+    return `${priceValue.toLocaleString("vi-VN")} VNĐ`;
+  };
+
+  const calculateTotal = (): number => {
+    return cart
+      .filter((item) => item.status === "checked-in")
+      .reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+  };
+
+  const formatTotal = (): string => {
+    const totalValue = calculateTotal();
+    return `${totalValue.toLocaleString("vi-VN")} VNĐ`;
+  };
+
+  const getTodayDate = () => {
+    const today = new Date();
+    return `${today.getFullYear()}-${(today.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
+  };
 
   const generateTimeSlots = () => {
     const slots = [];
@@ -176,78 +210,18 @@ const EnhancedBookingPage: React.FC = () => {
     return slots;
   };
 
-  const validateForm = (): boolean => {
-    const errors: string[] = [];
-
-    if (!customerName.trim()) {
-      errors.push("Tên khách hàng không được để trống.");
-    }
-    if (!customerPhone.trim() || !/^\d{10}$/.test(customerPhone)) {
-      errors.push("Số điện thoại phải là 10 chữ số hợp lệ.");
-    }
-    if (
-      !customerEmail.trim() ||
-      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(customerEmail)
-    ) {
-      errors.push("Email phải có định dạng hợp lệ.");
-    }
-    if (!selectedDate) {
-      errors.push("Vui lòng chọn ngày đặt lịch.");
-    }
-    if (!selectedSlot) {
-      errors.push("Vui lòng chọn khung giờ.");
-    }
-
-    if (errors.length > 0) {
-      toast.error(errors[0]);
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!validateForm() || !service) return;
-
-    const bookingData: Booking = {
-      service,
-      customerName,
-      customerPhone,
-      customerEmail,
-      notes,
-      selectedDate,
-      selectedSlot: selectedSlot as string,
-      selectedTherapist,
-      timestamp: Date.now(),
-      status: "pending",
-    };
-
-    const updatedCart = [...cart, bookingData];
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-    setCart(updatedCart);
-    setShowCart(true);
-    setCustomerName("");
-    setCustomerPhone("");
-    setCustomerEmail("");
-    setNotes("");
-    setSelectedDate("");
-    setSelectedSlot(null);
-    setSelectedTherapist(null);
-    toast.success("Đã thêm dịch vụ vào giỏ hàng.");
-  };
-
-  const toggleCart = () => setShowCart(!showCart);
-
-  const handleRemoveFromCart = (index: number) => {
-    const updatedCart = cart.filter((_, i) => i !== index);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-    setCart(updatedCart);
-    toast.success("Đã xóa dịch vụ khỏi giỏ hàng.");
-  };
-
   const handleCheckout = async () => {
-    setShowCart(false);
+    if (!isLoggedIn) {
+      toast.warning("Please log in to proceed with checkout.");
+      return;
+    }
+
+    const pendingItems = cart.filter((item) => item.status === "checked-in");
+    if (pendingItems.length === 0) {
+      toast.error("No pending items in the cart to checkout.");
+      return;
+    }
+
     setShowCheckoutModal(true);
 
     const totalAmount = calculateTotal();
@@ -259,22 +233,19 @@ const EnhancedBookingPage: React.FC = () => {
     const cancelUrl = "http://localhost:5000/cancel.html";
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/payments/create",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount: totalAmount,
-            orderName,
-            description,
-            returnUrl,
-            cancelUrl,
-          }),
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/payments/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: totalAmount,
+          orderName,
+          description,
+          returnUrl,
+          cancelUrl,
+        }),
+      });
 
       const data = await response.json();
       if (!response.ok || data.error !== 0 || !data.data) {
@@ -290,242 +261,134 @@ const EnhancedBookingPage: React.FC = () => {
     }
   };
 
-  const handlePayment = () => {
-    const updatedCart = cart.map(
-      (item) => ({ ...item, status: "completed" } as Booking)
-    );
-    const bookingHistory: Booking[] = JSON.parse(
-      localStorage.getItem("bookingHistory") || "[]"
-    );
-    localStorage.setItem(
-      "bookingHistory",
-      JSON.stringify([...bookingHistory, ...updatedCart])
-    );
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-    setCart(updatedCart);
-    setShowCheckoutModal(false);
-    setShowCart(true);
-    toast.success("Thanh toán thành công!");
-  };
+  const handlePayment = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) throw new Error("Please log in to confirm payment.");
 
-  const getTodayDate = () => {
-    const today = new Date();
-    return `${today.getFullYear()}-${(today.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
-  };
+      await Promise.all(
+        cart
+          .filter((item) => item.status === "pending")
+          .map((item) =>
+            fetch(`${API_BASE_URL}/cart/${item.CartID}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                "x-auth-token": token,
+              },
+              body: JSON.stringify({ status: "completed", action: null }),
+            }).then((res) => {
+              if (!res.ok) throw new Error(`Failed to update cart item ${item.CartID}`);
+            })
+          )
+      );
 
-  const formatPrice = (
-    price: number | { $numberDecimal: string } | undefined
-  ): string => {
-    let priceValue = 0;
-    if (typeof price === "object" && price?.$numberDecimal) {
-      priceValue = Number.parseFloat(price.$numberDecimal);
-    } else if (typeof price === "number") {
-      priceValue = price;
+      await fetchCart();
+      setShowCheckoutModal(false);
+      toast.success("Thanh toán thành công!");
+    } catch (error) {
+      console.error("Error updating cart status:", error);
+      toast.error("Lỗi khi cập nhật trạng thái thanh toán.");
     }
-    return `${priceValue.toLocaleString("vi-VN")} VNĐ`;
   };
 
-  const calculateTotal = (): number => {
-    return cart
-      .filter((item) => item.status === "confirmed")
-      .reduce((sum, item) => {
-        const priceValue =
-          typeof item.service.price === "number"
-            ? item.service.price
-            : Number.parseFloat(
-                (item.service.price as { $numberDecimal: string })
-                  ?.$numberDecimal || "0"
-              );
-        return sum + (priceValue || 0);
-      }, 0);
-  };
+  useEffect(() => {
+    const fetchService = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/products/`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!response.ok) throw new Error(`Failed to fetch service: ${response.status}`);
+        const productsData = await response.json();
+        const foundService = productsData.find((s: Service) => s._id === id);
+        setService(foundService || null);
+      } catch (error) {
+        console.error("Error fetching service data:", error);
+        toast.error("Không thể tải dịch vụ.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const formatTotal = (): string => {
-    const totalValue = calculateTotal();
-    return `${totalValue.toLocaleString("vi-VN")} VNĐ`;
-  };
+    fetchService();
+    if (isLoggedIn) fetchCart();
+    else setCart([]);
+  }, [id, isLoggedIn]);
 
-  const isAllServicesConfirmed = () =>
-    cart.every(
-      (item) => item.status === "confirmed" || item.status === "completed"
-    );
-  const isAllServicesCompleted = () =>
-    cart.every((item) => item.status === "completed");
+  useEffect(() => {
+    const fetchTherapists = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        toast.error("Bạn chưa đăng nhập.");
+        return;
+      }
+      try {
+        const response = await fetch(`${API_BASE_URL}/users/skincare-staff`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": token,
+          },
+        });
+        if (!response.ok) throw new Error(`Failed to fetch therapists: ${response.status}`);
+        const data = await response.json();
+        setTherapists(
+          data.map((staff: any) => ({
+            id: staff._id,
+            name: staff.username,
+            image: staff.avatar || "/default-avatar.png",
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching therapists:", error);
+        toast.error("Không thể tải danh sách chuyên viên.");
+      }
+    };
 
-  const simulateStaffConfirmation = (bookingIndex: number) => {
-    const updatedCart = [...cart];
-    updatedCart[bookingIndex].status = "confirmed";
-    setCart(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-    toast.success("Xác nhận nhân viên thành công.");
-  };
+    if (isLoggedIn) fetchTherapists();
+  }, [isLoggedIn]);
 
-  const clearCart = () => {
-    localStorage.removeItem("cart");
-    setCart([]);
-    setShowCart(false);
-    toast.success("Đã xóa toàn bộ giỏ hàng.");
-  };
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!validateForm() || !service) return;
 
-  const toggleExpand = (index: number) => {
-    const newExpandedItems = new Set(expandedItems);
-    if (newExpandedItems.has(index)) {
-      newExpandedItems.delete(index);
-    } else {
-      newExpandedItems.add(index);
-    }
-    setExpandedItems(newExpandedItems);
+    const bookingData = {
+      service_id: service.service_id,
+      startTime: selectedSlot,
+      customerName,
+      customerEmail,
+      customerPhone,
+      notes: notes || undefined,
+      Skincare_staff: selectedTherapist?.id || undefined,
+      discountCode: undefined,
+    };
+
+    await addToCart(bookingData);
+    setCustomerName("");
+    setCustomerPhone("");
+    setCustomerEmail("");
+    setNotes("");
+    setSelectedDate("");
+    setSelectedSlot(null);
+    setSelectedTherapist(null);
   };
 
   return (
     <Layout>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="container mx-auto py-16 relative"
-      >
-        <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">
-          Book Your Service
-        </h2>
+      <motion.div className="container mx-auto py-16 relative">
+        <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">Book Your Service</h2>
 
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={toggleCart}
-          className="fixed top-28 right-4 p-3 bg-yellow-400 rounded-full shadow-lg hover:bg-yellow-500 transition-colors duration-300"
-        >
-          🛒
-          {cart.length > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              {cart.length}
-            </span>
-          )}
-        </motion.button>
-
-        <AnimatePresence>
-          {showCart && (
-            <motion.div
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 100 }}
-              transition={{ type: "spring", stiffness: 100, damping: 20 }}
-              className="fixed top-36 right-4 bg-white p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-gray-800">
-                  Your Cart
-                </h3>
-                {cart.length > 0 && (
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={clearCart}
-                    className="text-red-500 text-sm hover:text-red-700"
-                  >
-                    Clear Cart
-                  </motion.button>
-                )}
-              </div>
-              {cart.length > 0 ? (
-                cart.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="mb-4 border-b pb-2"
-                  >
-                    <div
-                      className="flex justify-between items-center cursor-pointer"
-                      onClick={() => toggleExpand(index)}
-                    >
-                      <p className="font-semibold text-gray-800">
-                        {item.service.name}
-                      </p>
-                      <span>{expandedItems.has(index) ? "−" : "+"}</span>
-                    </div>
-                    <AnimatePresence>
-                      {expandedItems.has(index) && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="mt-2 text-gray-600"
-                        >
-                          <p>
-                            Date: {item.selectedDate} - {item.selectedSlot}
-                          </p>
-                          <p>Email: {item.customerEmail}</p>
-                          {item.notes && <p>Notes: {item.notes}</p>}
-                          {item.selectedTherapist && (
-                            <p>Therapist: {item.selectedTherapist.name}</p>
-                          )}
-                          <p
-                            className={`${
-                              item.status === "completed"
-                                ? "text-green-500"
-                                : item.status === "confirmed"
-                                ? "text-blue-500"
-                                : "text-yellow-500"
-                            }`}
-                          >
-                            Status: {item.status}
-                          </p>
-                          {item.status === "pending" && (
-                            <button
-                              onClick={() => simulateStaffConfirmation(index)}
-                              className="mt-2 px-2 py-1 bg-blue-500 text-white rounded-md text-sm"
-                            >
-                              Simulate Staff Confirmation
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleRemoveFromCart(index)}
-                            className="mt-2 ml-2 px-2 py-1 bg-red-500 text-white rounded-md text-sm"
-                          >
-                            Hủy
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                ))
-              ) : (
-                <p className="text-gray-600">Your cart is empty.</p>
-              )}
-              {cart.length > 0 && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleCheckout}
-                  disabled={
-                    !isAllServicesConfirmed() || isAllServicesCompleted()
-                  }
-                  className={`w-full p-3 rounded-lg transition-colors duration-300 mt-4 ${
-                    isAllServicesConfirmed() && !isAllServicesCompleted()
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-                >
-                  Proceed to Checkout
-                </motion.button>
-              )}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={toggleCart}
-                className="w-full p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-300 mt-2"
-              >
-                Close
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Chỉ hiển thị CartComponent khi đăng nhập */}
+        {isLoggedIn && (
+          <CartComponent
+            cart={cart}
+            setCart={setCart}
+            fetchCart={fetchCart}
+            handleCheckout={handleCheckout}
+            isBookingPage={true}
+          />
+        )}
 
         <AnimatePresence>
           {showCheckoutModal && (
@@ -541,32 +404,21 @@ const EnhancedBookingPage: React.FC = () => {
                 exit={{ scale: 0.9, opacity: 0 }}
                 className="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full"
               >
-                <h3 className="text-2xl font-semibold mb-6 text-gray-800">
-                  Confirm Payment
-                </h3>
+                <h3 className="text-2xl font-semibold mb-6 text-gray-800">Confirm Payment</h3>
                 <ul className="space-y-4">
                   {cart
-                    .filter((item) => item.status === "confirmed")
+                    .filter((item) => item.status === "pending")
                     .map((item, index) => (
-                      <li
-                        key={index}
-                        className="flex justify-between py-2 border-b"
-                      >
+                      <li key={item.CartID || index} className="flex justify-between py-2 border-b">
                         <div>
-                          <p className="font-semibold text-gray-800">
-                            {item.service.name}
-                          </p>
-                          <p className="text-gray-600">
-                            {item.selectedDate} - {item.selectedSlot}
-                          </p>
-                          {item.selectedTherapist && (
-                            <p className="text-gray-600">
-                              Therapist: {item.selectedTherapist.name}
-                            </p>
+                          <p className="font-semibold text-gray-800">{item.serviceName}</p>
+                          <p className="text-gray-600">{item.bookingDate} - {item.startTime}</p>
+                          {item.Skincare_staff && (
+                            <p className="text-gray-600">Therapist ID: {item.Skincare_staff}</p>
                           )}
                         </div>
                         <span className="font-bold text-gray-800">
-                          {formatPrice(item.service.price)}
+                          {item.totalPrice?.toLocaleString("vi-VN")} VNĐ
                         </span>
                       </li>
                     ))}
@@ -575,17 +427,11 @@ const EnhancedBookingPage: React.FC = () => {
                   Total: {formatTotal()}
                 </div>
                 <div className="mt-6">
-                  <p className="text-lg font-semibold mb-2">
-                    Scan QR Code to Pay:
-                  </p>
+                  <p className="text-lg font-semibold mb-2">Scan QR Code to Pay:</p>
                   {/* <QRCode value={paymentUrl} size={200} className="mx-auto" /> */}
                 </div>
                 <p className="mt-4 text-blue-600 text-center">
-                  <a
-                    href={paymentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={paymentUrl} target="_blank" rel="noopener noreferrer">
                     Click here to pay if QR code doesn't work
                   </a>
                 </p>
@@ -594,7 +440,7 @@ const EnhancedBookingPage: React.FC = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setShowCheckoutModal(false)}
-                    className="p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-300"
+                    className="p-3 bg-gray-200 rounded-lg hover:bg-gray-300"
                   >
                     Cancel
                   </motion.button>
@@ -602,7 +448,7 @@ const EnhancedBookingPage: React.FC = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handlePayment}
-                    className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                    className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
                     Confirm Payment
                   </motion.button>
@@ -616,14 +462,11 @@ const EnhancedBookingPage: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
             className="w-full lg:w-1/3 px-4 mb-8 lg:mb-0"
           >
             {loading ? (
               <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
-                <p className="text-lg text-gray-600">
-                  Loading service details...
-                </p>
+                <p className="text-lg text-gray-600">Loading service details...</p>
               </div>
             ) : service ? (
               <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -637,12 +480,8 @@ const EnhancedBookingPage: React.FC = () => {
                   }}
                 />
                 <div className="p-6">
-                  <h3 className="text-3xl font-bold text-gray-800 mb-4">
-                    {service.name}
-                  </h3>
-                  <p className="text-gray-600 mb-6 line-clamp-3">
-                    {service.description}
-                  </p>
+                  <h3 className="text-3xl font-bold text-gray-800 mb-4">{service.name}</h3>
+                  <p className="text-gray-600 mb-6 line-clamp-3">{service.description}</p>
                   <div className="flex justify-between items-center mb-4">
                     <div>
                       <p className="text-xl font-semibold text-yellow-500">
@@ -657,9 +496,7 @@ const EnhancedBookingPage: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center justify-center h-64 bg-red-100 rounded-lg">
-                <p className="text-lg text-red-600">
-                  Service not found. Please try again.
-                </p>
+                <p className="text-lg text-red-600">Service not found. Please try again.</p>
               </div>
             )}
           </motion.div>
@@ -667,84 +504,57 @@ const EnhancedBookingPage: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
             className="w-full lg:w-2/3 px-4"
           >
-            <h3 className="text-3xl font-bold mb-6 text-gray-800">
-              Booking Form
-            </h3>
-            <form
-              className="space-y-6 bg-white p-6 rounded-lg shadow-md"
-              onSubmit={handleSubmit}
-            >
+            <h3 className="text-3xl font-bold mb-6 text-gray-800">Booking Form</h3>
+            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
               <div>
-                <label className="block text-lg text-gray-700 mb-2">
-                  Name <span className="text-red-500">*</span>
-                </label>
+                <label className="block text-lg text-gray-700 mb-2">Name</label>
                 <input
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Enter your name"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
-                  required
+                  className="w-full p-3 border rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">
-                  Phone Number <span className="text-red-500">*</span>
-                </label>
+                <label className="block text-lg text-gray-700 mb-2">Phone</label>
                 <input
                   type="tel"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="Enter your phone number"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
-                  required
+                  className="w-full p-3 border rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">
-                  Email <span className="text-red-500">*</span>
-                </label>
+                <label className="block text-lg text-gray-700 mb-2">Email</label>
                 <input
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
-                  required
+                  className="w-full p-3 border rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">
-                  Choose Date <span className="text-red-500">*</span>
-                </label>
+                <label className="block text-lg text-gray-700 mb-2">Date</label>
                 <input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   min={getTodayDate()}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
-                  required
+                  className="w-full p-3 border rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">
-                  Choose Time Slot <span className="text-red-500">*</span>
-                </label>
+                <label className="block text-lg text-gray-700 mb-2">Time Slot</label>
                 <div className="grid grid-cols-4 gap-2">
                   {generateTimeSlots().map((slot) => (
                     <motion.button
                       key={slot}
                       type="button"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
                       onClick={() => setSelectedSlot(slot)}
-                      className={`p-2 border rounded-lg transition-colors duration-300 ${
-                        selectedSlot === slot
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100 hover:bg-gray-200"
+                      className={`p-2 border rounded-lg ${
+                        selectedSlot === slot ? "bg-blue-500 text-white" : "bg-gray-100"
                       }`}
                     >
                       {slot}
@@ -759,18 +569,14 @@ const EnhancedBookingPage: React.FC = () => {
                 <select
                   value={selectedTherapist ? selectedTherapist.id : ""}
                   onChange={(e) => {
-                    const therapist = therapists.find(
-                      (t) => t.id === e.target.value
-                    );
+                    const therapist = therapists.find((t) => t.id === e.target.value);
                     setSelectedTherapist(therapist || null);
                   }}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+                  className="w-full p-3 border rounded-lg"
                   disabled={therapists.length === 0}
                 >
                   <option value="">
-                    {therapists.length > 0
-                      ? "Select a therapist"
-                      : "No available therapists"}
+                    {therapists.length > 0 ? "Select a therapist" : "No therapists available"}
                   </option>
                   {therapists.map((therapist) => (
                     <option key={therapist.id} value={therapist.id}>
@@ -779,43 +585,26 @@ const EnhancedBookingPage: React.FC = () => {
                   ))}
                 </select>
               </div>
-
               <div>
-                <label className="block text-lg text-gray-700 mb-2">
-                  Notes (Optional)
-                </label>
+                <label className="block text-lg text-gray-700 mb-2">Notes</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Enter any additional notes"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+                  className="w-full p-3 border rounded-lg"
                   rows={3}
                 />
               </div>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
                 type="submit"
-                className="w-full p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 text-lg font-semibold"
+                className="w-full p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                disabled={!isLoggedIn}
               >
                 Book Now
               </motion.button>
             </form>
-            <p className="mt-6 text-gray-600 italic">
-              Note: If you don't select a therapist, one will be assigned to you
-              upon check-in at our facility.
-            </p>
           </motion.div>
         </div>
       </motion.div>
-      <ToastContainer
-        autoClose={3000}
-        position="top-right"
-        hideProgressBar={false}
-        limit={1}
-        pauseOnFocusLoss={false}
-        closeOnClick
-      />  
     </Layout>
   );
 };

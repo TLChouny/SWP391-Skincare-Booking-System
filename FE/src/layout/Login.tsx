@@ -59,8 +59,8 @@ const Login: React.FC = () => {
       } else if (data.role === "admin") {
         navigate("/admin");
       } else if (data.role === "staff") {
-        navigate("/staff");
-      } else if (data.role === "therapist") {
+        navigate("/staff/check-in");
+      } else if (data.role === "skincare_staff") {
         navigate("/therapist");
       }
     } catch (error) {

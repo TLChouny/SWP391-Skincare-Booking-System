@@ -27,7 +27,7 @@ import ManageQuestion from "../pages/admin/ManageQuestion";
 //staff
 import CheckIn from "../pages/Staff/CheckIn";
 import AssignSpecialists from "../pages/Staff/AssignSpecialists";
-import CheckOut from "../pages/Staff/CheckOut";
+// import CheckOut from "../pages/Staff/CheckOut";
 import AppointmentSchedules from "../pages/Staff/AppointmentSchedules";
 import StaffManagement from "../components/Staff/StaffManagement";
 
@@ -82,7 +82,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/staff" element={<StaffManagement />}>
             <Route path="check-in" element={<CheckIn />} />
             <Route path="assign-specialists" element={<AssignSpecialists />} />
-            <Route path="check-out" element={<CheckOut />} />
+            {/* <Route path="check-out" element={<CheckOut />} /> */}
             <Route
               path="appointment-schedules"
               element={<AppointmentSchedules />}
