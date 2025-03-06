@@ -6,7 +6,12 @@ function ManagePayment() {
   const columns = [
     { title: "Order Code", dataIndex: "orderCode", key: "orderCode" },
     { title: "Order Name", dataIndex: "orderName", key: "orderName" },
-    { title: "Amount", dataIndex: "amount", key: "amount" },
+    {
+      title: "Amount (VND)",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount: number) => amount.toLocaleString("vi-VN"),
+    },
     { title: "Status", dataIndex: "status", key: "status" },
   ];
 
@@ -49,7 +54,6 @@ function ManagePayment() {
       </Form.Item>
     </>
   );
- 
 
   return (
     <ManageTemplate
