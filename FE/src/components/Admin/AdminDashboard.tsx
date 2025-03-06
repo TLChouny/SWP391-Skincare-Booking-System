@@ -7,6 +7,7 @@ import {
   QrcodeOutlined,
   StarOutlined,
   QuestionOutlined,
+  ProductOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
@@ -34,7 +35,13 @@ function getItem(
 const items: MenuItem[] = [
   getItem("AdminOverview", "/admin", <DashboardOutlined />),
   getItem("UserManagement", "/admin/user-management", <UserOutlined />),
+  getItem(
+    "SevicesManagement",
+    "/admin/service-management",
+    <ProductOutlined />
+  ),
   getItem("CategoryManagement", "/admin/category-management", <ReadOutlined />),
+
   getItem("BlogManagement", "/admin/blog-management", <InboxOutlined />),
   getItem("PaymentManagement", "/admin/payment-management", <QrcodeOutlined />),
   getItem("RatingManagement", "/admin/rating-management", <StarOutlined />),

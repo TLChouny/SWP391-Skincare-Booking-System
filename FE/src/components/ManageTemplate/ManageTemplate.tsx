@@ -15,7 +15,7 @@ interface ManageTemplateProps {
   columns: Columns[];
   formItems?: React.ReactElement;
   apiEndpoint: string;
-  mode?: 'full' | 'view-only';
+  mode?: "full" | "view-only";
 }
 
 function ManageTemplate({
@@ -23,7 +23,7 @@ function ManageTemplate({
   title,
   formItems,
   apiEndpoint,
-  mode = 'full',
+  mode = "full",
 }: ManageTemplateProps) {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,8 +55,6 @@ function ManageTemplate({
   }, [apiEndpoint]);
 
   const handleCreate = async (values: any) => {
-    console.log("Creating with values:", values); // Thêm dòng này để kiểm tra dữ liệu
-
     try {
       await api.post(apiEndpoint, values);
       toast.success(`${title} created successfully`);
@@ -93,39 +91,43 @@ function ManageTemplate({
 
   const startEdit = (record: any) => {
     setEditingId(record._id);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      ...record,
+      category: record.category?._id,
+    });
     setShowModal(true);
   };
 
-  const columnsWithActions = mode === 'full' 
-    ? [
-        ...columns,
-        {
-          title: "Actions",
-          key: "actions",
-          render: (_, record: any) => (
-            <Space>
-              <Button
-                type='link'
-                icon={<EditOutlined />}
-                onClick={() => startEdit(record)}
-              />
-              <Popconfirm
-                title={`Are you sure you want to delete this ${title}?`}
-                onConfirm={() => handleDelete(record._id)}
-                okText='Yes'
-                cancelText='No'>
-                <Button type='link' danger icon={<DeleteOutlined />} />
-              </Popconfirm>
-            </Space>
-          ),
-        },
-      ]
-    : columns;
+  const columnsWithActions =
+    mode === "full"
+      ? [
+          ...columns,
+          {
+            title: "Actions",
+            key: "actions",
+            render: (_, record: any) => (
+              <Space>
+                <Button
+                  type='link'
+                  icon={<EditOutlined />}
+                  onClick={() => startEdit(record)}
+                />
+                <Popconfirm
+                  title={`Are you sure you want to delete this ${title}?`}
+                  onConfirm={() => handleDelete(record._id)}
+                  okText='Yes'
+                  cancelText='No'>
+                  <Button type='link' danger icon={<DeleteOutlined />} />
+                </Popconfirm>
+              </Space>
+            ),
+          },
+        ]
+      : columns;
 
   return (
     <div style={{ padding: "24px" }}>
-      {mode === 'full' && (
+      {mode === "full" && (
         <Button
           type='primary'
           onClick={() => {
@@ -145,7 +147,7 @@ function ManageTemplate({
         rowKey='_id'
       />
 
-      {mode === 'full' && formItems && (
+      {mode === "full" && formItems && (
         <Modal
           title={editingId ? `Edit ${title}` : `Create new ${title}`}
           open={showModal}

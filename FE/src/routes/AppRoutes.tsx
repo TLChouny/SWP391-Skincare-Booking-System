@@ -37,6 +37,7 @@ import TherapistManagement from "../components/Therapist/TherapistManagement";
 import ListOfAssigned from "../pages/Therapist/ListOfAssigned";
 import PerformService from "../pages/Therapist/PerformService";
 import Forgot_password from "../layout/Forgot_password";
+import ManageService from "../pages/admin/ManageService";
 
 //customer
 
@@ -45,9 +46,9 @@ const AppRoutes: React.FC = () => {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path='/' element={<HomePage />} />
           <Route
-            path="/forgot-password"
+            path='/forgot-password'
             element={
               <>
                 <Header />
@@ -55,42 +56,43 @@ const AppRoutes: React.FC = () => {
               </>
             }
           />
-          <Route path="/settings" element={<SettingPage />} />
-          <Route path="/booking/:id" element={<BookingPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/contact" element={<ContactPage />} />{" "}
-          <Route path="/services" element={<ServicePage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/test" element={<TestPage />} />
+          <Route path='/settings' element={<SettingPage />} />
+          <Route path='/booking/:id' element={<BookingPage />} />
+          <Route path='/checkout' element={<CheckoutPage />} />
+          <Route path='/contact' element={<ContactPage />} />{" "}
+          <Route path='/services' element={<ServicePage />} />
+          <Route path='/blog' element={<BlogPage />} />
+          <Route path='/test' element={<TestPage />} />
           {/* <Route path="/blog-details/:id" element={<BlogPage />} /> */}
-          <Route path="/admin" element={<AdminDashboard />}>
+          <Route path='/admin' element={<AdminDashboard />}>
             <Route index element={<AdminOverview />} />
-            <Route path="user-management" element={<ManageUser />} />
-            <Route path="category-management" element={<ManageCategory />} />
-            <Route path="blog-management" element={<ManageBlog />} />
-            <Route path="payment-management" element={<ManagePayment />} />
-            <Route path="rating-management" element={<ManageRating />} />
-            <Route path="question-management" element={<ManageQuestion />} />
+            <Route path='user-management' element={<ManageUser />} />
+            <Route path='service-management' element={<ManageService />} />
+            <Route path='category-management' element={<ManageCategory />} />
+            <Route path='blog-management' element={<ManageBlog />} />
+            <Route path='payment-management' element={<ManagePayment />} />
+            <Route path='rating-management' element={<ManageRating />} />
+            <Route path='question-management' element={<ManageQuestion />} />
           </Route>
           {/* The therapist router */}
-          <Route path="/therapist" element={<TherapistManagement />}>
-            <Route path="list-of-assigned" element={<ListOfAssigned />} />
-            <Route path="perfom-service" element={<PerformService />} />
-            <Route path="service-history" element={<ServiceHistory />} />
+          <Route path='/therapist' element={<TherapistManagement />}>
+            <Route path='list-of-assigned' element={<ListOfAssigned />} />
+            <Route path='perfom-service' element={<PerformService />} />
+            <Route path='service-history' element={<ServiceHistory />} />
           </Route>
           {/* Staff router */}
-          <Route path="/staff" element={<StaffManagement />}>
-            <Route path="check-in" element={<CheckIn />} />
-            <Route path="assign-specialists" element={<AssignSpecialists />} />
+          <Route path='/staff' element={<StaffManagement />}>
+            <Route path='check-in' element={<CheckIn />} />
+            <Route path='assign-specialists' element={<AssignSpecialists />} />
             {/* <Route path="check-out" element={<CheckOut />} /> */}
             <Route
-              path="appointment-schedules"
+              path='appointment-schedules'
               element={<AppointmentSchedules />}
             />
           </Route>
           {/* Login */}
           <Route
-            path="/login"
+            path='/login'
             element={
               <>
                 <Header />
@@ -99,7 +101,7 @@ const AppRoutes: React.FC = () => {
             }
           />
           <Route
-            path="/register"
+            path='/register'
             element={
               <>
                 <Header />
