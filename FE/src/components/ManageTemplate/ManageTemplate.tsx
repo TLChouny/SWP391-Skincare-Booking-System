@@ -16,7 +16,7 @@ interface ManageTemplateProps {
   columns: Columns[];
   formItems?: React.ReactElement;
   apiEndpoint: string;
-  mode?: "full" | "view-only";
+  mode?: "full" | "view-only" | "create-only";
 }
 
 function ManageTemplate({
@@ -53,11 +53,7 @@ function ManageTemplate({
       setData(responseData);
     } catch (error) {
       console.error("Fetch error:", error.response?.data || error);
-      if (error.response?.status === 401) {
-        message.error("Session expired. Please log in again.");
-      } else {
-        toast.error(`Error fetching ${title}`);
-      }
+      message.error(error.response?.data?.message || `Error fetching ${title}`);
       setData([]);
     } finally {
       setLoading(false);
@@ -69,39 +65,24 @@ function ManageTemplate({
   }, [apiEndpoint, token]);
 
   const handleCreate = async (values: any) => {
-    if (!token) {
-      message.error("Authentication required");
-      return;
-    }
+    if (!token || mode === "view-only") return;
     try {
       console.log("Sending Data to API:", JSON.stringify(values, null, 2));
       const response = await api.post(apiEndpoint, values, {
         headers: { "x-auth-token": token, "Content-Type": "application/json" },
       });
       console.log("API Response:", response.data);
-      if (response.status === 201 || response.status === 200) {
-        toast.success(`${title} created successfully`);
-        form.resetFields();
-        setShowModal(false);
-        fetchData();
-      } else {
-        throw new Error("Unexpected API response");
-      }
+      toast.success(`${title} created successfully`);
+      form.resetFields();
+      setShowModal(false);
+      fetchData();
     } catch (error) {
-      console.error("Create User Error:", error.response?.data || error);
-      if (error.response?.status === 400) {
-        message.error("Invalid data. Please check the form fields.");
-      } else if (error.response?.status === 500) {
-        message.error("Server error: Please check backend logs.");
-      } else {
-        message.error(
-          error.response?.data?.message || `Error creating ${title}`
-        );
-      }
+      message.error(error.response?.data?.message || `Error creating ${title}`);
     }
   };
 
   const handleEdit = async (values: any) => {
+    if (!token || mode !== "full") return;
     try {
       await api.put(`${apiEndpoint}/${editingId}`, values, {
         headers: { "x-auth-token": token },
@@ -117,6 +98,7 @@ function ManageTemplate({
   };
 
   const handleDelete = async (id: string) => {
+    if (!token || mode !== "full") return;
     try {
       await api.delete(`${apiEndpoint}/${id}`, {
         headers: { "x-auth-token": token },
@@ -129,6 +111,7 @@ function ManageTemplate({
   };
 
   const startEdit = (record: any) => {
+    if (mode !== "full") return;
     setEditingId(record._id);
     form.setFieldsValue(record);
     setShowModal(true);
@@ -160,11 +143,13 @@ function ManageTemplate({
             ),
           },
         ]
-      : columns;
+      : mode === "create-only"
+      ? [...columns] // Chỉ cho phép thêm mới, không sửa hoặc xóa
+      : columns; // "view-only" -> Không có hành động nào
 
   return (
     <div style={{ padding: "24px" }}>
-      {mode === "full" && (
+      {mode !== "view-only" && (
         <Button
           type="primary"
           onClick={() => {
@@ -173,6 +158,7 @@ function ManageTemplate({
             setShowModal(true);
           }}
           style={{ marginBottom: "16px" }}
+          disabled={mode === "view-only"} // Tắt nếu chỉ cho phép xem
         >
           Create new {title}
         </Button>
@@ -185,7 +171,7 @@ function ManageTemplate({
         rowKey="_id"
       />
 
-      {mode === "full" && formItems && (
+      {mode !== "view-only" && formItems && (
         <Modal
           title={editingId ? `Edit ${title}` : `Create new ${title}`}
           open={showModal}
