@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/apiService";
-import { Button, Form, Modal, Table, Space, Popconfirm } from "antd";
+import { Button, Form, Modal, Table, Space, Popconfirm, message } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 
 interface Columns {
@@ -25,6 +26,7 @@ function ManageTemplate({
   apiEndpoint,
   mode = "full",
 }: ManageTemplateProps) {
+  const { token } = useAuth();
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -32,9 +34,17 @@ function ManageTemplate({
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchData = async () => {
+    if (!token) {
+      message.error("Authentication required. Please log in.");
+      return;
+    }
     try {
       setLoading(true);
-      const res = await api.get(apiEndpoint);
+      console.log("Fetching data with token:", token);
+      const res = await api.get(apiEndpoint, {
+        headers: { "x-auth-token": token },
+      });
+      console.log("API Response Data:", res.data);
       const responseData = Array.isArray(res.data)
         ? res.data
         : res.data.data
@@ -42,8 +52,12 @@ function ManageTemplate({
         : [];
       setData(responseData);
     } catch (error) {
-      console.error("Fetch error:", error);
-      toast.error(`Error fetching ${title}`);
+      console.error("Fetch error:", error.response?.data || error);
+      if (error.response?.status === 401) {
+        message.error("Session expired. Please log in again.");
+      } else {
+        toast.error(`Error fetching ${title}`);
+      }
       setData([]);
     } finally {
       setLoading(false);
@@ -52,49 +66,71 @@ function ManageTemplate({
 
   useEffect(() => {
     fetchData();
-  }, [apiEndpoint]);
+  }, [apiEndpoint, token]);
 
   const handleCreate = async (values: any) => {
+    if (!token) {
+      message.error("Authentication required");
+      return;
+    }
     try {
-      await api.post(apiEndpoint, values);
-      toast.success(`${title} created successfully`);
-      form.resetFields();
-      setShowModal(false);
-      fetchData();
+      console.log("Sending Data to API:", JSON.stringify(values, null, 2));
+      const response = await api.post(apiEndpoint, values, {
+        headers: { "x-auth-token": token, "Content-Type": "application/json" },
+      });
+      console.log("API Response:", response.data);
+      if (response.status === 201 || response.status === 200) {
+        toast.success(`${title} created successfully`);
+        form.resetFields();
+        setShowModal(false);
+        fetchData();
+      } else {
+        throw new Error("Unexpected API response");
+      }
     } catch (error) {
-      toast.error(`Error creating ${title}`);
+      console.error("Create User Error:", error.response?.data || error);
+      if (error.response?.status === 400) {
+        message.error("Invalid data. Please check the form fields.");
+      } else if (error.response?.status === 500) {
+        message.error("Server error: Please check backend logs.");
+      } else {
+        message.error(
+          error.response?.data?.message || `Error creating ${title}`
+        );
+      }
     }
   };
 
   const handleEdit = async (values: any) => {
     try {
-      await api.put(`${apiEndpoint}/${editingId}`, values);
+      await api.put(`${apiEndpoint}/${editingId}`, values, {
+        headers: { "x-auth-token": token },
+      });
       toast.success(`${title} updated successfully`);
       form.resetFields();
       setShowModal(false);
       setEditingId(null);
       fetchData();
     } catch (error) {
-      toast.error(`Error updating ${title}`);
+      message.error(error.response?.data?.message || `Error updating ${title}`);
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      await api.delete(`${apiEndpoint}/${id}`);
+      await api.delete(`${apiEndpoint}/${id}`, {
+        headers: { "x-auth-token": token },
+      });
       toast.success(`${title} deleted successfully`);
       fetchData();
     } catch (error) {
-      toast.error(`Error deleting ${title}`);
+      message.error(error.response?.data?.message || `Error deleting ${title}`);
     }
   };
 
   const startEdit = (record: any) => {
     setEditingId(record._id);
-    form.setFieldsValue({
-      ...record,
-      category: record.category?._id,
-    });
+    form.setFieldsValue(record);
     setShowModal(true);
   };
 
@@ -108,16 +144,17 @@ function ManageTemplate({
             render: (_, record: any) => (
               <Space>
                 <Button
-                  type='link'
+                  type="link"
                   icon={<EditOutlined />}
                   onClick={() => startEdit(record)}
                 />
                 <Popconfirm
                   title={`Are you sure you want to delete this ${title}?`}
                   onConfirm={() => handleDelete(record._id)}
-                  okText='Yes'
-                  cancelText='No'>
-                  <Button type='link' danger icon={<DeleteOutlined />} />
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button type="link" danger icon={<DeleteOutlined />} />
                 </Popconfirm>
               </Space>
             ),
@@ -129,13 +166,14 @@ function ManageTemplate({
     <div style={{ padding: "24px" }}>
       {mode === "full" && (
         <Button
-          type='primary'
+          type="primary"
           onClick={() => {
             setEditingId(null);
             form.resetFields();
             setShowModal(true);
           }}
-          style={{ marginBottom: "16px" }}>
+          style={{ marginBottom: "16px" }}
+        >
           Create new {title}
         </Button>
       )}
@@ -144,7 +182,7 @@ function ManageTemplate({
         columns={columnsWithActions}
         dataSource={data}
         loading={loading}
-        rowKey='_id'
+        rowKey="_id"
       />
 
       {mode === "full" && formItems && (
@@ -156,11 +194,13 @@ function ManageTemplate({
             setEditingId(null);
             form.resetFields();
           }}
-          onOk={() => form.submit()}>
+          onOk={() => form.submit()}
+        >
           <Form
             form={form}
             labelCol={{ span: 24 }}
-            onFinish={editingId ? handleEdit : handleCreate}>
+            onFinish={editingId ? handleEdit : handleCreate}
+          >
             {formItems}
           </Form>
         </Modal>
