@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Form, Input, Select } from "antd";
+import { Form, Input, Select, message } from "antd";
 import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
+
 function ManageUser() {
-  const { token, user, setUser } = useAuth();
+  const { token } = useAuth();
   const title = "user";
+  const [users, setUsers] = useState([]);
+  const [form] = Form.useForm();
+
   const columns = [
-    { title: "ID", dataIndex: "_id", key: "_id" },
     { title: "Name", dataIndex: "username", key: "username" },
+    { title: "Email", dataIndex: "email", key: "email" },
     { title: "Phone", dataIndex: "phone_number", key: "phone_number" },
     { title: "Gender", dataIndex: "gender", key: "gender" },
     { title: "Address", dataIndex: "address", key: "address" },
@@ -39,7 +43,6 @@ function ManageUser() {
     }
   }, [token]);
 
-
   const handleCreateUser = async (values) => {
     if (!token) {
       message.error("Authentication required");
@@ -62,25 +65,13 @@ function ManageUser() {
       );
       console.log("Create User Response:", response.data);
       message.success("User created successfully!");
-      setShowModal(false);
       form.resetFields();
       fetchUsers();
     } catch (error) {
       console.error("Create User Error:", error.response?.data || error);
-      if (error.response?.status === 400) {
-        message.error("Invalid input data. Please check your form.");
-      } else if (error.response?.status === 500) {
-        console.error("Server error details:", error.response?.data);
-        message.error(
-          "Server error: " +
-            (error.response?.data?.message || "Please check backend logs.")
-        );
-      } else {
-        message.error(error.response?.data?.message || "Failed to create user");
-      }
+      message.error(error.response?.data?.message || "Failed to create user");
     }
   };
-
 
   const formItems = (
     <>
@@ -94,21 +85,36 @@ function ManageUser() {
       <Form.Item
         name="password"
         label="Password"
-        rules={[{ required: true, message: "Please input password" }]}
+        rules={[
+          { required: true, message: "Please input password" },
+          { min: 8, message: "Password must be at least 8 characters" },
+        ]}
       >
         <Input.Password />
       </Form.Item>
       <Form.Item
         name="email"
         label="Email"
-        rules={[{ required: true, message: "Please input email" }]}
+        rules={[
+          { required: true, message: "Please input email" },
+          {
+            pattern: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
+            message: "Email must be in the format of @gmail.com",
+          },
+        ]}
       >
         <Input />
       </Form.Item>
       <Form.Item
         name="phone_number"
         label="Phone Number"
-        rules={[{ required: true, message: "Please input phone number" }]}
+        rules={[
+          { required: true, message: "Please input phone number" },
+          {
+            pattern: /^\d{10}$/,
+            message: "Phone number must be exactly 10 digits",
+          },
+        ]}
       >
         <Input />
       </Form.Item>
@@ -136,7 +142,8 @@ function ManageUser() {
       >
         <Select>
           <Select.Option value="admin">Admin</Select.Option>
-          <Select.Option value="user">User</Select.Option>
+          <Select.Option value="skincare_staff">Skincare Staff</Select.Option>
+          <Select.Option value="staff">Staff</Select.Option>
         </Select>
       </Form.Item>
     </>
@@ -149,6 +156,7 @@ function ManageUser() {
         columns={columns}
         formItems={formItems}
         apiEndpoint="/users"
+        mode="create-only" // Chỉ cho phép tạo, không sửa, không xóa
       />
     </div>
   );
