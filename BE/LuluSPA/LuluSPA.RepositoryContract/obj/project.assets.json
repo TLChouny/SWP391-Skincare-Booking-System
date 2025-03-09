@@ -2851,11 +2851,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj",
+      "projectUniqueName": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\New folder\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj",
       "projectName": "LuluSPA.RepositoryContract",
-      "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj",
+      "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\New folder\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\LuluSPA.RepositoryContract.csproj",
       "packagesPath": "C:\\Users\\tnqt3\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\obj\\",
+      "outputPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\New folder\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.RepositoryContract\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -2877,11 +2877,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Common\\LuluSPA.Common.csproj": {
-              "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Common\\LuluSPA.Common.csproj"
+            "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\New folder\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.Common\\LuluSPA.Common.csproj": {
+              "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\New folder\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.Common\\LuluSPA.Common.csproj"
             },
-            "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Data\\LuluSPA.Data.csproj": {
-              "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Data\\LuluSPA.Data.csproj"
+            "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\New folder\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.Data\\LuluSPA.Data.csproj": {
+              "projectPath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\New folder\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.Data\\LuluSPA.Data.csproj"
             }
           }
         }

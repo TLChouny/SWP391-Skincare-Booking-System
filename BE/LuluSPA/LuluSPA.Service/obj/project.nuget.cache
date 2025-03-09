@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "JWSWbLY41M4=",
+  "dgSpecHash": "7+XoJ/jI998=",
   "success": true,
-  "projectFilePath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\Github\\BE\\LuluSPA\\LuluSPA.Service\\LuluSPA.Service.csproj",
+  "projectFilePath": "C:\\Users\\tnqt3\\OneDrive\\Máy tính\\New folder\\SWP391-Skincare-Booking-System\\BE\\LuluSPA\\LuluSPA.Service\\LuluSPA.Service.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\tnqt3\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\tnqt3\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
