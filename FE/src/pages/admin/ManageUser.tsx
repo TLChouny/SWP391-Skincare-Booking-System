@@ -10,7 +10,7 @@ interface User {
   email: string;
   phone_number: string;
   gender: string;
-  description: string;
+  Description: string;
   address: string;
   role: string;
 }
@@ -27,7 +27,7 @@ function ManageUser() {
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Phone", dataIndex: "phone_number", key: "phone_number" },
     { title: "Gender", dataIndex: "gender", key: "gender" },
-    { title: "Description", dataIndex: "description", key: "description" },
+    { title: "Description", dataIndex: "Description", key: "Description" },
     { title: "Address", dataIndex: "address", key: "address" },
     { title: "Role", dataIndex: "role", key: "role" },
   ];
@@ -148,7 +148,7 @@ function ManageUser() {
         </Select>
       </Form.Item>
       <Form.Item
-        name="description"
+        name="Description"
         label="Description"
         rules={[{ required: true, message: "Please input description" }]}
       >

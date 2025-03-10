@@ -41,7 +41,7 @@ const createUser = [
   check("gender", "Giới tính không hợp lệ")
     .optional()
     .isIn(["male", "female", "other"]),
-    check("Description", "Mô tả không hợp lệ").optional().isString(),
+  check("Description", "Mô tả không hợp lệ").optional().isString(),
   check("address", "Địa chỉ không hợp lệ").optional().isString(),
 
   async (req, res) => {

@@ -42,6 +42,7 @@ interface Booking {
 const ListOfAssigned: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const API_BASE_URL = "http://localhost:5000/api";
 
   useEffect(() => {
@@ -50,11 +51,16 @@ const ListOfAssigned: React.FC = () => {
 
   const fetchAssignedBookings = async () => {
     setLoading(true);
+    setError(null); // Reset lỗi trước khi fetch
     try {
       const token = localStorage.getItem("authToken");
-      const therapistName = localStorage.getItem("therapistName"); // Giả định tên therapist được lưu ở đây
-      if (!token || !therapistName) {
-        throw new Error("Please log in as a therapist to view assigned bookings.");
+      const therapistName = localStorage.getItem("name"); // Giả định tên therapist lấy từ 'username'
+
+      if (!token) {
+        throw new Error("No authentication token found. Please log in.");
+      }
+      if (!therapistName) {
+        throw new Error("Therapist name not found. Please ensure you are logged in as a therapist.");
       }
 
       const response = await fetch(`${API_BASE_URL}/cart?status=pending,checked-in`, {
@@ -76,7 +82,9 @@ const ListOfAssigned: React.FC = () => {
       setBookings(filteredBookings);
     } catch (error) {
       console.error("Error fetching assigned bookings:", error);
-      toast.error(error instanceof Error ? error.message : "Unable to load assigned bookings.");
+      const errorMessage = error instanceof Error ? error.message : "Unable to load assigned bookings.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -108,8 +116,8 @@ const ListOfAssigned: React.FC = () => {
           "x-auth-token": token,
         },
         body: JSON.stringify({
-          status: "completed", // Cập nhật trạng thái thành "completed"
-          action: "checkout", // Cho phép checkout
+          status: "completed",
+          action: "checkout",
         }),
       });
 
@@ -136,6 +144,8 @@ const ListOfAssigned: React.FC = () => {
       <h1 className="text-3xl font-bold text-center mb-6">Assigned Bookings</h1>
       {loading ? (
         <p className="text-center text-gray-600">Loading assigned bookings...</p>
+      ) : error ? (
+        <p className="text-center text-red-600">{error}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
@@ -205,6 +215,15 @@ const ListOfAssigned: React.FC = () => {
           </table>
         </div>
       )}
+      <div className="text-center mt-6">
+        <button
+          onClick={fetchAssignedBookings}
+          className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition-all duration-300"
+          disabled={loading}
+        >
+          {loading ? "Refreshing..." : "Refresh Bookings"}
+        </button>
+      </div>
     </div>
   );
 };
