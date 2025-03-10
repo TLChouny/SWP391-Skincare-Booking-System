@@ -63,6 +63,8 @@ const Header: React.FC = () => {
         return "/staff";
       case "therapist":
         return "/therapist";
+      case "user":
+        return "/dashboard";
       default:
         return "/dashboard"; // Mặc định cho user thường
     }

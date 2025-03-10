@@ -40,7 +40,7 @@ import Forgot_password from "../layout/Forgot_password";
 import ManageService from "../pages/admin/ManageService";
 
 //customer
-
+import ProfileUser from "../pages/Customer/Customer_profile";
 const AppRoutes: React.FC = () => {
   return (
     <AuthProvider>
@@ -90,6 +90,8 @@ const AppRoutes: React.FC = () => {
               element={<AppointmentSchedules />}
             />
           </Route>
+          {/* Staff router */}
+          <Route path='/dashboard' element={<ProfileUser />} />
           {/* Login */}
           <Route
             path='/login'

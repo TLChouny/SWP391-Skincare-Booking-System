@@ -5,6 +5,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Layout from "../../layout/Layout";
 
+// Giả sử bạn có một AuthContext để quản lý trạng thái đăng nhập
+import { useAuth } from "../../context/AuthContext"; // Cần được triển khai thực tế
+
 interface Service {
   _id: string;
   service_id: number;
@@ -31,6 +34,7 @@ const ServicePage: React.FC = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth(); // Lấy trạng thái xác thực từ context
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -90,7 +94,15 @@ const ServicePage: React.FC = () => {
   };
 
   const handleServiceClick = (serviceId: string) => {
-    navigate(`/booking/${serviceId}`);
+    if (isAuthenticated) {
+      // Nếu người dùng đã đăng nhập, chuyển hướng đến trang đặt lịch
+      navigate(`/booking/${serviceId}`);
+    } else {
+      // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập với URL đích
+      navigate("/login", {
+        state: { from: `/booking/${serviceId}` },
+      });
+    }
   };
 
   return (
@@ -142,7 +154,7 @@ const ServicePage: React.FC = () => {
                     (e.target as HTMLImageElement).src = "/default-image.jpg";
                   }}
                 />
-                    <p className="text-lg font-bold text-gray-900 mb-2">{formatPrice(service.price)}</p>
+                <p className="text-lg font-bold text-gray-900 mb-2">{formatPrice(service.price)}</p>
 
                 {hoveredService === service._id && (
                   <motion.div
@@ -156,7 +168,6 @@ const ServicePage: React.FC = () => {
                     <p className="text-md text-gray-700">{service.description}</p>
                     <p className="text-md">Duration: {service.duration || "N/A"} minutes</p>
                     <p className="text-lg font-bold text-gray-900 mb-2">{formatPrice(service.price)}</p>
-
                   </motion.div>
                 )}
               </motion.div>

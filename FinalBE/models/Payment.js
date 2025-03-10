@@ -8,7 +8,7 @@ const PaymentSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ["pending", "success", "failed", "cancelled"],
-    default: "success",
+    default: "pending",
   },
   returnUrl: { type: String },
   cancelUrl: { type: String },
