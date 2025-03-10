@@ -41,6 +41,7 @@ const createUser = [
   check("gender", "Giới tính không hợp lệ")
     .optional()
     .isIn(["male", "female", "other"]),
+    check("Description", "Mô tả không hợp lệ").optional().isString(),
   check("address", "Địa chỉ không hợp lệ").optional().isString(),
 
   async (req, res) => {
@@ -57,6 +58,7 @@ const createUser = [
         role,
         phone_number,
         gender,
+        Description,
         address,
         avatar,
       } = req.body;
@@ -77,6 +79,7 @@ const createUser = [
         isVerified: false,
         phone_number,
         gender,
+        Description,
         address,
         avatar: avatar || "default-avatar.png",
       });
@@ -151,7 +154,7 @@ const verifyEmail = async (req, res) => {
 
 // ✅ Cập nhật thông tin người dùng
 const updateUser = async (req, res) => {
-  const { username, email, role, phone_number, gender, avatar, password } =
+  const { username, email, role, phone_number, gender, Description, address, avatar, password } =
     req.body;
 
   try {

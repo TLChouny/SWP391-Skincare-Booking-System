@@ -246,7 +246,6 @@ const Register: React.FC = () => {
                   <option value='male'>Male</option>
                   <option value='female'>Female</option>
                 </select>
-
                 <label className='text-sm font-medium text-left text-gray-700'>
                   Address
                 </label>

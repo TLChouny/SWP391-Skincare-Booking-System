@@ -21,6 +21,8 @@ router.post(
       .optional()
       .isIn(["male", "female", "other"]),
     check("address", "Địa chỉ không hợp lệ").optional().isString(),
+    check("Description", "Mô tả không hợp lệ").optional().isString(),
+
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -35,6 +37,7 @@ router.post(
       role,
       phone_number,
       gender,
+      Description,
       address,
       avatar,
     } = req.body;
@@ -56,6 +59,7 @@ router.post(
         isVerified: false,
         phone_number,
         gender,
+        Description,
         address,
         avatar: avatar || "default-avatar.png",
       });
