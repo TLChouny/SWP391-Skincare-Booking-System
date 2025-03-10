@@ -3,7 +3,7 @@ import api from "../../api/apiService";
 import { Button, Form, Modal, Table, Space, Popconfirm, message } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useAuth } from "../../context/AuthContext";
-import { toast } from "react-toastify";
+import {ToastContainer, toast } from "react-toastify";
 
 interface Columns {
   title: string;
@@ -167,6 +167,8 @@ function ManageTemplate({
 
   return (
     <div style={{ padding: "24px" }}>
+          <ToastContainer/>
+
       {(mode === "full" || mode === "create-only") && (
   <Button
     type="primary"
