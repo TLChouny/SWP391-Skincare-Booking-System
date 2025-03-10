@@ -1,8 +1,16 @@
-import { Form, Input, InputNumber, Select } from "antd";
+import { Form, Input, InputNumber, Select, Tag } from "antd";
 import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
 
 function ManagePayment() {
   const title = "Payment";
+
+  const statusColors: Record<string, string> = {
+    pending: "gold",
+    success: "green",
+    failed: "red",
+    cancelled: "gray",
+  };
+
   const columns = [
     { title: "Order Code", dataIndex: "orderCode", key: "orderCode" },
     { title: "Order Name", dataIndex: "orderName", key: "orderName" },
@@ -12,7 +20,16 @@ function ManagePayment() {
       key: "amount",
       render: (amount: number) => amount.toLocaleString("vi-VN"),
     },
-    { title: "Status", dataIndex: "status", key: "status" },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status: string) => (
+        <Tag color={statusColors[status] || "default"}>
+          {status.toUpperCase()}
+        </Tag>
+      ),
+    },
   ];
 
   const formItems = (
