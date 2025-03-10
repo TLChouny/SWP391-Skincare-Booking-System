@@ -4,10 +4,21 @@ import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 
+interface User {
+  _id: string;
+  username: string;
+  email: string;
+  phone_number: string;
+  gender: string;
+  description: string;
+  address: string;
+  role: string;
+}
+
 function ManageUser() {
   const { token } = useAuth();
   const title = "user";
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [form] = Form.useForm();
   const [editingId, setEditingId] = useState(null);
 
@@ -16,6 +27,7 @@ function ManageUser() {
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Phone", dataIndex: "phone_number", key: "phone_number" },
     { title: "Gender", dataIndex: "gender", key: "gender" },
+    { title: "Description", dataIndex: "description", key: "description" },
     { title: "Address", dataIndex: "address", key: "address" },
     { title: "Role", dataIndex: "role", key: "role" },
   ];
@@ -32,7 +44,7 @@ function ManageUser() {
       });
       console.log("Fetched users:", response.data);
       setUsers(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Fetch Users Error:", error.response?.data || error);
       message.error(error.response?.data?.message || "Failed to fetch users");
     }
@@ -44,7 +56,7 @@ function ManageUser() {
     }
   }, [token]);
 
-  const handleCreateUser = async (values) => {
+  const handleCreateUser = async (values: any) => {
     if (!token) {
       message.error("Authentication required");
       return;
@@ -68,7 +80,7 @@ function ManageUser() {
       message.success("User created successfully!");
       form.resetFields();
       fetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Create User Error:", error.response?.data || error);
       message.error(error.response?.data?.message || "Failed to create user");
     }
@@ -76,7 +88,7 @@ function ManageUser() {
 
   const formItems = (editingId: string | null) => {
     // Lấy thông tin user đang edit từ danh sách users
-    const editingUser = editingId ? users.find(user => user._id === editingId) : null;
+    const editingUser = editingId ? users.find((user: any) => user._id === editingId) : null;
     
     return (
     <>
@@ -134,6 +146,13 @@ function ManageUser() {
           <Select.Option value="male">Male</Select.Option>
           <Select.Option value="female">Female</Select.Option>
         </Select>
+      </Form.Item>
+      <Form.Item
+        name="description"
+        label="Description"
+        rules={[{ required: true, message: "Please input description" }]}
+      >
+        <Input />
       </Form.Item>
       <Form.Item
         name="address"

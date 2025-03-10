@@ -85,7 +85,7 @@ const Forgot_password: React.FC = () => {
       setConfirmPassword("");
       setOtp("");
       navigate("/login");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Lỗi API:", error.response?.data || error.message);
       message.error(error.response?.data?.msg || "Lỗi khi đặt lại mật khẩu!");
     }

@@ -51,7 +51,7 @@ function ManageTemplate({
         ? res.data.data
         : [];
       setData(responseData);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Fetch error:", error.response?.data || error);
       message.error(error.response?.data?.message || `Error fetching ${title}`);
       setData([]);
@@ -76,7 +76,7 @@ function ManageTemplate({
       form.resetFields();
       setShowModal(false);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       message.error(error.response?.data?.message || `Error creating ${title}`);
     }
   };
@@ -92,7 +92,7 @@ function ManageTemplate({
       setShowModal(false);
       setEditingId(null);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       message.error(error.response?.data?.message || `Error updating ${title}`);
     }
   };
@@ -105,7 +105,7 @@ function ManageTemplate({
       });
       toast.success(`${title} deleted successfully`);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       message.error(error.response?.data?.message || `Error deleting ${title}`);
     }
   };
@@ -124,7 +124,7 @@ function ManageTemplate({
         {
           title: "Actions",
           key: "actions",
-          render: (_, record: any) => (
+          render: (_: any, record: any) => (
             <Space>
               <Button
                 type="link"
@@ -149,7 +149,7 @@ function ManageTemplate({
         {
           title: "Actions",
           key: "actions",
-          render: (_, record: any) => (
+          render: (_: any, record: any) => (
             <Popconfirm
               title={`Are you sure you want to delete this ${title}?`}
               onConfirm={() => handleDelete(record._id)}
