@@ -1,30 +1,35 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useEffect, useState } from "react"
-import { Layout, Avatar, Dropdown, Menu, Badge } from "antd"
-import { UserOutlined, BellOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons"
-import { Link, useNavigate } from "react-router-dom"
-import logo from "../../assets/logo7.png"
+import type React from "react";
+import { useEffect, useState } from "react";
+import { Layout, Avatar, Dropdown, Menu, Badge } from "antd";
+import {
+  UserOutlined,
+  BellOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+} from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../../assets/logo7.png";
 
-const { Header } = Layout
+const { Header } = Layout;
 
 const AdminHeader: React.FC = () => {
-  const navigate = useNavigate()
-  const [user, setUser] = useState<{ username: string } | null>(null)
+  const navigate = useNavigate();
+  const [user, setUser] = useState<{ username: string } | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser))
+      setUser(JSON.parse(storedUser));
     }
-  }, [])
+  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("user")
-    localStorage.removeItem("authToken")
-    navigate("/login")
-  }
+    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
+    navigate("/login");
+  };
 
   // Custom styles for the dropdown menu
   const dropdownMenuStyle = {
@@ -52,7 +57,7 @@ const AdminHeader: React.FC = () => {
     logoutText: {
       color: "#f5222d",
     },
-  }
+  };
 
   // Custom menu component to apply our styles
   const userMenu = (
@@ -72,6 +77,7 @@ const AdminHeader: React.FC = () => {
           label: "Settings",
           style: dropdownMenuStyle.item,
           className: "hover:bg-yellow-50",
+          onClick: () => navigate("/settings"),
         },
         {
           type: "divider",
@@ -79,7 +85,11 @@ const AdminHeader: React.FC = () => {
         },
         {
           key: "logout",
-          icon: <LogoutOutlined style={{ ...dropdownMenuStyle.icon, color: "#f5222d" }} />,
+          icon: (
+            <LogoutOutlined
+              style={{ ...dropdownMenuStyle.icon, color: "#f5222d" }}
+            />
+          ),
           label: <span style={dropdownMenuStyle.logoutText}>Log Out</span>,
           onClick: handleLogout,
           style: dropdownMenuStyle.item,
@@ -87,7 +97,7 @@ const AdminHeader: React.FC = () => {
         },
       ]}
     />
-  )
+  );
 
   return (
     <Header
@@ -102,17 +112,20 @@ const AdminHeader: React.FC = () => {
         alignItems: "center",
         justifyContent: "space-between",
         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-      <div className="flex items-center">
-        <Link to="/">
-          <img src={logo || "/placeholder.svg"} alt="LuLuSpa Logo" className="w-16 h-16 rounded-full" />
+      }}>
+      <div className='flex items-center'>
+        <Link to='/'>
+          <img
+            src={logo || "/placeholder.svg"}
+            alt='LuLuSpa Logo'
+            className='w-16 h-16 rounded-full'
+          />
         </Link>
-        <div className="text-xl font-semibold ml-4 p">Welcome</div>
+        <div className='text-xl font-semibold ml-4 p'>Welcome</div>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-        <Badge count={5} size="small">
+        <Badge count={5} size='small'>
           <BellOutlined
             style={{
               fontSize: "20px",
@@ -124,7 +137,10 @@ const AdminHeader: React.FC = () => {
           />
         </Badge>
 
-        <Dropdown overlay={userMenu} placement="bottomRight" trigger={["click"]}>
+        <Dropdown
+          overlay={userMenu}
+          placement='bottomRight'
+          trigger={["click"]}>
           <div
             style={{
               cursor: "pointer",
@@ -136,8 +152,7 @@ const AdminHeader: React.FC = () => {
               borderRadius: "8px",
               transition: "all 0.2s",
             }}
-            className="hover:bg-yellow-300/30"
-          >
+            className='hover:bg-yellow-300/30'>
             <Avatar
               icon={<UserOutlined />}
               style={{
@@ -147,25 +162,23 @@ const AdminHeader: React.FC = () => {
             />
             {user && <span style={{ fontWeight: 500 }}>{user.username}</span>}
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ color: "#666" }}
-            >
-              <path d="m6 9 6 6 6-6" />
+              xmlns='http://www.w3.org/2000/svg'
+              width='16'
+              height='16'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              style={{ color: "#666" }}>
+              <path d='m6 9 6 6 6-6' />
             </svg>
           </div>
         </Dropdown>
       </div>
     </Header>
-  )
-}
+  );
+};
 
-export default AdminHeader
-
+export default AdminHeader;
