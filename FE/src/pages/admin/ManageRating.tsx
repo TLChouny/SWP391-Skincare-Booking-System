@@ -1,11 +1,15 @@
-import { Form, Input } from "antd";
+import { Form, Input, Rate } from "antd";
 import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
 
 function ManageRating() {
   const title = "rating";
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Rating", dataIndex: "rating", key: "rating" },
+    { title: "ServiceName", dataIndex: "serviceName", key: "serviceName" },
+    { title: "Rating", dataIndex: "serviceRating", key: "serviceRating" ,render: (rating: number) => <Rate disabled defaultValue={rating} />,},
+    { title: "Comment", dataIndex: "serviceContent", key: "serviceContent" },
+    { title: "User Rating", dataIndex: "createName", key: "createName" },
+
+    
   ];
 
   const formItems = (
@@ -24,7 +28,7 @@ function ManageRating() {
 
   return (
     <div>
-      <ManageTemplate title={title} columns={columns} formItems={formItems} />
+      <ManageTemplate title={title} columns={columns} formItems={formItems} apiEndpoint="/ratings" mode="delete-only"/>
     </div>
   );
 }

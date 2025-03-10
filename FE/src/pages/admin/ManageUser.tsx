@@ -9,6 +9,7 @@ function ManageUser() {
   const title = "user";
   const [users, setUsers] = useState([]);
   const [form] = Form.useForm();
+  const [editingId, setEditingId] = useState(null);
 
   const columns = [
     { title: "Name", dataIndex: "username", key: "username" },
@@ -73,7 +74,11 @@ function ManageUser() {
     }
   };
 
-  const formItems = (
+  const formItems = (editingId: string | null) => {
+    // Lấy thông tin user đang edit từ danh sách users
+    const editingUser = editingId ? users.find(user => user._id === editingId) : null;
+    
+    return (
     <>
       <Form.Item
         name="username"
@@ -82,16 +87,18 @@ function ManageUser() {
       >
         <Input />
       </Form.Item>
-      <Form.Item
-        name="password"
-        label="Password"
-        rules={[
-          { required: true, message: "Please input password" },
-          { min: 8, message: "Password must be at least 8 characters" },
-        ]}
-      >
-        <Input.Password />
-      </Form.Item>
+      {!editingId && (
+        <Form.Item
+          name="password"
+          label="Password"
+          rules={[
+            { required: true, message: "Please input password" },
+            { min: 8, message: "Password must be at least 8 characters" },
+          ]}
+        >
+          <Input.Password />
+        </Form.Item>
+      )}
       <Form.Item
         name="email"
         label="Email"
@@ -140,14 +147,14 @@ function ManageUser() {
         label="Role"
         rules={[{ required: true, message: "Please select role" }]}
       >
-        <Select>
+        <Select disabled={editingUser?.role === 'admin'}>
           <Select.Option value="admin">Admin</Select.Option>
           <Select.Option value="skincare_staff">Skincare Staff</Select.Option>
           <Select.Option value="staff">Staff</Select.Option>
         </Select>
       </Form.Item>
     </>
-  );
+  )};
 
   return (
     <div>
@@ -156,7 +163,7 @@ function ManageUser() {
         columns={columns}
         formItems={formItems}
         apiEndpoint="/users"
-        mode="create-only" // Chỉ cho phép tạo, không sửa, không xóa
+        mode="full"
       />
     </div>
   );

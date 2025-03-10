@@ -16,7 +16,7 @@ interface ManageTemplateProps {
   columns: Columns[];
   formItems?: React.ReactElement;
   apiEndpoint: string;
-  mode?: "full" | "view-only" | "create-only";
+  mode?: "full" | "view-only" | "create-only"|"delete-only";
 }
 
 function ManageTemplate({
@@ -98,7 +98,7 @@ function ManageTemplate({
   };
 
   const handleDelete = async (id: string) => {
-    if (!token || mode !== "full") return;
+    if (!token || mode !== "full" && mode !== "delete-only") return;
     try {
       await api.delete(`${apiEndpoint}/${id}`, {
         headers: { "x-auth-token": token },
@@ -118,51 +118,68 @@ function ManageTemplate({
   };
 
   const columnsWithActions =
-    mode === "full"
-      ? [
-          ...columns,
-          {
-            title: "Actions",
-            key: "actions",
-            render: (_, record: any) => (
-              <Space>
-                <Button
-                  type="link"
-                  icon={<EditOutlined />}
-                  onClick={() => startEdit(record)}
-                />
-                <Popconfirm
-                  title={`Are you sure you want to delete this ${title}?`}
-                  onConfirm={() => handleDelete(record._id)}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Button type="link" danger icon={<DeleteOutlined />} />
-                </Popconfirm>
-              </Space>
-            ),
-          },
-        ]
-      : mode === "create-only"
-      ? [...columns] // Chỉ cho phép thêm mới, không sửa hoặc xóa
-      : columns; // "view-only" -> Không có hành động nào
+  mode === "full"
+    ? [
+        ...columns,
+        {
+          title: "Actions",
+          key: "actions",
+          render: (_, record: any) => (
+            <Space>
+              <Button
+                type="link"
+                icon={<EditOutlined />}
+                onClick={() => startEdit(record)}
+              />
+              <Popconfirm
+                title={`Are you sure you want to delete this ${title}?`}
+                onConfirm={() => handleDelete(record._id)}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button type="link" danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+            </Space>
+          ),
+        },
+      ]
+    : mode === "delete-only"
+    ? [
+        ...columns,
+        {
+          title: "Actions",
+          key: "actions",
+          render: (_, record: any) => (
+            <Popconfirm
+              title={`Are you sure you want to delete this ${title}?`}
+              onConfirm={() => handleDelete(record._id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="link" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          ),
+        },
+      ]
+    : mode === "create-only"
+    ? [...columns]
+    : columns; // "view-only" -> No actions
 
   return (
     <div style={{ padding: "24px" }}>
-      {mode !== "view-only" && (
-        <Button
-          type="primary"
-          onClick={() => {
-            setEditingId(null);
-            form.resetFields();
-            setShowModal(true);
-          }}
-          style={{ marginBottom: "16px" }}
-          disabled={mode === "view-only"} // Tắt nếu chỉ cho phép xem
-        >
-          Create new {title}
-        </Button>
-      )}
+      {(mode === "full" || mode === "create-only") && (
+  <Button
+    type="primary"
+    onClick={() => {
+      setEditingId(null);
+      form.resetFields();
+      setShowModal(true);
+    }}
+    style={{ marginBottom: "16px" }}
+  >
+    Create new {title}
+  </Button>
+)}
 
       <Table
         columns={columnsWithActions}
