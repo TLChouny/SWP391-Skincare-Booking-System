@@ -55,7 +55,7 @@ function ManageUser() {
         JSON.stringify(values, null, 2)
       );
       const response = await axios.post(
-        "http://localhost:5000/api/users/",
+        "http://localhost:500/api/users/",
         values,
         {
           headers: {
