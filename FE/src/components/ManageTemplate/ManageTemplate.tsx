@@ -14,7 +14,7 @@ interface Columns {
 interface ManageTemplateProps {
   title: string;
   columns: Columns[];
-  formItems?: React.ReactElement;
+  formItems?: React.ReactElement | ((editingId: string | null) => React.ReactElement);
   apiEndpoint: string;
   mode?: "full" | "view-only" | "create-only";
 }
@@ -187,7 +187,7 @@ function ManageTemplate({
             labelCol={{ span: 24 }}
             onFinish={editingId ? handleEdit : handleCreate}
           >
-            {formItems}
+            {typeof formItems === 'function' ? formItems(editingId) : formItems}
           </Form>
         </Modal>
       )}
