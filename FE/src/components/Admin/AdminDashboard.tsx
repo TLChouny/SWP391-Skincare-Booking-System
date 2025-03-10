@@ -8,6 +8,7 @@ import {
   StarOutlined,
   QuestionOutlined,
   ProductOutlined,
+  MoneyCollectOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
@@ -40,6 +41,12 @@ const items: MenuItem[] = [
     "/admin/service-management",
     <ProductOutlined />
   ),
+  getItem(
+    "VoucherManagement",
+    "/admin/voucher-management",
+    <MoneyCollectOutlined />
+  ),
+
   getItem("CategoryManagement", "/admin/category-management", <ReadOutlined />),
 
   getItem("BlogManagement", "/admin/blog-management", <InboxOutlined />),

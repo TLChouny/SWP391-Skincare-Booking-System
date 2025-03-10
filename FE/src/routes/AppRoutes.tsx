@@ -41,6 +41,7 @@ import ManageService from "../pages/admin/ManageService";
 
 //customer
 import ProfileUser from "../pages/Customer/Customer_profile";
+import ManageVoucher from "../pages/admin/ManageVoucher";
 const AppRoutes: React.FC = () => {
   return (
     <AuthProvider>
@@ -68,6 +69,7 @@ const AppRoutes: React.FC = () => {
             <Route index element={<AdminOverview />} />
             <Route path='user-management' element={<ManageUser />} />
             <Route path='service-management' element={<ManageService />} />
+            <Route path='voucher-management' element={<ManageVoucher />} />
             <Route path='category-management' element={<ManageCategory />} />
             <Route path='blog-management' element={<ManageBlog />} />
             <Route path='payment-management' element={<ManagePayment />} />
@@ -84,7 +86,7 @@ const AppRoutes: React.FC = () => {
           <Route path='/staff' element={<StaffManagement />}>
             <Route path='check-in' element={<CheckIn />} />
             <Route path='assign-specialists' element={<AssignSpecialists />} />
-            <Route path="check-out" element={<CheckOut />} />
+            <Route path='check-out' element={<CheckOut />} />
             <Route
               path='appointment-schedules'
               element={<AppointmentSchedules />}
