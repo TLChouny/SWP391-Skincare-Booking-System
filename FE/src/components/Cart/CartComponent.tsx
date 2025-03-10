@@ -1,7 +1,7 @@
-// components/CartComponent.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
+import { useAuth } from "../../context/AuthContext";
 
 interface Therapist {
   id: string;
@@ -28,27 +28,31 @@ interface Booking {
 }
 
 interface CartComponentProps {
-  cart: Booking[];
-  setCart: React.Dispatch<React.SetStateAction<Booking[]>>;
-  fetchCart: () => Promise<void>;
   handleCheckout?: () => Promise<void>;
   isBookingPage?: boolean;
 }
 
 const CartComponent: React.FC<CartComponentProps> = ({
-  cart,
-  setCart,
-  fetchCart,
   handleCheckout,
   isBookingPage = false,
 }) => {
+  const { cart, fetchCart, loadingCart, cartError } = useAuth();
   const [showCart, setShowCart] = useState<boolean>(false);
-  const API_BASE_URL = "http://localhost:5000/api";
 
-  // Calculate total price of pending or checked-in items
+  useEffect(() => {
+    const loadCart = async () => {
+      try {
+        await fetchCart();
+      } catch (err: any) {
+        toast.error("Failed to load cart: " + err.message);
+      }
+    };
+    loadCart();
+  }, [fetchCart]);
+
   const calculateTotal = (): number => {
     return cart
-      .filter((item) =>  item.status === "checked-in")
+      .filter((item) => item.status === "checked-in")
       .reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   };
 
@@ -84,7 +88,11 @@ const CartComponent: React.FC<CartComponentProps> = ({
             className="fixed top-36 right-4 bg-white p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[70vh] overflow-y-auto"
           >
             <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Cart</h3>
-            {cart.length > 0 ? (
+            {loadingCart ? (
+              <p className="text-gray-600">Loading cart...</p>
+            ) : cartError ? (
+              <p className="text-red-600">{cartError}</p>
+            ) : cart.length > 0 ? (
               <>
                 {cart.map((item, index) => (
                   <motion.div key={item.CartID || index} className="mb-4 border-b pb-2">
@@ -105,16 +113,18 @@ const CartComponent: React.FC<CartComponentProps> = ({
                     >
                       Status: {item.status}
                     </p>
-                    {/* View-only, không có nút Check-out hoặc Hủy */}
                   </motion.div>
                 ))}
+                <p className="text-lg font-semibold text-gray-800 mt-4">
+                  Total: {formatTotal()}
+                </p>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleCheckout || (() => (window.location.href = "/booking"))}
-                  disabled={!cart.some((item) => item.status === "checked-in" )}
+                  disabled={!cart.some((item) => item.status === "checked-in")}
                   className={`w-full p-3 rounded-lg mt-4 ${
-                    cart.some((item) => item.status === "checked-in" )
+                    cart.some((item) => item.status === "checked-in")
                       ? "bg-blue-600 text-white hover:bg-blue-700"
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}

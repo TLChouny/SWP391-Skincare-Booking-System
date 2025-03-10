@@ -9,7 +9,7 @@ import { AuthProvider } from "../context/AuthContext";
 //homepage
 import ServicePage from "../pages/Home/Servicepage";
 import SettingPage from "../pages/Home/Settingpage";
-import CheckoutPage from "../pages/Home/CheckoutPage";
+// import CheckoutPage from "../pages/Home/CheckoutPage";
 import ContactPage from "../pages/Home/ContactPage";
 import BlogPage from "../pages/Home/Blogpage";
 import TestPage from "../pages/Home/SkinAssessmentQuiz";
@@ -27,7 +27,7 @@ import ManageQuestion from "../pages/admin/ManageQuestion";
 //staff
 import CheckIn from "../pages/Staff/CheckIn";
 import AssignSpecialists from "../pages/Staff/AssignSpecialists";
-// import CheckOut from "../pages/Staff/CheckOut";
+import CheckOut from "../pages/Staff/CheckOut";
 import AppointmentSchedules from "../pages/Staff/AppointmentSchedules";
 import StaffManagement from "../components/Staff/StaffManagement";
 
@@ -58,7 +58,7 @@ const AppRoutes: React.FC = () => {
           />
           <Route path='/settings' element={<SettingPage />} />
           <Route path='/booking/:id' element={<BookingPage />} />
-          <Route path='/checkout' element={<CheckoutPage />} />
+          {/* <Route path='/checkout' element={<CheckoutPage />} /> */}
           <Route path='/contact' element={<ContactPage />} />{" "}
           <Route path='/services' element={<ServicePage />} />
           <Route path='/blog' element={<BlogPage />} />
@@ -84,7 +84,7 @@ const AppRoutes: React.FC = () => {
           <Route path='/staff' element={<StaffManagement />}>
             <Route path='check-in' element={<CheckIn />} />
             <Route path='assign-specialists' element={<AssignSpecialists />} />
-            {/* <Route path="check-out" element={<CheckOut />} /> */}
+            <Route path="check-out" element={<CheckOut />} />
             <Route
               path='appointment-schedules'
               element={<AppointmentSchedules />}

@@ -58,9 +58,9 @@ const Header: React.FC = () => {
   const getDashboardLink = () => {
     switch (role) {
       case "admin":
-        return "/admin-dashboard";
+        return "/admin";
       case "staff":
-        return "/staff/ch";
+        return "/staff";
       case "therapist":
         return "/therapist";
       default:

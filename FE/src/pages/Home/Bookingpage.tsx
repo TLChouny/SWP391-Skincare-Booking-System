@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Layout from "../../layout/Layout";
 import CartComponent from "../../components/Cart/CartComponent";
+import { useAuth } from "../../context/AuthContext";
 
 interface Service {
   _id: string;
@@ -45,65 +46,46 @@ interface Booking {
   selectedTherapist?: Therapist | null;
   Skincare_staff?: string;
   totalPrice?: number;
-  status: "pending" | "checked-in" | "completed" | "cancelled"; // Đồng bộ với CartComponent và HomePage
-  action?: "checkin" | "checkout" | null; // Thêm action để đồng bộ
+  status: "pending" | "checked-in" | "completed" | "cancelled";
+  action?: "checkin" | "checkout" | null;
 }
 
 const EnhancedBookingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { cart, fetchCart, user, token, isAuthenticated } = useAuth();
   const [service, setService] = useState<Service | null>(null);
   const [therapists, setTherapists] = useState<Therapist[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingTherapists, setLoadingTherapists] = useState<boolean>(false);
+  const [therapistError, setTherapistError] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
-  const [customerEmail, setCustomerEmail] = useState<string>("");
+  const [customerEmail, setCustomerEmail] = useState<string>(user?.username || "");
   const [notes, setNotes] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
-  const [cart, setCart] = useState<Booking[]>([]);
   const [paymentUrl, setPaymentUrl] = useState<string>("");
   const [qrCode, setQrCode] = useState<string>("");
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const API_BASE_URL = "http://localhost:5000/api";
 
-  // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     setIsLoggedIn(!!storedUser);
   }, []);
 
-  const fetchCart = async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
-      const response = await fetch(`${API_BASE_URL}/cart`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": token,
-        },
-      });
-      if (!response.ok) throw new Error(`Failed to fetch cart: ${response.status}`);
-      const data = await response.json();
-      console.log("Cart data from server:", data);
-      setCart(data);
-    } catch (error) {
-      console.error("Error fetching cart:", error);
-      toast.error("Không thể tải giỏ hàng.");
-    }
-  };
+  useEffect(() => {
+    setCustomerEmail(user?.username || "");
+  }, [user]);
 
   const addToCart = async (bookingData: any) => {
     try {
-      const token = localStorage.getItem("authToken");
       if (!token) {
         throw new Error("Bạn cần đăng nhập để thêm vào giỏ hàng.");
       }
-
-      console.log("Booking data gửi lên server:", JSON.stringify(bookingData, null, 2));
 
       const response = await fetch(`${API_BASE_URL}/cart`, {
         method: "POST",
@@ -121,8 +103,6 @@ const EnhancedBookingPage: React.FC = () => {
         );
       }
 
-      const result = await response.json();
-      console.log("Response from add to cart:", result);
       await fetchCart();
       toast.success("Đã thêm dịch vụ vào giỏ hàng.");
     } catch (error: any) {
@@ -211,7 +191,7 @@ const EnhancedBookingPage: React.FC = () => {
   };
 
   const handleCheckout = async () => {
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
       toast.warning("Please log in to proceed with checkout.");
       return;
     }
@@ -263,7 +243,6 @@ const EnhancedBookingPage: React.FC = () => {
 
   const handlePayment = async () => {
     try {
-      const token = localStorage.getItem("authToken");
       if (!token) throw new Error("Please log in to confirm payment.");
 
       await Promise.all(
@@ -312,17 +291,18 @@ const EnhancedBookingPage: React.FC = () => {
     };
 
     fetchService();
-    if (isLoggedIn) fetchCart();
-    else setCart([]);
-  }, [id, isLoggedIn]);
+    if (isAuthenticated) fetchCart();
+  }, [id, isAuthenticated, fetchCart]);
 
   useEffect(() => {
     const fetchTherapists = async () => {
-      const token = localStorage.getItem("authToken");
       if (!token) {
+        setTherapistError("Bạn chưa đăng nhập.");
         toast.error("Bạn chưa đăng nhập.");
         return;
       }
+      setLoadingTherapists(true);
+      setTherapistError(null);
       try {
         const response = await fetch(`${API_BASE_URL}/users/skincare-staff`, {
           method: "GET",
@@ -331,23 +311,33 @@ const EnhancedBookingPage: React.FC = () => {
             "x-auth-token": token,
           },
         });
-        if (!response.ok) throw new Error(`Failed to fetch therapists: ${response.status}`);
+        console.log("Therapist fetch response status:", response.status);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            `Failed to fetch therapists: ${response.status} - ${errorData.message || "Unknown error"}`
+          );
+        }
         const data = await response.json();
+        console.log("Therapist data:", data);
         setTherapists(
           data.map((staff: any) => ({
             id: staff._id,
-            name: staff.username,
+            name: staff.username || staff.name || "Unknown",
             image: staff.avatar || "/default-avatar.png",
           }))
         );
-      } catch (error) {
-        console.error("Error fetching therapists:", error);
-        toast.error("Không thể tải danh sách chuyên viên.");
+      } catch (error: any) {
+        console.error("Error fetching therapists:", error.message);
+        setTherapistError(`Không thể tải danh sách chuyên viên: ${error.message}`);
+        toast.error(`Không thể tải danh sách chuyên viên: ${error.message}`);
+      } finally {
+        setLoadingTherapists(false);
       }
     };
 
-    if (isLoggedIn) fetchTherapists();
-  }, [isLoggedIn]);
+    if (isAuthenticated) fetchTherapists();
+  }, [isAuthenticated, token]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -355,19 +345,27 @@ const EnhancedBookingPage: React.FC = () => {
 
     const bookingData = {
       service_id: service.service_id,
+      serviceName: service.name,
+      bookingDate: selectedDate,
       startTime: selectedSlot,
       customerName,
       customerEmail,
       customerPhone,
       notes: notes || undefined,
-      Skincare_staff: selectedTherapist?.id || undefined,
-      discountCode: undefined,
+      Skincare_staff: selectedTherapist?.name || undefined,
+      totalPrice:
+        typeof service.price === "number"
+          ? service.price
+          : service.price?.$numberDecimal
+          ? parseFloat(service.price.$numberDecimal)
+          : 0,
+      status: "pending" as const,
     };
 
     await addToCart(bookingData);
     setCustomerName("");
     setCustomerPhone("");
-    setCustomerEmail("");
+    setCustomerEmail(user?.username || "");
     setNotes("");
     setSelectedDate("");
     setSelectedSlot(null);
@@ -379,15 +377,8 @@ const EnhancedBookingPage: React.FC = () => {
       <motion.div className="container mx-auto py-16 relative">
         <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">Book Your Service</h2>
 
-        {/* Chỉ hiển thị CartComponent khi đăng nhập */}
-        {isLoggedIn && (
-          <CartComponent
-            cart={cart}
-            setCart={setCart}
-            fetchCart={fetchCart}
-            handleCheckout={handleCheckout}
-            isBookingPage={true}
-          />
+        {isAuthenticated && (
+          <CartComponent handleCheckout={handleCheckout} isBookingPage={true} />
         )}
 
         <AnimatePresence>
@@ -407,14 +398,14 @@ const EnhancedBookingPage: React.FC = () => {
                 <h3 className="text-2xl font-semibold mb-6 text-gray-800">Confirm Payment</h3>
                 <ul className="space-y-4">
                   {cart
-                    .filter((item) => item.status === "pending")
+                    .filter((item) => item.status === "checked-in")
                     .map((item, index) => (
                       <li key={item.CartID || index} className="flex justify-between py-2 border-b">
                         <div>
                           <p className="font-semibold text-gray-800">{item.serviceName}</p>
                           <p className="text-gray-600">{item.bookingDate} - {item.startTime}</p>
                           {item.Skincare_staff && (
-                            <p className="text-gray-600">Therapist ID: {item.Skincare_staff}</p>
+                            <p className="text-gray-600">Therapist: {item.Skincare_staff}</p>
                           )}
                         </div>
                         <span className="font-bold text-gray-800">
@@ -428,6 +419,7 @@ const EnhancedBookingPage: React.FC = () => {
                 </div>
                 <div className="mt-6">
                   <p className="text-lg font-semibold mb-2">Scan QR Code to Pay:</p>
+                  {/* Uncomment and import QRCode component if needed */}
                   {/* <QRCode value={paymentUrl} size={200} className="mx-auto" /> */}
                 </div>
                 <p className="mt-4 text-blue-600 text-center">
@@ -566,24 +558,30 @@ const EnhancedBookingPage: React.FC = () => {
                 <label className="block text-lg text-gray-700 mb-2">
                   Choose Therapist (Optional)
                 </label>
-                <select
-                  value={selectedTherapist ? selectedTherapist.id : ""}
-                  onChange={(e) => {
-                    const therapist = therapists.find((t) => t.id === e.target.value);
-                    setSelectedTherapist(therapist || null);
-                  }}
-                  className="w-full p-3 border rounded-lg"
-                  disabled={therapists.length === 0}
-                >
-                  <option value="">
-                    {therapists.length > 0 ? "Select a therapist" : "No therapists available"}
-                  </option>
-                  {therapists.map((therapist) => (
-                    <option key={therapist.id} value={therapist.id}>
-                      {therapist.name}
+                {loadingTherapists ? (
+                  <p className="text-gray-600">Loading therapists...</p>
+                ) : therapistError ? (
+                  <p className="text-red-600">{therapistError}</p>
+                ) : (
+                  <select
+                    value={selectedTherapist ? selectedTherapist.id : ""}
+                    onChange={(e) => {
+                      const therapist = therapists.find((t) => t.id === e.target.value);
+                      setSelectedTherapist(therapist || null);
+                    }}
+                    className="w-full p-3 border rounded-lg"
+                    disabled={therapists.length === 0}
+                  >
+                    <option value="">
+                      {therapists.length > 0 ? "Select a therapist" : "No therapists available"}
                     </option>
-                  ))}
-                </select>
+                    {therapists.map((therapist) => (
+                      <option key={therapist.id} value={therapist.id}>
+                        {therapist.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
               <div>
                 <label className="block text-lg text-gray-700 mb-2">Notes</label>
@@ -597,7 +595,7 @@ const EnhancedBookingPage: React.FC = () => {
               <motion.button
                 type="submit"
                 className="w-full p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                disabled={!isLoggedIn}
+                disabled={!isAuthenticated}
               >
                 Book Now
               </motion.button>
