@@ -46,7 +46,7 @@ interface Booking {
   selectedTherapist?: Therapist | null;
   Skincare_staff?: string;
   totalPrice?: number;
-  status: "pending" | "checked-in" | "completed" | "cancelled";
+  status: "pending" | "checked-in" | "completed" | "checked-out" | "cancel";
   action?: "checkin" | "checkout" | null;
 }
 
@@ -60,7 +60,9 @@ const EnhancedBookingPage: React.FC = () => {
   const [therapistError, setTherapistError] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
-  const [customerEmail, setCustomerEmail] = useState<string>(user?.username || "");
+  const [customerEmail, setCustomerEmail] = useState<string>(
+    user?.username || user?.email || ""
+  );
   const [notes, setNotes] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
@@ -78,7 +80,7 @@ const EnhancedBookingPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    setCustomerEmail(user?.username || "");
+    setCustomerEmail(user?.email || user?.username || "");
   }, [user]);
 
   const addToCart = async (bookingData: any) => {
@@ -86,6 +88,8 @@ const EnhancedBookingPage: React.FC = () => {
       if (!token) {
         throw new Error("Bạn cần đăng nhập để thêm vào giỏ hàng.");
       }
+
+      console.log("📌 Dữ liệu gửi lên API:", bookingData);
 
       const response = await fetch(`${API_BASE_URL}/cart`, {
         method: "POST",
@@ -99,10 +103,14 @@ const EnhancedBookingPage: React.FC = () => {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          `Failed to add to cart: ${response.status} - ${errorData.message || "Bad Request"}`
+          `Failed to add to cart: ${response.status} - ${
+            errorData.message || "Bad Request"
+          }`
         );
       }
 
+      const responseData = await response.json();
+      console.log("📌 API Response:", responseData);
       await fetchCart();
       toast.success("Đã thêm dịch vụ vào giỏ hàng.");
     } catch (error: any) {
@@ -144,7 +152,7 @@ const EnhancedBookingPage: React.FC = () => {
 
   const calculateTotal = (): number => {
     return cart
-      .filter((item) => item.status === "checked-in")
+      .filter((item) => item.status === "completed") // Updated to "completed" for checkout
       .reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   };
 
@@ -196,9 +204,9 @@ const EnhancedBookingPage: React.FC = () => {
       return;
     }
 
-    const pendingItems = cart.filter((item) => item.status === "checked-in");
-    if (pendingItems.length === 0) {
-      toast.error("No pending items in the cart to checkout.");
+    const completedItems = cart.filter((item) => item.status === "completed");
+    if (completedItems.length === 0) {
+      toast.error("No completed items in the cart to checkout.");
       return;
     }
 
@@ -247,7 +255,7 @@ const EnhancedBookingPage: React.FC = () => {
 
       await Promise.all(
         cart
-          .filter((item) => item.status === "pending")
+          .filter((item) => item.status === "completed")
           .map((item) =>
             fetch(`${API_BASE_URL}/cart/${item.CartID}`, {
               method: "PUT",
@@ -255,16 +263,17 @@ const EnhancedBookingPage: React.FC = () => {
                 "Content-Type": "application/json",
                 "x-auth-token": token,
               },
-              body: JSON.stringify({ status: "completed", action: null }),
+              body: JSON.stringify({ status: "checked-out" }), // Updated to "checked-out"
             }).then((res) => {
-              if (!res.ok) throw new Error(`Failed to update cart item ${item.CartID}`);
+              if (!res.ok)
+                throw new Error(`Failed to update cart item ${item.CartID}`);
             })
           )
       );
 
       await fetchCart();
       setShowCheckoutModal(false);
-      toast.success("Thanh toán thành công!");
+      toast.success("Thanh toán và check-out thành công!");
     } catch (error) {
       console.error("Error updating cart status:", error);
       toast.error("Lỗi khi cập nhật trạng thái thanh toán.");
@@ -278,7 +287,8 @@ const EnhancedBookingPage: React.FC = () => {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
-        if (!response.ok) throw new Error(`Failed to fetch service: ${response.status}`);
+        if (!response.ok)
+          throw new Error(`Failed to fetch service: ${response.status}`);
         const productsData = await response.json();
         const foundService = productsData.find((s: Service) => s._id === id);
         setService(foundService || null);
@@ -311,15 +321,15 @@ const EnhancedBookingPage: React.FC = () => {
             "x-auth-token": token,
           },
         });
-        console.log("Therapist fetch response status:", response.status);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            `Failed to fetch therapists: ${response.status} - ${errorData.message || "Unknown error"}`
+            `Failed to fetch therapists: ${response.status} - ${
+              errorData.message || "Unknown error"
+            }`
           );
         }
         const data = await response.json();
-        console.log("Therapist data:", data);
         setTherapists(
           data.map((staff: any) => ({
             id: staff._id,
@@ -329,7 +339,9 @@ const EnhancedBookingPage: React.FC = () => {
         );
       } catch (error: any) {
         console.error("Error fetching therapists:", error.message);
-        setTherapistError(`Không thể tải danh sách chuyên viên: ${error.message}`);
+        setTherapistError(
+          `Không thể tải danh sách chuyên viên: ${error.message}`
+        );
         toast.error(`Không thể tải danh sách chuyên viên: ${error.message}`);
       } finally {
         setLoadingTherapists(false);
@@ -341,13 +353,24 @@ const EnhancedBookingPage: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!validateForm() || !service) return;
+    if (!validateForm() || !service || !user?.username) {
+      toast.error("Vui lòng nhập đầy đủ thông tin!");
+      return;
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
+      toast.error("Ngày đặt lịch không hợp lệ!");
+      return;
+    }
+
+    console.log("📌 Selected Date from Form:", selectedDate);
 
     const bookingData = {
+      username: user.username,
       service_id: service.service_id,
       serviceName: service.name,
       bookingDate: selectedDate,
-      startTime: selectedSlot,
+      startTime: selectedSlot!,
       customerName,
       customerEmail,
       customerPhone,
@@ -359,23 +382,22 @@ const EnhancedBookingPage: React.FC = () => {
           : service.price?.$numberDecimal
           ? parseFloat(service.price.$numberDecimal)
           : 0,
-      status: "pending" as const,
+      status: "pending",
     };
 
+    console.log("📌 Dữ liệu gửi lên API:", bookingData);
     await addToCart(bookingData);
-    setCustomerName("");
-    setCustomerPhone("");
-    setCustomerEmail(user?.username || "");
-    setNotes("");
+
     setSelectedDate("");
     setSelectedSlot(null);
-    setSelectedTherapist(null);
   };
 
   return (
     <Layout>
       <motion.div className="container mx-auto py-16 relative">
-        <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">Book Your Service</h2>
+        <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">
+          Book Your Service
+        </h2>
 
         {isAuthenticated && (
           <CartComponent handleCheckout={handleCheckout} isBookingPage={true} />
@@ -395,17 +417,28 @@ const EnhancedBookingPage: React.FC = () => {
                 exit={{ scale: 0.9, opacity: 0 }}
                 className="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full"
               >
-                <h3 className="text-2xl font-semibold mb-6 text-gray-800">Confirm Payment</h3>
+                <h3 className="text-2xl font-semibold mb-6 text-gray-800">
+                  Confirm Payment
+                </h3>
                 <ul className="space-y-4">
                   {cart
-                    .filter((item) => item.status === "checked-in")
+                    .filter((item) => item.status === "completed")
                     .map((item, index) => (
-                      <li key={item.CartID || index} className="flex justify-between py-2 border-b">
+                      <li
+                        key={item.CartID || index}
+                        className="flex justify-between py-2 border-b"
+                      >
                         <div>
-                          <p className="font-semibold text-gray-800">{item.serviceName}</p>
-                          <p className="text-gray-600">{item.bookingDate} - {item.startTime}</p>
+                          <p className="font-semibold text-gray-800">
+                            {item.serviceName}
+                          </p>
+                          <p className="text-gray-600">
+                            {item.bookingDate} - {item.startTime}
+                          </p>
                           {item.Skincare_staff && (
-                            <p className="text-gray-600">Therapist: {item.Skincare_staff}</p>
+                            <p className="text-gray-600">
+                              Therapist: {item.Skincare_staff}
+                            </p>
                           )}
                         </div>
                         <span className="font-bold text-gray-800">
@@ -418,12 +451,16 @@ const EnhancedBookingPage: React.FC = () => {
                   Total: {formatTotal()}
                 </div>
                 <div className="mt-6">
-                  <p className="text-lg font-semibold mb-2">Scan QR Code to Pay:</p>
-                  {/* Uncomment and import QRCode component if needed */}
-                  {/* <QRCode value={paymentUrl} size={200} className="mx-auto" /> */}
+                  <p className="text-lg font-semibold mb-2">
+                    Scan QR Code to Pay:
+                  </p>
                 </div>
                 <p className="mt-4 text-blue-600 text-center">
-                  <a href={paymentUrl} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={paymentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Click here to pay if QR code doesn't work
                   </a>
                 </p>
@@ -458,7 +495,9 @@ const EnhancedBookingPage: React.FC = () => {
           >
             {loading ? (
               <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
-                <p className="text-lg text-gray-600">Loading service details...</p>
+                <p className="text-lg text-gray-600">
+                  Loading service details...
+                </p>
               </div>
             ) : service ? (
               <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -472,8 +511,12 @@ const EnhancedBookingPage: React.FC = () => {
                   }}
                 />
                 <div className="p-6">
-                  <h3 className="text-3xl font-bold text-gray-800 mb-4">{service.name}</h3>
-                  <p className="text-gray-600 mb-6 line-clamp-3">{service.description}</p>
+                  <h3 className="text-3xl font-bold text-gray-800 mb-4">
+                    {service.name}
+                  </h3>
+                  <p className="text-gray-600 mb-6 line-clamp-3">
+                    {service.description}
+                  </p>
                   <div className="flex justify-between items-center mb-4">
                     <div>
                       <p className="text-xl font-semibold text-yellow-500">
@@ -488,7 +531,9 @@ const EnhancedBookingPage: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center justify-center h-64 bg-red-100 rounded-lg">
-                <p className="text-lg text-red-600">Service not found. Please try again.</p>
+                <p className="text-lg text-red-600">
+                  Service not found. Please try again.
+                </p>
               </div>
             )}
           </motion.div>
@@ -498,8 +543,13 @@ const EnhancedBookingPage: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             className="w-full lg:w-2/3 px-4"
           >
-            <h3 className="text-3xl font-bold mb-6 text-gray-800">Booking Form</h3>
-            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-3xl font-bold mb-6 text-gray-800">
+              Booking Form
+            </h3>
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-6 bg-white p-6 rounded-lg shadow-md"
+            >
               <div>
                 <label className="block text-lg text-gray-700 mb-2">Name</label>
                 <input
@@ -510,7 +560,9 @@ const EnhancedBookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Phone</label>
+                <label className="block text-lg text-gray-700 mb-2">
+                  Phone
+                </label>
                 <input
                   type="tel"
                   value={customerPhone}
@@ -519,7 +571,9 @@ const EnhancedBookingPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Email</label>
+                <label className="block text-lg text-gray-700 mb-2">
+                  Email
+                </label>
                 <input
                   type="email"
                   value={customerEmail}
@@ -532,13 +586,20 @@ const EnhancedBookingPage: React.FC = () => {
                 <input
                   type="date"
                   value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
+                  onChange={(e) => {
+                    const newDate = e.target.value;
+                    setSelectedDate(newDate);
+                    console.log("Date Changed:", newDate);
+                  }}
                   min={getTodayDate()}
                   className="w-full p-3 border rounded-lg"
+                  required
                 />
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Time Slot</label>
+                <label className="block text-lg text-gray-700 mb-2">
+                  Time Slot
+                </label>
                 <div className="grid grid-cols-4 gap-2">
                   {generateTimeSlots().map((slot) => (
                     <motion.button
@@ -546,7 +607,9 @@ const EnhancedBookingPage: React.FC = () => {
                       type="button"
                       onClick={() => setSelectedSlot(slot)}
                       className={`p-2 border rounded-lg ${
-                        selectedSlot === slot ? "bg-blue-500 text-white" : "bg-gray-100"
+                        selectedSlot === slot
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-100"
                       }`}
                     >
                       {slot}
@@ -566,14 +629,18 @@ const EnhancedBookingPage: React.FC = () => {
                   <select
                     value={selectedTherapist ? selectedTherapist.id : ""}
                     onChange={(e) => {
-                      const therapist = therapists.find((t) => t.id === e.target.value);
+                      const therapist = therapists.find(
+                        (t) => t.id === e.target.value
+                      );
                       setSelectedTherapist(therapist || null);
                     }}
                     className="w-full p-3 border rounded-lg"
                     disabled={therapists.length === 0}
                   >
                     <option value="">
-                      {therapists.length > 0 ? "Select a therapist" : "No therapists available"}
+                      {therapists.length > 0
+                        ? "Select a therapist"
+                        : "No therapists available"}
                     </option>
                     {therapists.map((therapist) => (
                       <option key={therapist.id} value={therapist.id}>
@@ -584,7 +651,9 @@ const EnhancedBookingPage: React.FC = () => {
                 )}
               </div>
               <div>
-                <label className="block text-lg text-gray-700 mb-2">Notes</label>
+                <label className="block text-lg text-gray-700 mb-2">
+                  Notes
+                </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}

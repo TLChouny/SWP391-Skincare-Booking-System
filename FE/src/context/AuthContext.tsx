@@ -1,39 +1,26 @@
-import React, { 
-  createContext, 
-  useContext, 
-  useState, 
-  useEffect, 
-  ReactNode, 
-  useCallback 
-} from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { toast } from "react-toastify";
 
 interface User {
   username: string;
   role: string;
+  email?: string;
 }
 
-interface Therapist {
-  id: string;
-  name: string;
-  image?: string;
-}
-
-interface Booking {
-  CartID?: string;
-  service_id: number;
+export interface Booking {
+  CartID: string;
+  username: string;
   serviceName: string;
   customerName: string;
-  customerPhone: string;
   customerEmail: string;
-  notes?: string;
+  customerPhone: string;
   bookingDate: string;
   startTime: string;
   endTime?: string;
-  selectedTherapist?: Therapist | null;
+  totalPrice: number;
+  status: "pending" | "checked-in" | "completed" | "checked-out" | "cancel";
   Skincare_staff?: string;
-  totalPrice?: number;
-  status: "pending" | "checked-in" | "completed" | "cancelled";
-  action?: "checkin" | "checkout" | null;
+  notes?: string;
 }
 
 interface AuthContextType {
@@ -45,6 +32,7 @@ interface AuthContextType {
   setCart: React.Dispatch<React.SetStateAction<Booking[]>>;
   isAuthenticated: boolean;
   fetchCart: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   loadingCart: boolean;
   cartError: string | null;
 }
@@ -68,32 +56,64 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       localStorage.setItem("authToken", token);
     } else {
       localStorage.removeItem("authToken");
-      setCart([]); // Clear cart on logout
+      localStorage.removeItem("user");
       setUser(null);
+      setCart([]);
     }
   }, [token]);
 
   useEffect(() => {
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
-    } else {
-      localStorage.removeItem("user");
-      setCart([]); // Clear cart if user logs out
     }
   }, [user]);
 
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) throw new Error("Đăng nhập thất bại!");
+
+      const data = await response.json();
+      setToken(data.token);
+      setUser({
+        username: data.username,
+        role: data.role || "user",
+        email: data.email,
+      });
+      toast.success("Đăng nhập thành công!");
+    } catch (error) {
+      console.error("Lỗi đăng nhập:", error);
+      toast.error("Đăng nhập thất bại, vui lòng thử lại!");
+    }
+  };
+
   const fetchCart = useCallback(async () => {
-    if (!token || !user) {
+    if (!user || !token) {
+      setCartError("Vui lòng đăng nhập để xem giỏ hàng");
       setCart([]);
-      setCartError("No authentication token or user found.");
       return;
     }
 
     setLoadingCart(true);
-    setCartError(null);
-
     try {
-      const response = await fetch(`${API_BASE_URL}/cart`, {
+      let endpoint: string;
+      if (user.role === "staff") {
+        endpoint = `${API_BASE_URL}/cart`;
+        console.log(`Staff role detected - Fetching all carts from: ${endpoint}`);
+      } else if (user.role === "therapist") {
+        endpoint = `${API_BASE_URL}/cart/therapist/${user.username}`;
+        console.log(`Therapist role detected - Fetching assigned carts from: ${endpoint}`);
+      } else {
+        endpoint = `${API_BASE_URL}/cart/user/${user.username}`;
+        console.log(`Customer role detected - Fetching user carts from: ${endpoint}`);
+      }
+
+      const response = await fetch(endpoint, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -102,22 +122,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch cart: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`Không thể tải giỏ hàng: ${response.status} - ${errorData.message || "Lỗi server không xác định"}`);
       }
 
-      const data: Booking[] = await response.json();
-      console.log("Cart data:", data); 
-      console.log("User email:", user.username);
-
-      setCart(data); 
-    } catch (error: any) {
-      console.error("Error fetching cart:", error.message);
-      setCartError(`Failed to fetch cart: ${error.message}`);
+      const data = await response.json();
+      console.log("Fetched cart data:", data); // Debug: Log the raw API response
+      setCart(data);
+      setCartError(null);
+    } catch (error) {
+      console.error("Lỗi khi tải giỏ hàng:", error);
+      const errorMessage = error instanceof Error ? error.message : "Lỗi không xác định";
+      setCartError(errorMessage);
       setCart([]);
+      toast.error(errorMessage);
     } finally {
       setLoadingCart(false);
     }
-  }, [token, user]);
+  }, [user, token]);
+
+  useEffect(() => {
+    if (token && user) {
+      fetchCart();
+    }
+  }, [token, user, fetchCart]);
 
   return (
     <AuthContext.Provider
@@ -130,6 +158,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setCart,
         isAuthenticated: !!token,
         fetchCart,
+        login,
         loadingCart,
         cartError,
       }}
@@ -141,8 +170,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
