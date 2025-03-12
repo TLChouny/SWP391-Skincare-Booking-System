@@ -8,47 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Layout from "../../layout/Layout";
 import CartComponent from "../../components/Cart/CartComponent";
 import { useAuth } from "../../context/AuthContext";
-
-interface Service {
-  _id: string;
-  service_id: number;
-  name: string;
-  description: string;
-  image?: string;
-  duration?: number;
-  price?: number | { $numberDecimal: string };
-  category: {
-    _id: string;
-    name: string;
-    description: string;
-  };
-  createDate?: string;
-  __v?: number;
-}
-
-interface Therapist {
-  id: string;
-  name: string;
-  image?: string;
-}
-
-interface Booking {
-  CartID?: string;
-  service_id: number;
-  serviceName: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail: string;
-  notes?: string;
-  bookingDate: string;
-  startTime: string;
-  endTime?: string;
-  selectedTherapist?: Therapist | null;
-  Skincare_staff?: string;
-  totalPrice?: number;
-  status: "pending" | "checked-in" | "completed" | "checked-out" | "cancel";
-  action?: "checkin" | "checkout" | null;
-}
+import { Service, Therapist, Booking } from "../../types/booking";
 
 const EnhancedBookingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -127,7 +87,7 @@ const EnhancedBookingPage: React.FC = () => {
       errors.push("Số điện thoại phải là 10 chữ số hợp lệ.");
     if (
       !customerEmail.trim() ||
-      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(customerEmail)
+      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0.9.-]+\.[a-zA-Z]{2,}$/.test(customerEmail)
     )
       errors.push("Email phải có định dạng hợp lệ.");
     if (!selectedDate) errors.push("Vui lòng chọn ngày đặt lịch.");
@@ -152,7 +112,7 @@ const EnhancedBookingPage: React.FC = () => {
 
   const calculateTotal = (): number => {
     return cart
-      .filter((item) => item.status === "completed") // Updated to "completed" for checkout
+      .filter((item) => item.status === "completed") // Updated to "completed"
       .reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   };
 
@@ -204,7 +164,7 @@ const EnhancedBookingPage: React.FC = () => {
       return;
     }
 
-    const completedItems = cart.filter((item) => item.status === "completed");
+    const completedItems = cart.filter((item) => item.status === "completed"); // Updated to "completed"
     if (completedItems.length === 0) {
       toast.error("No completed items in the cart to checkout.");
       return;
@@ -223,9 +183,7 @@ const EnhancedBookingPage: React.FC = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/payments/create`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: totalAmount,
           orderName,
@@ -255,7 +213,7 @@ const EnhancedBookingPage: React.FC = () => {
 
       await Promise.all(
         cart
-          .filter((item) => item.status === "completed")
+          .filter((item) => item.status === "completed") // Updated to "completed"
           .map((item) =>
             fetch(`${API_BASE_URL}/cart/${item.CartID}`, {
               method: "PUT",
@@ -263,7 +221,7 @@ const EnhancedBookingPage: React.FC = () => {
                 "Content-Type": "application/json",
                 "x-auth-token": token,
               },
-              body: JSON.stringify({ status: "checked-out" }), // Updated to "checked-out"
+              body: JSON.stringify({ status: "checked-out" }),
             }).then((res) => {
               if (!res.ok)
                 throw new Error(`Failed to update cart item ${item.CartID}`);
@@ -422,7 +380,7 @@ const EnhancedBookingPage: React.FC = () => {
                 </h3>
                 <ul className="space-y-4">
                   {cart
-                    .filter((item) => item.status === "completed")
+                    .filter((item) => item.status === "completed") // Updated to "completed"
                     .map((item, index) => (
                       <li
                         key={item.CartID || index}

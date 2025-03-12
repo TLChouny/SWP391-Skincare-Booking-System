@@ -8,60 +8,10 @@ import CartComponent from "../../components/Cart/CartComponent";
 import CheckoutModal from "../../components/Cart/CheckoutModal";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
+import { Booking, Service, Therapist, Blog } from "../../types/booking";
 import video1 from "../../assets/video/invideo-ai-1080 Discover the Magic of LuLuSpa_ Your Skin 2025-01-10.mp4";
 
-interface Service {
-  _id: string;
-  service_id: number;
-  name: string;
-  description: string;
-  image?: string;
-  duration?: number;
-  price?: number;
-  category: {
-    _id: string;
-    name: string;
-    description: string;
-  };
-  createDate?: string;
-  __v?: number;
-}
-
-interface Therapist {
-  id: string;
-  name: string;
-  image?: string;
-  Description?: string;
-}
-
-interface Blog {
-  id: number;
-  title: string;
-  author: string;
-  description: string;
-  image?: string;
-  content?: string;
-}
-
-interface Booking {
-  CartID?: string;
-  service_id: number;
-  serviceName: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail: string;
-  notes?: string;
-  bookingDate: string;
-  startTime: string;
-  endTime?: string;
-  selectedTherapist?: Therapist | null;
-  Skincare_staff?: string;
-  totalPrice?: number;
-  status: "pending" | "checked-in" | "completed" | "cancelled";
-  action?: "checkin" | "checkout" | null;
-}
-
-// Animation variants
+// Animation variants (unchanged)
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
@@ -88,7 +38,7 @@ const therapistCardVariants = {
 };
 
 const HomePage: React.FC = () => {
-  const { cart, fetchCart, isAuthenticated, loadingCart, cartError } = useAuth();
+  const { cart, fetchCart, isAuthenticated, loadingCart, cartError, setCart, token } = useAuth();
   const navigate = useNavigate();
   const [services, setServices] = useState<Service[]>([]);
   const [therapists, setTherapists] = useState<Therapist[]>([]);
@@ -102,7 +52,7 @@ const HomePage: React.FC = () => {
   const [qrCode, setQrCode] = useState<string>("");
   const API_BASE_URL = "http://localhost:5000/api";
 
-  // Fetch services
+  // Fetch services (unchanged)
   useEffect(() => {
     fetch(`${API_BASE_URL}/products/`, {
       method: "GET",
@@ -126,7 +76,7 @@ const HomePage: React.FC = () => {
       });
   }, []);
 
-  // Fetch therapists
+  // Fetch therapists (unchanged)
   useEffect(() => {
     const fetchTherapists = async () => {
       try {
@@ -166,7 +116,7 @@ const HomePage: React.FC = () => {
     if (isAuthenticated) fetchTherapists();
   }, [isAuthenticated]);
 
-  // Fetch blogs
+  // Fetch blogs (unchanged)
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
@@ -193,7 +143,7 @@ const HomePage: React.FC = () => {
     fetchBlogs();
   }, []);
 
-  // Fetch cart when authenticated
+  // Fetch cart when authenticated (unchanged)
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
@@ -201,12 +151,85 @@ const HomePage: React.FC = () => {
   }, [isAuthenticated, fetchCart]);
 
   const handleCheckout = async () => {
+    console.log("Checking out with cart:", cart); // Debug log
     if (!isAuthenticated) {
       toast.warning("Please log in to proceed with checkout.");
       navigate("/login");
       return;
     }
+
+    const completedItems = cart.filter((item) => item.status === "completed"); // Updated to "completed"
+    console.log("Completed items:", completedItems); // Debug log
+    if (completedItems.length === 0) {
+      toast.error("No completed items in the cart to checkout. Please ensure items are marked as completed.");
+      return;
+    }
+
     setShowCheckoutModal(true);
+
+    const totalAmount = completedItems.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+    const orderName = completedItems[0]?.serviceName || "Multiple Services";
+    let description = `Dịch vụ ${orderName.substring(0, 25)}`;
+    if (description.length > 25) description = description.substring(0, 25);
+
+    const returnUrl = "http://localhost:5000/success.html";
+    const cancelUrl = "http://localhost:5000/cancel.html";
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/payments/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: totalAmount,
+          orderName,
+          description,
+          returnUrl,
+          cancelUrl,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || data.error !== 0 || !data.data) {
+        throw new Error(`API Error: ${data.message || "Unknown error"}`);
+      }
+
+      setPaymentUrl(data.data.checkoutUrl);
+      setQrCode(data.data.qrCode);
+    } catch (error: any) {
+      console.error("❌ Error during checkout:", error);
+      toast.error("Khởi tạo thanh toán thất bại. Vui lòng thử lại.");
+      setShowCheckoutModal(false);
+    }
+  };
+
+  const handlePayment = async () => {
+    try {
+      if (!token) throw new Error("Please log in to confirm payment.");
+
+      await Promise.all(
+        cart
+          .filter((item) => item.status === "completed") // Updated to "completed"
+          .map((item) =>
+            fetch(`${API_BASE_URL}/cart/${item.CartID}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                "x-auth-token": token,
+              },
+              body: JSON.stringify({ status: "checked-out" }),
+            }).then((res) => {
+              if (!res.ok) throw new Error(`Failed to update cart item ${item.CartID}`);
+            })
+          )
+      );
+
+      await fetchCart();
+      setShowCheckoutModal(false);
+      toast.success("Thanh toán và check-out thành công!");
+    } catch (error) {
+      console.error("Error updating cart status:", error);
+      toast.error("Lỗi khi cập nhật trạng thái thanh toán.");
+    }
   };
 
   const handleBookNow = (id: string) => {
@@ -327,7 +350,9 @@ const HomePage: React.FC = () => {
                           <div className="flex flex-col">
                             <span className="text-2xl font-bold text-yellow-500">
                               {service.price
-                                ? `${service.price.toLocaleString("vi-VN")} VNĐ`
+                                ? `${typeof service.price === "number"
+                                    ? service.price.toLocaleString("vi-VN")
+                                    : parseFloat((service.price as { $numberDecimal: string }).$numberDecimal).toLocaleString("vi-VN")} VNĐ`
                                 : "Contact for Price"}
                             </span>
                             <span className="text-lg text-gray-600">
@@ -498,7 +523,7 @@ const HomePage: React.FC = () => {
       <CheckoutModal
         showModal={showCheckoutModal}
         setShowModal={setShowCheckoutModal}
-        cart={cart}
+        cart={cart as Booking[]}
         fetchCart={fetchCart}
         loadingCart={loadingCart}
         cartError={cartError}

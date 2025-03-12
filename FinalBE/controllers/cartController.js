@@ -196,21 +196,21 @@ exports.updateCart = async (req, res) => {
   }
 };
 // Cancel cart
-exports.cancelCart = async (req, res) => {
-  try {
-    const { cartID } = req.params;
-    const cart = await Cart.findOne({ CartID: cartID });
-    if (!cart) {
-      return res.status(404).json({ message: "Không tìm thấy Cart!" });
-    }
-    if (cart.status !== "pending") {
-      return res.status(400).json({ message: "Chỉ có thể hủy đơn hàng ở trạng thái 'pending'!" });
-    }
+// exports.cancelCart = async (req, res) => {
+//   try {
+//     const { cartID } = req.params;
+//     const cart = await Cart.findOne({ CartID: cartID });
+//     if (!cart) {
+//       return res.status(404).json({ message: "Không tìm thấy Cart!" });
+//     }
+//     if (cart.status !== "pending") {
+//       return res.status(400).json({ message: "Chỉ có thể hủy đơn hàng ở trạng thái 'pending'!" });
+//     }
 
-    cart.status = "cancel";
-    await cart.save();
-    res.status(200).json({ message: "Cart đã bị hủy!", cart });
-  } catch (error) {
-    res.status(500).json({ message: "Lỗi khi hủy Cart!", error });
-  }
-};
+//     cart.status = "cancel";
+//     await cart.save();
+//     res.status(200).json({ message: "Cart đã bị hủy!", cart });
+//   } catch (error) {
+//     res.status(500).json({ message: "Lỗi khi hủy Cart!", error });
+//   }
+// };

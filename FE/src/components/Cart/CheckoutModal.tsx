@@ -32,7 +32,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 }) => {
   const calculateTotal = (): number => {
     return cart
-      .filter((item) => item.status === "checked-in")
+      .filter((item) => item.status === "completed")
       .reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   };
 
@@ -42,7 +42,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   };
 
   const handleCheckout = async () => {
-    const checkedInItems = cart.filter((item) => item.status === "checked-in");
+    const checkedInItems = cart.filter((item) => item.status === "completed");
     if (checkedInItems.length === 0) {
       toast.error("Không có mục nào được chọn để thanh toán.");
       setShowModal(false);
@@ -91,7 +91,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
       await Promise.all(
         cart
-          .filter((item) => item.status === "checked-in")
+          .filter((item) => item.status === "completed")
           .map((item) =>
             fetch(`${API_BASE_URL}/cart/${item.CartID}`, {
               method: "PUT",
@@ -99,7 +99,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 "Content-Type": "application/json",
                 "x-auth-token": token,
               },
-              body: JSON.stringify({ status: "completed", action: null }),
+              body: JSON.stringify({ status: "checked-out", action: null }),
             }).then((res) => {
               if (!res.ok) throw new Error(`Không thể cập nhật mục giỏ hàng ${item.CartID}`);
             })
@@ -143,13 +143,13 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <p className="text-center text-gray-600">Đang tải giỏ hàng...</p>
               ) : cartError ? (
                 <p className="text-center text-red-600">{cartError}</p>
-              ) : cart.filter((item) => item.status === "checked-in").length === 0 ? (
+              ) : cart.filter((item) => item.status === "completed").length === 0 ? (
                 <p className="text-center text-gray-600">Không có mục nào để thanh toán.</p>
               ) : (
                 <>
                   <ul className="space-y-4 max-h-[40vh] overflow-y-auto">
                     {cart
-                      .filter((item) => item.status === "checked-in")
+                      .filter((item) => item.status === "completed")
                       .map((item, index) => (
                         <li
                           key={item.CartID || index}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useAuth, Booking } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
+import { Booking } from "../../types/booking";
 
 const statusStyles = {
   pending: { bg: "bg-yellow-100", text: "text-yellow-800", icon: "⏳" },

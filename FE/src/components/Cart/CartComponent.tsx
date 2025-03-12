@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
-import { useAuth, Booking } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
+import { Booking } from "../../types/booking";
+
+// Define a minimal type for the user object from useAuth
+type AuthUser = {
+  username?: string;
+  email?: string;
+};
 
 interface CartComponentProps {
   handleCheckout?: () => Promise<void>;
@@ -27,7 +34,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
       }
     };
 
-    if (user?.username) {
+    if ((user as AuthUser)?.username) {
       loadCart();
     }
 
@@ -36,7 +43,8 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
     };
   }, [fetchCart, user]);
 
-  const userCart = cart.filter((item) => item.username === user?.username);
+  // Filter cart items for the current user
+  const userCart = cart.filter((item) => item.username === (user as AuthUser)?.username);
 
   // Debug: Log the cart data
   useEffect(() => {
@@ -94,26 +102,38 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
 
   const toggleCart = () => setShowCart((prev) => !prev);
 
-  const handleCancelCart = async (cartID: string) => {
+  const handleCancelCart = async (cartID: string | undefined) => {
+    if (!cartID) {
+      toast.error("Không thể hủy giỏ hàng: ID giỏ hàng không hợp lệ.");
+      return;
+    }
+
     try {
       if (!token) {
         throw new Error("Bạn cần đăng nhập để hủy giỏ hàng.");
       }
 
-      const response = await fetch(`${API_BASE_URL}/cart/cancel/${cartID}`, {
+      console.log(`Attempting to cancel cart item with ID: ${cartID}`); // Debug log
+
+      const response = await fetch(`${API_BASE_URL}/cart/${cartID}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           "x-auth-token": token,
         },
+        body: JSON.stringify({ status: "cancel" }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`Không thể hủy giỏ hàng: ${errorData.message || "Lỗi server"}`);
+        throw new Error(errorData.message || "Không thể hủy giỏ hàng: Lỗi server");
       }
 
-      await fetchCart(); // Refresh cart after cancellation
+      const data = await response.json();
+      console.log(`Successfully canceled cart item with ID: ${cartID}`, data); // Debug log
+
+      // Làm mới giỏ hàng từ server
+      await fetchCart();
       toast.success("Giỏ hàng đã được hủy thành công!");
     } catch (error) {
       console.error("Lỗi khi hủy giỏ hàng:", error);
@@ -193,9 +213,9 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
                   onClick={handleCheckout || (() => (window.location.href = "/booking"))}
                   disabled={!userCart.some((item) => item.status === "completed")}
                   className={`w-full p-3 rounded-lg mt-4 ${
-                    userCart.some((item) => item.status === "completed")
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    !userCart.some((item) => item.status === "completed")
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
                   }`}
                 >
                   Thanh toán

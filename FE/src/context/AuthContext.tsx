@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { toast } from "react-toastify";
+import { Therapist, Booking } from "../types/booking";
 
 interface User {
   username: string;
@@ -7,21 +8,24 @@ interface User {
   email?: string;
 }
 
-export interface Booking {
-  CartID: string;
-  username: string;
-  serviceName: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  bookingDate: string;
-  startTime: string;
-  endTime?: string;
-  totalPrice: number;
-  status: "pending" | "checked-in" | "completed" | "checked-out" | "cancel";
-  Skincare_staff?: string;
-  notes?: string;
-}
+// export interface Booking {
+//   username: string | undefined;
+//   CartID?: string;
+//   service_id: number;
+//   serviceName: string;
+//   customerName: string;
+//   customerPhone: string;
+//   customerEmail: string;
+//   notes?: string;
+//   bookingDate: string;
+//   startTime: string;
+//   endTime?: string;
+//   selectedTherapist?: Therapist | null;
+//   Skincare_staff?: string;
+//   totalPrice?: number;
+//   status: "pending" | "checked-in" | "completed" | "cancelled";
+//   action?: "checkin" | "checkout" | null;
+// }
 
 interface AuthContextType {
   token: string | null;
@@ -92,27 +96,77 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // const fetchCart = useCallback(async () => {
+  //   if (!user || !token) {
+  //     setCartError("Vui lòng đăng nhập để xem giỏ hàng");
+  //     setCart([]);
+  //     return;
+  //   }
+
+  //   setLoadingCart(true);
+  //   try {
+  //     let endpoint: string;
+  //     if (user.role === "staff") {
+  //       endpoint = `${API_BASE_URL}/cart`;
+  //       console.log(`Staff role detected - Fetching all carts from: ${endpoint}`);
+  //     } else if (user.role === "therapist") {
+  //       endpoint = `${API_BASE_URL}/cart/therapist/${user.username}`;
+  //       console.log(`Therapist role detected - Fetching assigned carts from: ${endpoint}`);
+  //     } else {
+  //       endpoint = `${API_BASE_URL}/cart/user/${user.username}`;
+  //       console.log(`Customer role detected - Fetching user carts from: ${endpoint}`);
+  //     }
+
+  //     const response = await fetch(endpoint, {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "x-auth-token": token,
+  //       },
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json().catch(() => ({}));
+  //       throw new Error(`Không thể tải giỏ hàng: ${response.status} - ${errorData.message || "Lỗi server không xác định"}`);
+  //     }
+
+  //     const data = await response.json();
+  //     console.log("Fetched cart data:", data); // Debug: Log the raw API response
+  //     setCart(data);
+  //     setCartError(null);
+  //   } catch (error) {
+  //     console.error("Lỗi khi tải giỏ hàng:", error);
+  //     const errorMessage = error instanceof Error ? error.message : "Lỗi không xác định";
+  //     setCartError(errorMessage);
+  //     setCart([]);
+  //     toast.error(errorMessage);
+  //   } finally {
+  //     setLoadingCart(false);
+  //   }
+  // }, [user, token]);
+
   const fetchCart = useCallback(async () => {
     if (!user || !token) {
       setCartError("Vui lòng đăng nhập để xem giỏ hàng");
       setCart([]);
       return;
     }
-
+  
     setLoadingCart(true);
     try {
       let endpoint: string;
       if (user.role === "staff") {
         endpoint = `${API_BASE_URL}/cart`;
         console.log(`Staff role detected - Fetching all carts from: ${endpoint}`);
-      } else if (user.role === "therapist") {
+      } else if (user.role === "therapist" || user.username.startsWith("therapist")) {
+        // Thêm kiểm tra username bắt đầu bằng "therapist" để ưu tiên
         endpoint = `${API_BASE_URL}/cart/therapist/${user.username}`;
         console.log(`Therapist role detected - Fetching assigned carts from: ${endpoint}`);
       } else {
         endpoint = `${API_BASE_URL}/cart/user/${user.username}`;
         console.log(`Customer role detected - Fetching user carts from: ${endpoint}`);
       }
-
+  
       const response = await fetch(endpoint, {
         method: "GET",
         headers: {
@@ -120,14 +174,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           "x-auth-token": token,
         },
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(`Không thể tải giỏ hàng: ${response.status} - ${errorData.message || "Lỗi server không xác định"}`);
       }
-
+  
       const data = await response.json();
-      console.log("Fetched cart data:", data); // Debug: Log the raw API response
+      console.log("Fetched cart data:", data);
       setCart(data);
       setCartError(null);
     } catch (error) {
