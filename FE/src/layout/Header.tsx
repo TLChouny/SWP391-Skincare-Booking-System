@@ -196,28 +196,42 @@ const Header: React.FC = () => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-1/2">
-            <button onClick={() => setShowModal(false)} className="text-2xl float-right">
-              ×
-            </button>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Contact Information</h3>
-            <form>
-              <input type="text" placeholder="Name" className="mb-4 p-2 border w-full" />
-              <input type="text" placeholder="Phone Number" className="mb-4 p-2 border w-full" />
-              <button className="py-2 px-4 bg-blue-500 text-white rounded-lg mt-4">Submit</button>
-            </form>
-            <div className="mt-6">
-              <p className="text-gray-600">Store Name: LuLuSpa</p>
-              <p className="text-gray-600">Phone: 123-456-789</p>
-              <p className="text-gray-600">Email: info@luluspa.com</p>
-              <a href="https://facebook.com/luluspa" className="text-blue-600">
-                Facebook
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center px-4">
+    <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg relative">
+      {/* Nút đóng modal */}
+      <button
+        onClick={() => setShowModal(false)}
+        className="absolute top-3 right-3 text-2xl text-gray-600 hover:text-gray-900"
+      >
+        ×
+      </button>
+
+      {/* Tiêu đề */}
+      <h3 className="text-2xl font-semibold text-gray-800 mb-4 text-center">Contact Information</h3>
+
+      {/* Form */}
+      <form className="space-y-4">
+        <input type="text" placeholder="Name" className="p-2 border w-full rounded-md" />
+        <input type="text" placeholder="Phone Number" className="p-2 border w-full rounded-md" />
+        <button className="py-2 px-4 bg-blue-500 text-white rounded-lg w-full hover:bg-blue-600 transition">
+          Submit
+        </button>
+      </form>
+
+      {/* Thông tin LuLuSpa */}
+      <div className="mt-6 text-left">
+        <p className="text-gray-600 font-medium">🏡 Store Name: <span className="font-semibold">LuLuSpa</span></p>
+        <p className="text-gray-600">📞 Phone: <span className="font-semibold">123-456-789</span></p>
+        <p className="text-gray-600">📧 Email: <span className="font-semibold">info@luluspa.com</span></p>
+        <p className="text-gray-600">⏰ Working Hours: <span className="font-semibold">Mon - Sat, 9:00 - 17:30</span></p>
+        <a href="https://facebook.com/luluspa" className="text-blue-600 hover:underline mt-2 inline-block">
+          🌐 Visit our Facebook
+        </a>
+      </div>
+    </div>
+  </div>
+)}
+
 
       <ToastContainer autoClose={3000} />
     </header>

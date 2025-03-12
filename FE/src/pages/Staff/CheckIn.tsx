@@ -24,7 +24,7 @@ const StaffCheckIn: React.FC = () => {
   const [staffLoading, setStaffLoading] = useState<boolean>(false);
   const [selectedStaff, setSelectedStaff] = useState<{ [cartId: string]: string | null }>({});
   const [currentPage, setCurrentPage] = useState(1);
-  const bookingsPerPage = 5;
+  const bookingsPerPage = 15;
   const API_BASE_URL = "http://localhost:5000/api";
 
   useEffect(() => {
@@ -234,10 +234,8 @@ const StaffCheckIn: React.FC = () => {
             <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="py-3 px-4 border-b text-left whitespace-nowrap sticky left-0 bg-gray-100 z-10">
-                    CartID
-                  </th>
-                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">Customer Name</th>
+             
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap sticky left-0 bg-gray-100 z-10">Customer Name</th>
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap">Email</th>
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap">Phone</th>
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap">Service Name</th>
@@ -260,10 +258,8 @@ const StaffCheckIn: React.FC = () => {
                       key={booking.CartID || Math.random().toString()}
                       className="hover:bg-gray-50 transition-colors duration-300"
                     >
-                      <td className="py-2 px-4 border-b whitespace-nowrap sticky left-0 bg-white z-10">
-                        {booking.CartID || "N/A"}
-                      </td>
-                      <td className="py-2 px-4 border-b whitespace-nowrap">{booking.customerName}</td>
+                  
+                      <td className="py-2 px-4 border-b whitespace-nowrap sticky left-0 bg-white z-10">{booking.customerName}</td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">{booking.customerEmail}</td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">{booking.customerPhone}</td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">{booking.serviceName}</td>

@@ -9,7 +9,6 @@ import { AuthProvider } from "../context/AuthContext";
 //homepage
 import ServicePage from "../pages/Home/Servicepage";
 import SettingPage from "../pages/Home/Settingpage";
-// import CheckoutPage from "../pages/Home/CheckoutPage";
 import ContactPage from "../pages/Home/ContactPage";
 import BlogPage from "../pages/Home/Blogpage";
 import TestPage from "../pages/Home/SkinAssessmentQuiz";
@@ -27,9 +26,9 @@ import ManageQuestion from "../pages/admin/ManageQuestion";
 //staff
 import CheckIn from "../pages/Staff/CheckIn";
 import AssignSpecialists from "../pages/Staff/AssignSpecialists";
-import CheckOut from "../pages/Staff/CheckOut";
 import AppointmentSchedules from "../pages/Staff/AppointmentSchedules";
 import StaffManagement from "../components/Staff/StaffManagement";
+import CheckOut from "../pages/Staff/CheckOut"; // Sử dụng component CheckOut
 
 //therapist
 import ServiceHistory from "../pages/Therapist/ServiceHistory";
@@ -42,6 +41,7 @@ import ManageService from "../pages/admin/ManageService";
 //customer
 import ProfileUser from "../pages/Customer/Customer_profile";
 import ManageVoucher from "../pages/admin/ManageVoucher";
+
 const AppRoutes: React.FC = () => {
   return (
     <AuthProvider>
@@ -59,7 +59,6 @@ const AppRoutes: React.FC = () => {
           />
           <Route path='/settings' element={<SettingPage />} />
           <Route path='/booking/:id' element={<BookingPage />} />
-          {/* <Route path='/checkout' element={<CheckoutPage />} /> */}
           <Route path='/contact' element={<ContactPage />} />{" "}
           <Route path='/services' element={<ServicePage />} />
           <Route path='/blog' element={<BlogPage />} />
@@ -86,13 +85,10 @@ const AppRoutes: React.FC = () => {
           <Route path='/staff' element={<StaffManagement />}>
             <Route path='check-in' element={<CheckIn />} />
             <Route path='assign-specialists' element={<AssignSpecialists />} />
-            <Route path='check-out' element={<CheckOut />} />
-            <Route
-              path='appointment-schedules'
-              element={<AppointmentSchedules />}
-            />
+            <Route path='check-out' element={<CheckOut />} /> {/* Sử dụng CheckOut component */}
+            <Route path='appointment-schedules' element={<AppointmentSchedules />} />
           </Route>
-          {/* Staff router */}
+          {/* Customer router */}
           <Route path='/dashboard' element={<ProfileUser />} />
           {/* Login */}
           <Route

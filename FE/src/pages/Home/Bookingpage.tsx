@@ -172,40 +172,40 @@ const EnhancedBookingPage: React.FC = () => {
 
     setShowCheckoutModal(true);
 
-    const totalAmount = calculateTotal();
-    const orderName = service?.name || "Unknown Service";
-    let description = `Dịch vụ ${orderName.substring(0, 25)}`;
-    if (description.length > 25) description = description.substring(0, 25);
-
-    const returnUrl = "http://localhost:5000/success.html";
-    const cancelUrl = "http://localhost:5000/cancel.html";
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/payments/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: totalAmount,
-          orderName,
-          description,
-          returnUrl,
-          cancelUrl,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok || data.error !== 0 || !data.data) {
-        throw new Error(`API Error: ${data.message || "Unknown error"}`);
-      }
-
-      setPaymentUrl(data.data.checkoutUrl);
-      setQrCode(data.data.qrCode);
-    } catch (error: any) {
-      console.error("❌ Error during checkout:", error);
-      toast.error("Khởi tạo thanh toán thất bại. Vui lòng thử lại.");
-      setShowCheckoutModal(false);
-    }
-  };
+     const totalAmount = completedItems.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+        const orderName = completedItems[0]?.serviceName || "Multiple Services";
+        let description = `Dịch vụ ${orderName.substring(0, 25)}`;
+        if (description.length > 25) description = description.substring(0, 25);
+    
+        const returnUrl = "http://localhost:5000/success.html";
+        const cancelUrl = "http://localhost:5000/cancel.html";
+    
+        try {
+          const response = await fetch(`${API_BASE_URL}/payments/create`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              amount: totalAmount,
+              orderName,
+              description,
+              returnUrl,
+              cancelUrl,
+            }),
+          });
+    
+          const data = await response.json();
+          if (!response.ok || data.error !== 0 || !data.data) {
+            throw new Error(`API Error: ${data.message || "Unknown error"}`);
+          }
+    
+          setPaymentUrl(data.data.checkoutUrl);
+          setQrCode(data.data.qrCode);
+        } catch (error: any) {
+          console.error("❌ Error during checkout:", error);
+          toast.error("Khởi tạo thanh toán thất bại. Vui lòng thử lại.");
+          setShowCheckoutModal(false);
+        }
+      };
 
   const handlePayment = async () => {
     try {
@@ -431,14 +431,14 @@ const EnhancedBookingPage: React.FC = () => {
                   >
                     Cancel
                   </motion.button>
-                  <motion.button
+                  {/* <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handlePayment}
                     className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
                     Confirm Payment
-                  </motion.button>
+                  </motion.button> */}
                 </div>
               </motion.div>
             </motion.div>

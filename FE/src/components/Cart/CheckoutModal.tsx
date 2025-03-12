@@ -200,14 +200,14 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     >
                       Hủy
                     </motion.button>
-                    <motion.button
+                    {/* <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={handlePayment}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300"
                     >
                       Xác Nhận
-                    </motion.button>
+                    </motion.button> */}
                   </div>
                 </>
               )}
