@@ -26,12 +26,15 @@ const EnhancedBookingPage: React.FC = () => {
   const [notes, setNotes] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
+  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(
+    null
+  );
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [paymentUrl, setPaymentUrl] = useState<string>("");
   const [qrCode, setQrCode] = useState<string>("");
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-
+  const [ratings, setRatings] = useState<Rating[]>([]);
+  const [loadingRatings, setLoadingRatings] = useState<boolean>(true);
   const API_BASE_URL = "http://localhost:5000/api";
 
   useEffect(() => {
@@ -82,7 +85,8 @@ const EnhancedBookingPage: React.FC = () => {
   const validateForm = (): boolean => {
     const errors: string[] = [];
 
-    if (!customerName.trim()) errors.push("Tên khách hàng không được để trống.");
+    if (!customerName.trim())
+      errors.push("Tên khách hàng không được để trống.");
     if (!customerPhone.trim() || !/^\d{10}$/.test(customerPhone))
       errors.push("Số điện thoại phải là 10 chữ số hợp lệ.");
     if (
@@ -172,40 +176,43 @@ const EnhancedBookingPage: React.FC = () => {
 
     setShowCheckoutModal(true);
 
-     const totalAmount = completedItems.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
-        const orderName = completedItems[0]?.serviceName || "Multiple Services";
-        let description = `Dịch vụ ${orderName.substring(0, 25)}`;
-        if (description.length > 25) description = description.substring(0, 25);
-    
-        const returnUrl = "http://localhost:5000/success.html";
-        const cancelUrl = "http://localhost:5000/cancel.html";
-    
-        try {
-          const response = await fetch(`${API_BASE_URL}/payments/create`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              amount: totalAmount,
-              orderName,
-              description,
-              returnUrl,
-              cancelUrl,
-            }),
-          });
-    
-          const data = await response.json();
-          if (!response.ok || data.error !== 0 || !data.data) {
-            throw new Error(`API Error: ${data.message || "Unknown error"}`);
-          }
-    
-          setPaymentUrl(data.data.checkoutUrl);
-          setQrCode(data.data.qrCode);
-        } catch (error: any) {
-          console.error("❌ Error during checkout:", error);
-          toast.error("Khởi tạo thanh toán thất bại. Vui lòng thử lại.");
-          setShowCheckoutModal(false);
-        }
-      };
+    const totalAmount = completedItems.reduce(
+      (sum, item) => sum + (item.totalPrice || 0),
+      0
+    );
+    const orderName = completedItems[0]?.serviceName || "Multiple Services";
+    let description = `Dịch vụ ${orderName.substring(0, 25)}`;
+    if (description.length > 25) description = description.substring(0, 25);
+
+    const returnUrl = "http://localhost:5000/success.html";
+    const cancelUrl = "http://localhost:5000/cancel.html";
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/payments/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: totalAmount,
+          orderName,
+          description,
+          returnUrl,
+          cancelUrl,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || data.error !== 0 || !data.data) {
+        throw new Error(`API Error: ${data.message || "Unknown error"}`);
+      }
+
+      setPaymentUrl(data.data.checkoutUrl);
+      setQrCode(data.data.qrCode);
+    } catch (error: any) {
+      console.error("❌ Error during checkout:", error);
+      toast.error("Khởi tạo thanh toán thất bại. Vui lòng thử lại.");
+      setShowCheckoutModal(false);
+    }
+  };
 
   const handlePayment = async () => {
     try {
@@ -308,6 +315,31 @@ const EnhancedBookingPage: React.FC = () => {
 
     if (isAuthenticated) fetchTherapists();
   }, [isAuthenticated, token]);
+
+  useEffect(() => {
+    if (service?.name) {
+      const fetchRatings = async () => {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/ratings/service/${encodeURIComponent(
+              service.name
+            )}`
+          );
+          if (!response.ok) {
+            throw new Error("Không thể tải đánh giá.");
+          }
+          const data = await response.json();
+          setRatings(data);
+        } catch (error) {
+          console.error("Lỗi khi lấy đánh giá:", error);
+          toast.error("Không thể tải đánh giá.");
+        } finally {
+          setLoadingRatings(false);
+        }
+      };
+      fetchRatings();
+    }
+  }, [service]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -627,6 +659,44 @@ const EnhancedBookingPage: React.FC = () => {
                 Book Now
               </motion.button>
             </form>
+          </motion.div>
+
+          <motion.div className="container mx-auto py-16 px-6 relative">
+            {isAuthenticated && (
+              <CartComponent handleCheckout={() => {}} isBookingPage={true} />
+            )}
+
+            <div className="mt-12 bg-white p-6 rounded-lg shadow-lg">
+              <h3 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">
+                Reviews
+              </h3>
+              {loadingRatings ? (
+                <p className="text-gray-600 text-center">Loading ratings...</p>
+              ) : ratings.length === 0 ? (
+                <p className="text-gray-600 text-center">
+                  No ratings available for this service.
+                </p>
+              ) : (
+                <div className="space-y-6">
+                  {ratings.map((rating) => (
+                    <div
+                      key={rating._id}
+                      className="p-4 border rounded-lg shadow-md bg-gray-50 hover:bg-gray-100 transition duration-300"
+                    >
+                      <p className="font-bold text-lg text-blue-600">
+                        {rating.createName}
+                      </p>
+                      <p className="text-yellow-500 text-lg">
+                        Rating: {rating.serviceRating} ⭐
+                      </p>
+                      <p className="text-gray-600 mt-2">
+                        {rating.serviceContent}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </motion.div>
         </div>
       </motion.div>

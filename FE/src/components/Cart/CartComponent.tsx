@@ -183,7 +183,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
                     <p className="font-semibold text-gray-800">{item.serviceName}</p>
                     <p className="text-gray-600">Ngày đặt: {item.bookingDate} - {item.startTime}</p>
                     <p className="text-gray-600">
-                      Khách hàng: {item.customerName} ({item.customerEmail})
+                      Khách hàng: {item.customerName}
                     </p>
                     {item.Skincare_staff && (
                       <p className="text-gray-600">Nhân viên: {item.Skincare_staff}</p>

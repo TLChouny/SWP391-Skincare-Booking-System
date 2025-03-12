@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useAuth, Booking } from "../../context/AuthContext"; // Import Booking type
+import { useAuth, Booking } from "../../context/AuthContext";
 import Layout from "../../layout/Layout";
-
+import { Skeleton, Modal, Rate, Input, Button, message } from "antd";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // Define status styles
 const statusStyles = {
   pending: { bg: "bg-yellow-100", text: "text-yellow-800", icon: "⏳" },
@@ -12,12 +14,17 @@ const statusStyles = {
 
 const CustomerProfile: React.FC = () => {
   const { user } = useAuth();
-  const [orders, setOrders] = useState<Booking[]>([]); // Use Booking type instead of any[]
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null); // Add error state
+  const [orders, setOrders] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 15;
   const API_BASE_URL = "http://localhost:5000/api";
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Booking | null>(null);
+  const [rating, setRating] = useState<number>(5);
+  const [reviewText, setReviewText] = useState<string>("");
 
   useEffect(() => {
     if (user?.username) {
@@ -27,140 +34,173 @@ const CustomerProfile: React.FC = () => {
 
   const fetchOrders = async () => {
     setLoading(true);
-    setError(null); // Reset error state
+    setError(null);
     try {
       const token = localStorage.getItem("authToken");
       if (!token || !user?.username) {
         throw new Error("Bạn cần đăng nhập để xem lịch sử đơn hàng.");
       }
 
-      const encodedUsername = encodeURIComponent(user.username);
-      console.log("📌 Fetching orders for:", encodedUsername);
-
-      const response = await fetch(`${API_BASE_URL}/cart/user/${encodedUsername}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": token,
-        },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/cart/user/${encodeURIComponent(user.username)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": token,
+          },
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          `Failed to fetch orders: ${response.status} - ${
-            errorData.message || "Unknown error"
-          }`
-        );
+        throw new Error("Không thể tải đơn hàng.");
       }
 
-      const data: Booking[] = await response.json(); // Type the response
-      console.log("📌 Orders received:", data);
+      const data: Booking[] = await response.json();
       setOrders(data);
-    } catch (error) { // Explicitly type error as Error
+    } catch (error) {
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Pagination
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
-  const totalPages = Math.ceil(orders.length / ordersPerPage);
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  // Open Modal for review
+  const openReviewModal = (order: Booking) => {
+    setSelectedOrder(order);
+    setIsModalOpen(true);
   };
 
-  const goToNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  // Close Modal
+  const closeReviewModal = () => {
+    setIsModalOpen(false);
+    setSelectedOrder(null);
+    setRating(5);
+    setReviewText("");
+  };
+
+  // Handle Review Submission
+  const handleSubmitReview = async () => {
+    if (!selectedOrder) {
+      message.error("Lỗi: Không có đơn hàng nào được chọn.");
+      return;
+    }
+
+    const reviewData = {
+      serviceID: selectedOrder.service_id,
+      serviceName: selectedOrder.serviceName,
+      serviceRating: rating,
+      serviceContent: reviewText,
+      createName: user.username,
+    };
+
+
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/ratings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": token || "",
+        },
+        body: JSON.stringify(reviewData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Không thể gửi đánh giá.");
+      }
+
+      toast.success("Đánh giá đã được gửi thành công!");
+      closeReviewModal();
+    } catch (error) {
+      toast.error("Lỗi khi gửi đánh giá.");
+      console.error("Lỗi khi gửi đánh giá:", error);
+    }
   };
 
   return (
     <Layout>
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold text-center mb-6">Lịch Sử Đơn Hàng</h1>
-        {loading ? (
-          <p className="text-center text-gray-600">Đang tải dữ liệu...</p>
-        ) : error ? (
-          <p className="text-center text-red-600">{error}</p>
-        ) : orders.length === 0 ? (
-          <p className="text-center text-gray-600">Không có đơn hàng nào</p>
-        ) : (
-          <div className="overflow-x-auto">
+        <h1 className="text-3xl font-bold text-center mb-6">
+          Lịch Sử Đơn Hàng
+        </h1>
+
+        <div className="overflow-x-auto min-h-[500px]">
+          {loading ? (
+            <Skeleton active paragraph={{ rows: 10 }} />
+          ) : error ? (
+            <p className="text-center text-red-600">{error}</p>
+          ) : orders.length === 0 ? (
+            <p className="text-center text-gray-600">Không có đơn hàng nào</p>
+          ) : (
             <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="py-3 px-4 border-b text-left">Mã Đơn</th>
                   <th className="py-3 px-4 border-b text-left">Tên Dịch Vụ</th>
                   <th className="py-3 px-4 border-b text-left">Khách Hàng</th>
-                  <th className="py-3 px-4 border-b text-left">Số Điện Thoại</th>
-                  <th className="py-3 px-4 border-b text-left">Ngày & Giờ</th>
-                  <th className="py-3 px-4 border-b text-left">Chuyên Viên</th>
-                  <th className="py-3 px-4 border-b text-left">Tổng Tiền</th>
                   <th className="py-3 px-4 border-b text-left">Trạng Thái</th>
+                  <th className="py-3 px-4 border-b text-left">Đánh Giá</th>
                 </tr>
               </thead>
               <tbody>
-                {currentOrders.map((order) => {
-                  const statusStyle =
-                    statusStyles[order.status] || {
-                      bg: "bg-gray-100",
-                      text: "text-gray-800",
-                      icon: "Pending",
-                    };
-
-                  return (
-                    <tr key={order.CartID} className="hover:bg-gray-50">
-                      <td className="py-2 px-4 border-b">{order.CartID || "N/A"}</td>
-                      <td className="py-2 px-4 border-b">{order.serviceName}</td>
-                      <td className="py-2 px-4 border-b">{order.customerName}</td>
-                      <td className="py-2 px-4 border-b">{order.customerPhone}</td>
-                      <td className="py-2 px-4 border-b">
-                        {order.bookingDate} {order.startTime}
-                      </td>
-                      <td className="py-2 px-4 border-b">{order.Skincare_staff || "N/A"}</td>
-                      <td className="py-2 px-4 border-b">
-                        {order.totalPrice?.toLocaleString("vi-VN") || "N/A"} VNĐ
-                      </td>
-                      <td className="py-2 px-4 border-b">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-sm ${statusStyle.bg} ${statusStyle.text}`}
+                {orders.map((order) => (
+                  <tr key={order.BookingID} className="hover:bg-gray-50">
+                    <td className="py-2 px-4 border-b">
+                      {order.BookingID || "N/A"}
+                    </td>
+                    <td className="py-2 px-4 border-b">{order.serviceName}</td>
+                    <td className="py-2 px-4 border-b">{order.customerName}</td>
+                    <td className="py-2 px-4 border-b">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-sm ${
+                          statusStyles[order.status]?.bg || "bg-gray-100"
+                        }`}
+                      >
+                        {statusStyles[order.status]?.icon || "❓"}{" "}
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="py-2 px-4 border-b">
+                      {order.status === "completed" ? (
+                        <Button
+                          type="primary"
+                          onClick={() => openReviewModal(order)}
                         >
-                          {statusStyle.icon} {order.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                          Đánh Giá
+                        </Button>
+                      ) : (
+                        <span className="text-gray-400">Chưa thể đánh giá</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
-          </div>
-        )}
-        {/* Pagination */}
-        {!loading && orders.length > 0 && (
-          <div className="flex justify-center mt-4 space-x-4">
-            <button
-              onClick={goToPreviousPage}
-              disabled={currentPage === 1}
-              className="py-2 px-4 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400"
-            >
-              Trang Trước
-            </button>
-            <span className="py-2 px-4">
-              Trang {currentPage} / {totalPages}
-            </span>
-            <button
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages}
-              className="py-2 px-4 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400"
-            >
-              Trang Tiếp
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      {/* Modal đánh giá */}
+      <Modal
+        title="Đánh Giá Dịch Vụ"
+        open={isModalOpen}
+        onCancel={closeReviewModal}
+        onOk={handleSubmitReview}
+        okText="Gửi"
+        cancelText="Hủy"
+      >
+        <p>
+          <b>{selectedOrder?.serviceName}</b>
+        </p>
+        <Rate value={rating} onChange={(value) => setRating(value)} />
+        <Input.TextArea
+          placeholder="Nhập nội dung đánh giá..."
+          value={reviewText}
+          onChange={(e) => setReviewText(e.target.value)}
+          className="mt-4"
+        />
+      </Modal>
     </Layout>
   );
 };
