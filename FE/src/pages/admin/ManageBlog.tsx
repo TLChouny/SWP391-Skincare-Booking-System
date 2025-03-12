@@ -2,6 +2,7 @@ import { Form, Input, Select } from "antd";
 import { useEffect, useState } from "react";
 import api from "../../api/apiService";
 import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
+import { render } from "react-dom";
 
 function ManageBlog() {
   const title = "Blog";
@@ -35,6 +36,15 @@ function ManageBlog() {
         const category = categories.find((cat) => cat._id === categoryId);
         return category ? category.name : "N/A";
       },
+    },
+    { title: "Content", dataIndex: "content", key: "content" },
+    {
+      title: "Image",
+      dataIndex: "image",
+      key: "image",
+      render: (image: string) => (
+        <img src={image} alt='blog' style={{ width: 100 }} />
+      ),
     },
   ];
 
