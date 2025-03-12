@@ -133,7 +133,7 @@ const ListOfAssign: React.FC = () => {
                       className="hover:bg-gray-50 transition-colors duration-300"
                     >
                       <td className="py-2 px-4 border-b whitespace-nowrap sticky left-0 bg-white z-10">
-                        {booking.CartID || "N/A"}
+                        {booking.BookingID || "N/A"}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">{booking.customerName}</td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">{booking.serviceName}</td>

@@ -24,6 +24,7 @@ export type Therapist = {
 };
 
 export type Booking = {
+  BookingID?:string;
   username: string | undefined;
   CartID?: string;
   service_id: number;

@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useAuth, Booking } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import Layout from "../../layout/Layout";
 import { Skeleton, Modal, Rate, Input, Button, message } from "antd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Booking } from "../../types/booking";
+
 // Define status styles
 const statusStyles = {
   pending: { bg: "bg-yellow-100", text: "text-yellow-800", icon: "⏳" },
   "checked-in": { bg: "bg-blue-100", text: "text-blue-800", icon: "✔" },
   completed: { bg: "bg-green-100", text: "text-green-800", icon: "✔" },
-  cancelled: { bg: "bg-red-100", text: "text-red-800", icon: "✖" },
+  cancel: { bg: "bg-red-100", text: "text-red-800", icon: "✖" },
+  "checked-out": { bg: "bg-green-100", text: "text-purple-800", icon: "✔" },
 } as const;
 
 const CustomerProfile: React.FC = () => {
@@ -29,15 +32,24 @@ const CustomerProfile: React.FC = () => {
   useEffect(() => {
     if (user?.username) {
       fetchOrders();
+    } else {
+      setOrders([]); // Đặt orders rỗng nếu user chưa đăng nhập
+      setLoading(false);
     }
   }, [user]);
 
   const fetchOrders = async () => {
+    if (!user?.username) {
+      setError("Bạn cần đăng nhập để xem lịch sử đơn hàng.");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
       const token = localStorage.getItem("authToken");
-      if (!token || !user?.username) {
+      if (!token) {
         throw new Error("Bạn cần đăng nhập để xem lịch sử đơn hàng.");
       }
 
@@ -58,8 +70,8 @@ const CustomerProfile: React.FC = () => {
 
       const data: Booking[] = await response.json();
       setOrders(data);
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Đã xảy ra lỗi không xác định.");
     } finally {
       setLoading(false);
     }
@@ -81,8 +93,8 @@ const CustomerProfile: React.FC = () => {
 
   // Handle Review Submission
   const handleSubmitReview = async () => {
-    if (!selectedOrder) {
-      message.error("Lỗi: Không có đơn hàng nào được chọn.");
+    if (!selectedOrder || !user?.username) {
+      message.error("Lỗi: Không có đơn hàng được chọn hoặc chưa đăng nhập.");
       return;
     }
 
@@ -94,14 +106,17 @@ const CustomerProfile: React.FC = () => {
       createName: user.username,
     };
 
-
     try {
       const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error("Bạn cần đăng nhập để gửi đánh giá.");
+      }
+
       const response = await fetch(`${API_BASE_URL}/ratings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-auth-token": token || "",
+          "x-auth-token": token,
         },
         body: JSON.stringify(reviewData),
       });
@@ -112,18 +127,16 @@ const CustomerProfile: React.FC = () => {
 
       toast.success("Đánh giá đã được gửi thành công!");
       closeReviewModal();
-    } catch (error) {
+    } catch (err) {
       toast.error("Lỗi khi gửi đánh giá.");
-      console.error("Lỗi khi gửi đánh giá:", error);
+      console.error("Lỗi khi gửi đánh giá:", err);
     }
   };
 
   return (
     <Layout>
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Lịch Sử Đơn Hàng
-        </h1>
+        <h1 className="text-3xl font-bold text-center mb-6">Lịch Sử Đơn Hàng</h1>
 
         <div className="overflow-x-auto min-h-[500px]">
           {loading ? (
@@ -145,28 +158,22 @@ const CustomerProfile: React.FC = () => {
               </thead>
               <tbody>
                 {orders.map((order) => (
-                  <tr key={order.BookingID} className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b">
-                      {order.BookingID || "N/A"}
-                    </td>
+                  <tr key={order.CartID} className="hover:bg-gray-50">
+                    <td className="py-2 px-4 border-b">{order.BookingID || "N/A"}</td>
                     <td className="py-2 px-4 border-b">{order.serviceName}</td>
                     <td className="py-2 px-4 border-b">{order.customerName}</td>
                     <td className="py-2 px-4 border-b">
                       <span
                         className={`px-2 py-0.5 rounded-full text-sm ${
                           statusStyles[order.status]?.bg || "bg-gray-100"
-                        }`}
+                        } ${statusStyles[order.status]?.text || "text-gray-800"}`}
                       >
-                        {statusStyles[order.status]?.icon || "❓"}{" "}
-                        {order.status}
+                        {statusStyles[order.status]?.icon || "⏳"} {order.status}
                       </span>
                     </td>
                     <td className="py-2 px-4 border-b">
-                      {order.status === "completed" ? (
-                        <Button
-                          type="primary"
-                          onClick={() => openReviewModal(order)}
-                        >
+                      {order.status === "checked-out" ? (
+                        <Button type="primary" onClick={() => openReviewModal(order)}>
                           Đánh Giá
                         </Button>
                       ) : (
@@ -191,7 +198,7 @@ const CustomerProfile: React.FC = () => {
         cancelText="Hủy"
       >
         <p>
-          <b>{selectedOrder?.serviceName}</b>
+          <b>{selectedOrder?.serviceName || "Không có tên dịch vụ"}</b>
         </p>
         <Rate value={rating} onChange={(value) => setRating(value)} />
         <Input.TextArea
