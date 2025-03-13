@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (user.role === "staff") {
         endpoint = `${API_BASE_URL}/cart`;
         console.log(`Staff role detected - Fetching all carts from: ${endpoint}`);
-      } else if (user.role === "therapist" || user.username.startsWith("therapist")) {
+      } else if (user.role === "skincare_staff" || user.username.startsWith("therapist")) {
         // Thêm kiểm tra username bắt đầu bằng "therapist" để ưu tiên
         endpoint = `${API_BASE_URL}/cart/therapist/${user.username}`;
         console.log(`Therapist role detected - Fetching assigned carts from: ${endpoint}`);

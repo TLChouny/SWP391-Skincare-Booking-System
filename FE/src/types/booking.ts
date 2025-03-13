@@ -51,3 +51,14 @@ export type Blog = {
   image?: string;
   content?: string;
 };
+
+export type Rating = {
+  _id: string;
+  serviceID: string;
+  serviceName: string;
+  serviceRating: number;
+  serviceContent: string;
+  images: string[];
+  createAt: Date;
+  createName: string;
+}

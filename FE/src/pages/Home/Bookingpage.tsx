@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Layout from "../../layout/Layout";
 import CartComponent from "../../components/Cart/CartComponent";
 import { useAuth } from "../../context/AuthContext";
-import { Service, Therapist, Booking } from "../../types/booking";
+import { Service, Therapist, Booking, Rating } from "../../types/booking";
 
 const EnhancedBookingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -663,7 +663,7 @@ const EnhancedBookingPage: React.FC = () => {
 
           <motion.div className="container mx-auto py-16 px-6 relative">
             {isAuthenticated && (
-              <CartComponent handleCheckout={() => {}} isBookingPage={true} />
+              <CartComponent handleCheckout={handleCheckout} isBookingPage={true} />  // Changed to use the actual handleCheckout
             )}
 
             <div className="mt-12 bg-white p-6 rounded-lg shadow-lg">
