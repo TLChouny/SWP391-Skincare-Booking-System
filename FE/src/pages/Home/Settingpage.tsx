@@ -13,6 +13,7 @@ const SettingPage = () => {
   });
   const [loading, setLoading] = useState(true);
   const [newPassword, setNewPassword] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
 
   useEffect(() => {
     if (token) {
@@ -28,7 +29,7 @@ const SettingPage = () => {
     }
 
     try {
-      const response = await axios.get("http://localhost:5002/api/auth/me", {
+      const response = await axios.get("http://localhost:5000/api/auth/me", {
         headers: { "x-auth-token": token }, // ✅ Đúng headers
       });
 
@@ -49,7 +50,7 @@ const SettingPage = () => {
 
     try {
       await axios.put(
-        "http://localhost:5002/api/auth/update-profile",
+        "http://localhost:5000/api/auth/update-profile",
         { username: user.username, email: user.email, avatar: user.avatar },
         { headers: { "x-auth-token": token } } // ✅ Dùng đúng headers
       );
@@ -67,17 +68,29 @@ const SettingPage = () => {
       return;
     }
 
+    console.log("User data:", user); // 🔍 Kiểm tra dữ liệu user trước khi gọi API
+
+    if (!user.email || !oldPassword || !newPassword) {
+      message.error("Vui lòng nhập đầy đủ thông tin!");
+      return;
+    }
+
     try {
-      await axios.put(
-        "http://localhost:5002/api/auth/change-password",
-        { newPassword },
-        { headers: { "x-auth-token": token } } // ✅ Đúng headers
+      await axios.post(
+        "http://localhost:5000/api/auth/forgot-password",
+        {
+          email: user.email, // ✅ Kiểm tra nếu user.email có giá trị hợp lệ
+          old_password: oldPassword, // ✅ Đổi thành biến đúng
+          new_password: newPassword, // ✅ Đổi thành biến đúng
+        },
+        { headers: { "x-auth-token": token } }
       );
 
       message.success("Đổi mật khẩu thành công!");
+      setOldPassword("");
       setNewPassword("");
     } catch (error) {
-      message.error("Lỗi khi đổi mật khẩu!");
+      message.error(error.response?.data?.msg || "Lỗi khi đổi mật khẩu!");
     }
   };
 
@@ -134,20 +147,26 @@ const SettingPage = () => {
       </div>
 
       {/* Đổi mật khẩu */}
-      <div style={{ marginTop: 20 }}>
-        <label>Mật khẩu mới</label>
-        <Input.Password
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
+      {/* Nhập mật khẩu cũ */}
+      <label>Mật khẩu cũ</label>
+      <Input.Password
+        value={oldPassword}
+        onChange={(e) => setOldPassword(e.target.value)}
+      />
 
-        <Button
-          type='default'
-          onClick={handleChangePassword}
-          style={{ marginTop: 10 }}>
-          Đổi mật khẩu
-        </Button>
-      </div>
+      {/* Nhập mật khẩu mới */}
+      <label>Mật khẩu mới</label>
+      <Input.Password
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+      />
+
+      <Button
+        type='default'
+        onClick={handleChangePassword}
+        style={{ marginTop: 10 }}>
+        Đổi mật khẩu
+      </Button>
 
       {/* Đăng xuất */}
       <div style={{ marginTop: 20, textAlign: "center" }}>

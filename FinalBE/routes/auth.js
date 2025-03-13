@@ -7,6 +7,7 @@ const router = express.Router();
 const { sendOTP } = require("../utils/email");
 const { sendResetPasswordOTP } = require("../utils/email");
 const { sendAdminVerificationEmail } = require("../utils/email");
+
 //Đăng ký tài khoản
 router.post(
   "/register",
@@ -21,8 +22,6 @@ router.post(
       .optional()
       .isIn(["male", "female", "other"]),
     check("address", "Địa chỉ không hợp lệ").optional().isString(),
-    check("Description", "Mô tả không hợp lệ").optional().isString(),
-
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -37,7 +36,6 @@ router.post(
       role,
       phone_number,
       gender,
-      Description,
       address,
       avatar,
     } = req.body;
@@ -59,7 +57,6 @@ router.post(
         isVerified: false,
         phone_number,
         gender,
-        Description,
         address,
         avatar: avatar || "default-avatar.png",
       });
@@ -83,12 +80,10 @@ router.post(
         await sendOTP(email, otp);
       }
 
-      res
-        .status(200)
-        .json({
-          msg: "Tài khoản đã được tạo. Kiểm tra email để xác thực.",
-          email,
-        });
+      res.status(200).json({
+        msg: "Tài khoản đã được tạo. Kiểm tra email để xác thực.",
+        email,
+      });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");
@@ -181,7 +176,6 @@ router.post(
   }
 );
 
-
 const authMiddleware = (req, res, next) => {
   const token = req.header("x-auth-token");
   if (!token) {
@@ -229,6 +223,65 @@ router.get("/me", authMiddleware, async (req, res) => {
   }
 });
 
+// Cập nhật thông tin cá nhân
+router.put(
+  "/update-profile",
+  authMiddleware,
+  upload.single("avatar"), // Xử lý upload file ảnh
+  [
+    check("username", "Tên người dùng không được để trống")
+      .optional()
+      .not()
+      .isEmpty(),
+    check("phone_number", "Số điện thoại không hợp lệ")
+      .optional()
+      .isMobilePhone(),
+    check("gender", "Giới tính không hợp lệ")
+      .optional()
+      .isIn(["male", "female", "other"]),
+    check("address", "Địa chỉ không hợp lệ").optional().isString(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { username, phone_number, gender, address } = req.body;
+    const avatar = req.file ? `/uploads/avatars/${req.file.filename}` : null;
+
+    try {
+      let user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ msg: "Người dùng không tồn tại" });
+      }
+
+      // Cập nhật thông tin nếu có
+      if (username) user.username = username;
+      if (phone_number) user.phone_number = phone_number;
+      if (gender) user.gender = gender;
+      if (address) user.address = address;
+      if (avatar) user.avatar = avatar;
+
+      await user.save();
+
+      res.status(200).json({
+        msg: "Cập nhật thông tin thành công!",
+        user: {
+          username: user.username,
+          email: user.email,
+          phone_number: user.phone_number,
+          gender: user.gender,
+          address: user.address,
+          avatar: user.avatar,
+        },
+      });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Lỗi máy chủ");
+    }
+  }
+);
 router.post(
   "/forgot-password",
   [
@@ -351,7 +404,6 @@ router.post(
   }
 );
 
-
 router.get("/auto-verify", async (req, res) => {
   const { token } = req.query;
 
@@ -378,6 +430,5 @@ router.get("/auto-verify", async (req, res) => {
     return res.status(400).json({ msg: "Token không hợp lệ hoặc đã hết hạn" });
   }
 });
-
 
 module.exports = router;
