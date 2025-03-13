@@ -11,7 +11,7 @@ import ServicePage from "../pages/Home/Servicepage";
 import SettingPage from "../pages/Home/Settingpage";
 import ContactPage from "../pages/Home/ContactPage";
 import BlogPage from "../pages/Home/Blogpage";
-import BlogDetailPage from "../pages/Home/Blogdetailpage";
+import BlogDetailPage from "../pages/Home/BlogDetailPage";
 import TestPage from "../pages/Home/SkinAssessmentQuiz";
 
 //manager
