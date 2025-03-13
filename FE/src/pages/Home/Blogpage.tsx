@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 interface Blog {
-  id: number;
+  _id: string;
   title: string;
   author: string;
   description: string;
@@ -111,7 +111,7 @@ const BlogPage: React.FC = () => {
                   </CardContent>
                   <CardFooter>
                     <Button>
-                      <a href={`/blog/${blogs[0].id}`}>Đọc thêm</a>
+                      <a href={`/blog/${blogs[0]._id}`}>Đọc thêm</a>
                     </Button>
                   </CardFooter>
                 </div>
@@ -125,7 +125,7 @@ const BlogPage: React.FC = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {blogs.length > 1 ? (
               blogs.slice(1).map((blog) => (
-                <Card key={blog.id} className="hover:shadow-lg transition-shadow duration-300">
+                <Card key={blog._id} className="hover:shadow-lg transition-shadow duration-300">
                   <img
                     src={blog.image || "/placeholder.svg"}
                     alt={blog.title}
@@ -140,7 +140,7 @@ const BlogPage: React.FC = () => {
                   <CardFooter className="flex justify-between items-center">
                     <span className="text-sm text-gray-500">{blog.author}</span>
                     <Button className="bg-transparent border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white">
-                      <a href={`/blog/${blog.id}`}>Đọc thêm</a>
+                      <a href={`/blog/${blog._id}`}>Đọc thêm</a>
                     </Button>
                   </CardFooter>
                 </Card>

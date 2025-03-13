@@ -11,6 +11,7 @@ import ServicePage from "../pages/Home/Servicepage";
 import SettingPage from "../pages/Home/Settingpage";
 import ContactPage from "../pages/Home/ContactPage";
 import BlogPage from "../pages/Home/Blogpage";
+import BlogDetailPage from "../pages/Home/Blogdetailpage";
 import TestPage from "../pages/Home/SkinAssessmentQuiz";
 
 //manager
@@ -62,6 +63,7 @@ const AppRoutes: React.FC = () => {
           <Route path='/contact' element={<ContactPage />} />{" "}
           <Route path='/services' element={<ServicePage />} />
           <Route path='/blog' element={<BlogPage />} />
+          <Route path="/blog/:_id" element={<BlogDetailPage />} />
           <Route path='/test' element={<TestPage />} />
           {/* <Route path="/blog-details/:id" element={<BlogPage />} /> */}
           <Route path='/admin' element={<AdminDashboard />}>
