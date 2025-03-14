@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { toast } from "react-toastify";
-import { Therapist, Booking } from "../types/booking";
+import {Booking } from "../types/booking";
 
 interface User {
   username: string;
@@ -22,7 +22,8 @@ interface AuthContextType {
   cartError: string | null;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem("authToken"));

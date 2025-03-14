@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../context/AuthContext";
-import { Therapist, Booking } from "../../types/booking";
+import { Booking } from "../../types/booking";
 
 const statusStyles = {
   pending: { bg: "bg-yellow-100", text: "text-yellow-800", icon: "⏳" },
@@ -41,7 +41,8 @@ const ListOfAssign: React.FC = () => {
 
       const booking = bookings.find((b) => b.CartID === cartId);
       if (!booking) throw new Error("Booking not found.");
-      if (booking.status !== "checked-in") throw new Error("Can only complete 'checked-in' bookings.");
+      if (booking.status !== "checked-in")
+        throw new Error("Can only complete 'checked-in' bookings.");
 
       const response = await fetch(`${API_BASE_URL}/cart/${cartId}`, {
         method: "PUT",
@@ -54,23 +55,39 @@ const ListOfAssign: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(`Failed to mark as complete: ${response.status} - ${errorData.message || "Unknown error"}`);
+        throw new Error(
+          `Failed to mark as complete: ${response.status} - ${
+            errorData.message || "Unknown error"
+          }`
+        );
       }
 
       const updatedCart = await response.json();
-      setBookings((prev) => prev.map((b) => (b.CartID === cartId ? { ...b, ...updatedCart.cart } : b)));
-      setCart((prev) => prev.map((b) => (b.CartID === cartId ? { ...b, ...updatedCart.cart } : b)));
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.CartID === cartId ? { ...b, ...updatedCart.cart } : b
+        )
+      );
+      setCart((prev) =>
+        prev.map((b) =>
+          b.CartID === cartId ? { ...b, ...updatedCart.cart } : b
+        )
+      );
       toast.success("Booking marked as completed!");
       await fetchCart(); // Refresh to sync with server
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
       toast.error(`Failed to complete: ${errorMessage}`);
     }
   };
 
   const indexOfLastBooking = currentPage * bookingsPerPage;
   const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage;
-  const currentBookings = bookings.slice(indexOfFirstBooking, indexOfLastBooking);
+  const currentBookings = bookings.slice(
+    indexOfFirstBooking,
+    indexOfLastBooking
+  );
   const totalPages = Math.ceil(bookings.length / bookingsPerPage);
 
   const goToPreviousPage = () => {
@@ -84,7 +101,9 @@ const ListOfAssign: React.FC = () => {
   return (
     <div className="container mx-auto p-6">
       <ToastContainer />
-      <h1 className="text-3xl font-bold text-center mb-6">Therapist Assigned Bookings</h1>
+      <h1 className="text-3xl font-bold text-center mb-6">
+        Therapist Assigned Bookings
+      </h1>
       {loadingCart ? (
         <div className="text-center">
           <svg
@@ -93,7 +112,14 @@ const ListOfAssign: React.FC = () => {
             fill="none"
             viewBox="0 0 24 24"
           >
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
             <path
               className="opacity-75"
               fill="currentColor"
@@ -115,18 +141,33 @@ const ListOfAssign: React.FC = () => {
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap sticky left-0 bg-gray-100 z-10">
                     CartID
                   </th>
-                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">Customer Name</th>
-                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">Service Name</th>
-                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">Booking Date</th>
-                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">Start Time</th>
-                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">Total Price (VND)</th>
-                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">Status</th>
-                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">Action</th>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
+                    Customer Name
+                  </th>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
+                    Service Name
+                  </th>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
+                    Booking Date
+                  </th>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
+                    Start Time
+                  </th>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
+                    Total Price (VND)
+                  </th>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
+                    Status
+                  </th>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {currentBookings.map((booking) => {
-                  const statusStyle = statusStyles[booking.status] || statusStyles.pending;
+                  const statusStyle =
+                    statusStyles[booking.status] || statusStyles.pending;
                   return (
                     <tr
                       key={booking.CartID || Math.random().toString()}
@@ -135,10 +176,18 @@ const ListOfAssign: React.FC = () => {
                       <td className="py-2 px-4 border-b whitespace-nowrap sticky left-0 bg-white z-10">
                         {booking.BookingID || "N/A"}
                       </td>
-                      <td className="py-2 px-4 border-b whitespace-nowrap">{booking.customerName}</td>
-                      <td className="py-2 px-4 border-b whitespace-nowrap">{booking.serviceName}</td>
-                      <td className="py-2 px-4 border-b whitespace NOWRAP">{booking.bookingDate}</td>
-                      <td className="py-2 px-4 border-b whitespace-nowrap">{booking.startTime}</td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        {booking.customerName}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        {booking.serviceName}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace NOWRAP">
+                        {booking.bookingDate}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        {booking.startTime}
+                      </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
                         {booking.totalPrice?.toLocaleString("vi-VN") || "N/A"}
                       </td>

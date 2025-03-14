@@ -1,4 +1,4 @@
-  require("dotenv").config();
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -16,6 +16,10 @@ const questionRoutes = require("./routes/questionRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const blogRoutes = require("./routes/blogRoutes");
 const app = express();
+const path = require("path");
+app.use(express.json({ limit: "10mb" })); // Cho phép body JSON lên đến 10MB
+app.use(express.urlencoded({ extended: true, limit: "10mb" })); // Tăng giới hạn URL-encoded
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Middleware
 app.use(express.json());
@@ -66,7 +70,7 @@ app.use("/api/questions", questionRoutes);
 //blog
 app.use("/api/blogs", blogRoutes);
 
-//rating 
+//rating
 app.use("/api/ratings", ratingRoutes);
 // Connect DB
 mongoose
@@ -76,7 +80,6 @@ mongoose
   })
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB Connection Error:", err));
-
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
