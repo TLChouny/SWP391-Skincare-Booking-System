@@ -227,7 +227,7 @@ router.get("/me", authMiddleware, async (req, res) => {
 router.put(
   "/update-profile",
   authMiddleware,
-  upload.single("avatar"), // Xử lý upload file ảnh
+  // upload.single("avatar"),
   [
     check("username", "Tên người dùng không được để trống")
       .optional()

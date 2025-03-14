@@ -44,6 +44,7 @@ const HomePage: React.FC = () => {
   const [therapists, setTherapists] = useState<Therapist[]>([]);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [currentServiceIndex, setCurrentServiceIndex] = useState(0);
+  const [currentTherapistIndex, setCurrentTherapistIndex] = useState(0);
   const [loadingBlogs, setLoadingBlogs] = useState<boolean>(true);
   const [loadingTherapists, setLoadingTherapists] = useState<boolean>(false);
   const [therapistError, setTherapistError] = useState<string | null>(null);
@@ -52,7 +53,47 @@ const HomePage: React.FC = () => {
   const [qrCode, setQrCode] = useState<string>("");
   const API_BASE_URL = "http://localhost:5000/api";
 
-  // Fetch services (unchanged)
+  // Hàm format giá để hiển thị giá gốc và giá giảm theo cột (dọc)
+  const formatPriceDisplay = (
+    price?: number | { $numberDecimal: string },
+    discountedPrice?: number | null | undefined
+  ): JSX.Element => {
+    let priceValue = 0;
+    if (typeof price === "object" && price?.$numberDecimal) {
+      priceValue = Number.parseFloat(price.$numberDecimal);
+    } else if (typeof price === "number") {
+      priceValue = price;
+    }
+
+    // Nếu priceValue không hợp lệ, trả về giá mặc định
+    if (isNaN(priceValue)) priceValue = 0;
+
+    // Tính phần trăm giảm giá
+    let discountPercentage = 0;
+    if (discountedPrice != null && priceValue > 0) {
+      discountPercentage = Math.round(((priceValue - discountedPrice) / priceValue) * 100);
+    }
+
+    return (
+      <div className="flex flex-col">
+        <span style={{ textDecoration: discountedPrice != null ? "line-through" : "none" }}>
+          {priceValue.toLocaleString("vi-VN")} VNĐ
+        </span>
+        {discountedPrice != null && (
+          <span style={{ color: "green" }}>
+            {discountedPrice.toLocaleString("vi-VN")} VNĐ
+          </span>
+        )}
+        {discountPercentage > 0 && (
+          <span className="text-sm text-red-500 font-semibold mt-1">
+            {discountPercentage}% OFF
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  // Fetch services
   useEffect(() => {
     fetch(`${API_BASE_URL}/products/`, {
       method: "GET",
@@ -76,7 +117,7 @@ const HomePage: React.FC = () => {
       });
   }, []);
 
-  // Fetch therapists (unchanged)
+  // Fetch therapists
   useEffect(() => {
     const fetchTherapists = async () => {
       try {
@@ -116,7 +157,7 @@ const HomePage: React.FC = () => {
     if (isAuthenticated) fetchTherapists();
   }, [isAuthenticated]);
 
-  // Fetch blogs (unchanged)
+  // Fetch blogs
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
@@ -143,7 +184,7 @@ const HomePage: React.FC = () => {
     fetchBlogs();
   }, []);
 
-  // Fetch cart when authenticated (unchanged)
+  // Fetch cart when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
@@ -158,7 +199,7 @@ const HomePage: React.FC = () => {
       return;
     }
 
-    const completedItems = cart.filter((item) => item.status === "completed"); // Updated to "completed"
+    const completedItems = cart.filter((item) => item.status === "completed");
     console.log("Completed items:", completedItems); // Debug log
     if (completedItems.length === 0) {
       toast.error("No completed items in the cart to checkout. Please ensure items are marked as completed.");
@@ -208,7 +249,7 @@ const HomePage: React.FC = () => {
 
       await Promise.all(
         cart
-          .filter((item) => item.status === "completed") // Updated to "completed"
+          .filter((item) => item.status === "completed")
           .map((item) =>
             fetch(`${API_BASE_URL}/cart/${item.CartID}`, {
               method: "PUT",
@@ -241,9 +282,14 @@ const HomePage: React.FC = () => {
     navigate(`/booking/${id}`);
   };
 
-  const handleNext = () => {
+  const handleNextServices = () => {
     const maxIndex = Math.ceil(services.length / 3) - 1;
     setCurrentServiceIndex((prevIndex) => (prevIndex < maxIndex ? prevIndex + 1 : 0));
+  };
+
+  const handleNextTherapists = () => {
+    const maxIndex = Math.ceil(therapists.length / 3) - 1;
+    setCurrentTherapistIndex((prevIndex) => (prevIndex < maxIndex ? prevIndex + 1 : 0));
   };
 
   const handleViewAllBlogs = () => {
@@ -328,11 +374,16 @@ const HomePage: React.FC = () => {
                   .map((service) => (
                     <motion.div
                       key={service._id}
-                      className="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl"
+                      className="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl flex flex-col h-full relative"
                       variants={cardVariants}
                       initial="hidden"
                       animate="visible"
                     >
+                      {service.discountedPrice != null && (
+                        <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
+                          {Math.round(((service.price as number) - service.discountedPrice) / (service.price as number) * 100)}% OFF
+                        </span>
+                      )}
                       <img
                         src={service.image || "/default-service.jpg"}
                         alt={service.name}
@@ -341,19 +392,17 @@ const HomePage: React.FC = () => {
                           (e.target as HTMLImageElement).src = "/default-service.jpg";
                         }}
                       />
-                      <div className="p-8">
-                        <h3 className="text-3xl font-semibold text-gray-800 mb-4">
+                      <div className="p-8 flex flex-col flex-grow">
+                        <h3 className="text-3xl font-semibold text-gray-800 mb-4 line-clamp-2">
                           {service.name}
                         </h3>
-                        <p className="text-gray-600 mb-6">{service.description}</p>
-                        <div className="flex justify-between items-center mb-4">
+                        <p className="text-gray-600 mb-6 flex-grow line-clamp-3">
+                          {service.description}
+                        </p>
+                        <div className="flex justify-between items-end mb-4">
                           <div className="flex flex-col">
                             <span className="text-2xl font-bold text-yellow-500">
-                              {service.price
-                                ? `${typeof service.price === "number"
-                                    ? service.price.toLocaleString("vi-VN")
-                                    : parseFloat((service.price as { $numberDecimal: string }).$numberDecimal).toLocaleString("vi-VN")} VNĐ`
-                                : "Contact for Price"}
+                              {formatPriceDisplay(service.price, service.discountedPrice)}
                             </span>
                             <span className="text-lg text-gray-600">
                               {service.duration
@@ -383,7 +432,7 @@ const HomePage: React.FC = () => {
             {services.length > 3 && (
               <div className="text-center mt-12">
                 <motion.button
-                  onClick={handleNext}
+                  onClick={handleNextServices}
                   className="px-6 py-3 bg-gray-800 text-white rounded-full font-semibold hover:bg-gray-700 transition duration-300 ease-in-out"
                   variants={buttonVariants}
                   whileHover="hover"
@@ -400,46 +449,48 @@ const HomePage: React.FC = () => {
             <h3 className="text-4xl font-extrabold text-gray-900 mb-12 text-center bg-gradient-to-r from-yellow-400 to-pink-500 bg-clip-text text-transparent">
               Our Skincare Experts
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
               {loadingTherapists ? (
                 <p className="text-center text-gray-600 col-span-3">Loading specialists...</p>
               ) : therapistError ? (
                 <p className="text-center text-red-600 col-span-3">{therapistError}</p>
               ) : isAuthenticated && therapists.length > 0 ? (
-                therapists.map((therapist) => (
-                  <motion.div
-                    key={therapist.id}
-                    className="relative bg-white rounded-xl overflow-hidden border-2 border-transparent bg-gradient-to-br from-yellow-50 via-white to-pink-50 p-1"
-                    variants={therapistCardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    whileHover="hover"
-                  >
-                    <div className="relative">
-                      <img
-                        src={therapist.image}
-                        alt={therapist.name}
-                        className="w-full h-56 object-cover rounded-t-lg"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/default-avatar.png";
-                        }}
-                      />
-                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-gray-900/30 rounded-t-lg"></div>
-                    </div>
-                    <div className="p-6 text-left">
-                      <h4 className="text-2xl font-semibold text-gray-800 mb-2">
-                        {therapist.name}
-                      </h4>
-                      <p className="text-base text-yellow-600 font-medium mb-2">
-                        Skincare Specialist
-                      </p>
-                      <p className="text-base text-gray-600 font-medium line-clamp-2">
-                        {therapist.Description || "Chuyên gia tận tâm với nhiều năm kinh nghiệm trong lĩnh vực chăm sóc da."}
-                      </p>
-                    </div>
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-yellow-400 to-pink-500 opacity-0 hover:opacity-10 transition-opacity duration-300"></div>
-                  </motion.div>
-                ))
+                therapists
+                  .slice(currentTherapistIndex * 3, (currentTherapistIndex + 1) * 3)
+                  .map((therapist) => (
+                    <motion.div
+                      key={therapist.id}
+                      className="relative bg-white rounded-xl overflow-hidden border-2 border-transparent bg-gradient-to-br from-yellow-50 via-white to-pink-50 p-1 flex flex-col h-full"
+                      variants={therapistCardVariants}
+                      initial="hidden"
+                      animate="visible"
+                      whileHover="hover"
+                    >
+                      <div className="relative">
+                        <img
+                          src={therapist.image}
+                          alt={therapist.name}
+                          className="w-full h-56 object-cover rounded-t-lg"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/default-avatar.png";
+                          }}
+                        />
+                        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-gray-900/30 rounded-t-lg"></div>
+                      </div>
+                      <div className="p-6 text-left flex flex-col flex-grow">
+                        <h4 className="text-2xl font-semibold text-gray-800 mb-2 line-clamp-1">
+                          {therapist.name}
+                        </h4>
+                        <p className="text-base text-yellow-600 font-medium mb-2">
+                          Skincare Specialist
+                        </p>
+                        <p className="text-base text-gray-600 font-medium line-clamp-3 flex-grow">
+                          {therapist.Description || "Chuyên gia tận tâm với nhiều năm kinh nghiệm trong lĩnh vực chăm sóc da."}
+                        </p>
+                      </div>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-yellow-400 to-pink-500 opacity-0 hover:opacity-10 transition-opacity duration-300"></div>
+                    </motion.div>
+                  ))
               ) : (
                 <p className="text-gray-600 text-center col-span-3 py-12">
                   {isAuthenticated
@@ -448,6 +499,19 @@ const HomePage: React.FC = () => {
                 </p>
               )}
             </div>
+            {isAuthenticated && therapists.length > 3 && (
+              <div className="text-center mt-12">
+                <motion.button
+                  onClick={handleNextTherapists}
+                  className="px-6 py-3 bg-gray-800 text-white rounded-full font-semibold hover:bg-gray-700 transition duration-300 ease-in-out"
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                >
+                  Explore More Specialists
+                </motion.button>
+              </div>
+            )}
           </div>
         </motion.section>
       </AnimatePresence>

@@ -1,70 +1,75 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import "../../src/index.css"
-import logo from "../assets/logo7.png"
-import { Link, useNavigate } from "react-router-dom"
-import { Divider, Dropdown, Menu } from "antd"
-import { ChevronDown, User } from "lucide-react"
-import { ToastContainer, toast } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
+import type React from "react";
+import { useState, useEffect } from "react";
+import "../../src/index.css";
+import logo from "../assets/logo7.png";
+import { Link, useNavigate } from "react-router-dom";
+import { Divider, Dropdown, Menu } from "antd";
+import { ChevronDown, User } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../context/AuthContext"; // Import useAuth từ AuthContext
 
 const Header: React.FC = () => {
-  const [user, setUser] = useState<{ username: string; role?: string } | null>(null)
-  const [role, setRole] = useState<string | null>(null)
-  const navigate = useNavigate()
-  const [showModal, setShowModal] = useState(false)
+  const { token, setToken, setUser, setCart, fetchCart } = useAuth(); // Lấy các phương thức từ AuthContext
+  const [user, setLocalUser] = useState<{ username: string; role?: string } | null>(null);
+  const [role, setRole] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser)
-      setUser(parsedUser)
-      setRole(parsedUser.role || null)
+      const parsedUser = JSON.parse(storedUser);
+      setLocalUser(parsedUser);
+      setRole(parsedUser.role || null);
+    } else {
+      setLocalUser(null);
+      setRole(null);
     }
-  }, [])
+  }, [token]); // Cập nhật khi token thay đổi
 
   const handleBookNow = () => {
     if (!user) {
-      toast.error("Bạn cần đăng nhập trước khi đặt dịch vụ!")
-      setTimeout(() => navigate("/login"), 3000)
+      toast.error("Bạn cần đăng nhập trước khi đặt dịch vụ!");
+      setTimeout(() => navigate("/login"), 3000);
     } else {
-      navigate("/services")
+      navigate("/services");
     }
-  }
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem("user")
-    localStorage.removeItem("authToken")
-    setUser(null)
-    setRole(null)
-    navigate("/login")
-    toast.success("Đã đăng xuất thành công!")
-  }
+    // Reset toàn bộ trạng thái trong AuthContext
+    setToken(null); // Điều này sẽ kích hoạt useEffect trong AuthContext để xóa localStorage và reset cart
+    setLocalUser(null); // Reset state cục bộ trong Header
+    setRole(null);
+    navigate("/login");
+    toast.success("Đã đăng xuất thành công!");
+  };
 
   const getDashboardLink = () => {
-    const storedUser = localStorage.getItem("user")
-    const userRole = storedUser ? JSON.parse(storedUser).role : null
+    const storedUser = localStorage.getItem("user");
+    const userRole = storedUser ? JSON.parse(storedUser).role : null;
 
     switch (userRole) {
       case "admin":
-        return "/admin"
+        return "/admin";
       case "staff":
-        return "/staff"
+        return "/staff";
       case "skincare_staff":
-        return "/therapist"
+        return "/therapist";
       case "user":
-        return "/dashboard"
+        return "/dashboard";
       default:
-        return "/dashboard"
+        return "/dashboard";
     }
-  }
+  };
 
   const handleProfileClick = () => {
-    console.log("User role from localStorage:", localStorage.getItem("user"))
-    navigate(getDashboardLink())
-  }
+    console.log("User role from localStorage:", localStorage.getItem("user"));
+    navigate(getDashboardLink());
+  };
 
   const userMenu = (
     <Menu className="bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-48">
@@ -115,7 +120,7 @@ const Header: React.FC = () => {
         </div>
       </Menu.Item>
     </Menu>
-  )
+  );
 
   return (
     <header className="bg-[#dad5c9] text-black py-4 shadow-lg sticky top-0 z-50">
@@ -196,47 +201,41 @@ const Header: React.FC = () => {
       </div>
 
       {showModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center px-4">
-    <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg relative">
-      {/* Nút đóng modal */}
-      <button
-        onClick={() => setShowModal(false)}
-        className="absolute top-3 right-3 text-2xl text-gray-600 hover:text-gray-900"
-      >
-        ×
-      </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center px-4">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg relative">
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-3 right-3 text-2xl text-gray-600 hover:text-gray-900"
+            >
+              ×
+            </button>
 
-      {/* Tiêu đề */}
-      <h3 className="text-2xl font-semibold text-gray-800 mb-4 text-center">Contact Information</h3>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4 text-center">Contact Information</h3>
 
-      {/* Form */}
-      <form className="space-y-4">
-        <input type="text" placeholder="Name" className="p-2 border w-full rounded-md" />
-        <input type="text" placeholder="Phone Number" className="p-2 border w-full rounded-md" />
-        <button className="py-2 px-4 bg-blue-500 text-white rounded-lg w-full hover:bg-blue-600 transition">
-          Submit
-        </button>
-      </form>
+            <form className="space-y-4">
+              <input type="text" placeholder="Name" className="p-2 border w-full rounded-md" />
+              <input type="text" placeholder="Phone Number" className="p-2 border w-full rounded-md" />
+              <button className="py-2 px-4 bg-blue-500 text-white rounded-lg w-full hover:bg-blue-600 transition">
+                Submit
+              </button>
+            </form>
 
-      {/* Thông tin LuLuSpa */}
-      <div className="mt-6 text-left">
-        <p className="text-gray-600 font-medium">🏡 Store Name: <span className="font-semibold">LuLuSpa</span></p>
-        <p className="text-gray-600">📞 Phone: <span className="font-semibold">123-456-789</span></p>
-        <p className="text-gray-600">📧 Email: <span className="font-semibold">info@luluspa.com</span></p>
-        <p className="text-gray-600">⏰ Working Hours: <span className="font-semibold">Mon - Sat, 9:00 - 17:30</span></p>
-        <a href="https://facebook.com/luluspa" className="text-blue-600 hover:underline mt-2 inline-block">
-          🌐 Visit our Facebook
-        </a>
-      </div>
-    </div>
-  </div>
-)}
-
+            <div className="mt-6 text-left">
+              <p className="text-gray-600 font-medium">🏡 Store Name: <span className="font-semibold">LuLuSpa</span></p>
+              <p className="text-gray-600">📞 Phone: <span className="font-semibold">123-456-789</span></p>
+              <p className="text-gray-600">📧 Email: <span className="font-semibold">info@luluspa.com</span></p>
+              <p className="text-gray-600">⏰ Working Hours: <span className="font-semibold">Mon - Sat, 9:00 - 17:30</span></p>
+              <a href="https://facebook.com/luluspa" className="text-blue-600 hover:underline mt-2 inline-block">
+                🌐 Visit our Facebook
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ToastContainer autoClose={3000} />
     </header>
-  )
-}
+  );
+};
 
-export default Header
-
+export default Header;

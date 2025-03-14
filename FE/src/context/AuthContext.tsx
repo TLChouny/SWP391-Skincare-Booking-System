@@ -8,25 +8,6 @@ interface User {
   email?: string;
 }
 
-// export interface Booking {
-//   username: string | undefined;
-//   CartID?: string;
-//   service_id: number;
-//   serviceName: string;
-//   customerName: string;
-//   customerPhone: string;
-//   customerEmail: string;
-//   notes?: string;
-//   bookingDate: string;
-//   startTime: string;
-//   endTime?: string;
-//   selectedTherapist?: Therapist | null;
-//   Skincare_staff?: string;
-//   totalPrice?: number;
-//   status: "pending" | "checked-in" | "completed" | "cancelled";
-//   action?: "checkin" | "checkout" | null;
-// }
-
 interface AuthContextType {
   token: string | null;
   user: User | null;
