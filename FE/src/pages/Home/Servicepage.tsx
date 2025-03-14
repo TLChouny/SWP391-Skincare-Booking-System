@@ -4,9 +4,7 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Layout from "../../layout/Layout";
-
-// Giả sử bạn có một AuthContext để quản lý trạng thái đăng nhập
-import { useAuth } from "../../context/AuthContext"; // Cần được triển khai thực tế
+import { useAuth } from "../../context/AuthContext";
 
 interface Service {
   _id: string;
@@ -16,6 +14,7 @@ interface Service {
   image?: string;
   duration?: number;
   price?: number | { $numberDecimal: string };
+  discountedPrice?: number | null | undefined; // Giữ nguyên định nghĩa này
   category: {
     _id: string;
     name: string;
@@ -34,7 +33,7 @@ const ServicePage: React.FC = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth(); // Lấy trạng thái xác thực từ context
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -74,31 +73,37 @@ const ServicePage: React.FC = () => {
   const formatServices = (data: any[]) => {
     return data.map((service) => ({
       ...service,
-      price: formatPrice(service.price),
+      price: typeof service.price === "object" && service.price?.$numberDecimal
+        ? Number.parseFloat(service.price.$numberDecimal)
+        : typeof service.price === "string"
+        ? Number.parseFloat(service.price.replace(/\./g, ""))
+        : service.price || 0,
+      discountedPrice: service.discountedPrice ?? null, // Chuyển undefined thành null
       isRecommended: recommendedType
         ? service.category?.name.toLowerCase().includes(recommendedType)
         : false,
     }));
   };
 
-  const formatPrice = (price: any): string => {
-    let priceValue = 0;
-    if (typeof price === "object" && price?.$numberDecimal) {
-      priceValue = Number.parseFloat(price.$numberDecimal);
-    } else if (typeof price === "number") {
-      priceValue = price;
-    } else if (typeof price === "string") {
-      priceValue = Number.parseFloat(price.replace(/\./g, ""));
-    }
-    return `${priceValue.toLocaleString("vi-VN")} VNĐ`;
+  const formatPriceDisplay = (price: number, discountedPrice?: number | null | undefined): JSX.Element => {
+    return (
+      <>
+        <span style={{ textDecoration: discountedPrice != null ? "line-through" : "none" }}>
+          {price.toLocaleString("vi-VN")} VNĐ
+        </span>
+        {discountedPrice != null && (
+          <span style={{ color: "green", marginLeft: "8px" }}>
+            {discountedPrice.toLocaleString("vi-VN")} VNĐ
+          </span>
+        )}
+      </>
+    );
   };
 
   const handleServiceClick = (serviceId: string) => {
     if (isAuthenticated) {
-      // Nếu người dùng đã đăng nhập, chuyển hướng đến trang đặt lịch
       navigate(`/booking/${serviceId}`);
     } else {
-      // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập với URL đích
       navigate("/login", {
         state: { from: `/booking/${serviceId}` },
       });
@@ -154,7 +159,9 @@ const ServicePage: React.FC = () => {
                     (e.target as HTMLImageElement).src = "/default-image.jpg";
                   }}
                 />
-                <p className="text-lg font-bold text-gray-900 mb-2">{formatPrice(service.price)}</p>
+                <p className="text-lg font-bold text-gray-900 mb-2">
+                  {formatPriceDisplay(service.price as number, service.discountedPrice)}
+                </p>
 
                 {hoveredService === service._id && (
                   <motion.div
@@ -167,7 +174,9 @@ const ServicePage: React.FC = () => {
                     <h3 className="text-2xl font-semibold text-gray-900 mb-2">{service.name}</h3>
                     <p className="text-md text-gray-700">{service.description}</p>
                     <p className="text-md">Duration: {service.duration || "N/A"} minutes</p>
-                    <p className="text-lg font-bold text-gray-900 mb-2">{formatPrice(service.price)}</p>
+                    <p className="text-lg font-bold text-gray-900 mb-2">
+                      {formatPriceDisplay(service.price as number, service.discountedPrice)}
+                    </p>
                   </motion.div>
                 )}
               </motion.div>
@@ -179,4 +188,4 @@ const ServicePage: React.FC = () => {
   );
 };
 
-export default ServicePage;
+export default ServicePage; 

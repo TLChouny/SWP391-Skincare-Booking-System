@@ -26,9 +26,7 @@ const EnhancedBookingPage: React.FC = () => {
   const [notes, setNotes] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(
-    null
-  );
+  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [paymentUrl, setPaymentUrl] = useState<string>("");
   const [qrCode, setQrCode] = useState<string>("");
@@ -91,7 +89,7 @@ const EnhancedBookingPage: React.FC = () => {
       errors.push("Số điện thoại phải là 10 chữ số hợp lệ.");
     if (
       !customerEmail.trim() ||
-      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0.9.-]+\.[a-zA-Z]{2,}$/.test(customerEmail)
+      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(customerEmail)
     )
       errors.push("Email phải có định dạng hợp lệ.");
     if (!selectedDate) errors.push("Vui lòng chọn ngày đặt lịch.");
@@ -104,19 +102,37 @@ const EnhancedBookingPage: React.FC = () => {
     return true;
   };
 
-  const formatPrice = (price?: number | { $numberDecimal: string }): string => {
+  const formatPriceDisplay = (
+    price?: number | { $numberDecimal: string },
+    discountedPrice?: number | null | undefined
+  ): JSX.Element => {
     let priceValue = 0;
     if (typeof price === "object" && price?.$numberDecimal) {
       priceValue = Number.parseFloat(price.$numberDecimal);
     } else if (typeof price === "number") {
       priceValue = price;
     }
-    return `${priceValue.toLocaleString("vi-VN")} VNĐ`;
+
+    // Nếu priceValue không hợp lệ, trả về giá mặc định
+    if (isNaN(priceValue)) priceValue = 0;
+
+    return (
+      <>
+        <span style={{ textDecoration: discountedPrice != null ? "line-through" : "none" }}>
+          {priceValue.toLocaleString("vi-VN")} VNĐ
+        </span>
+        {discountedPrice != null && (
+          <span style={{ color: "green", marginLeft: "8px" }}>
+            {discountedPrice.toLocaleString("vi-VN")} VNĐ
+          </span>
+        )}
+      </>
+    );
   };
 
   const calculateTotal = (): number => {
     return cart
-      .filter((item) => item.status === "completed") // Updated to "completed"
+      .filter((item) => item.status === "completed")
       .reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   };
 
@@ -168,7 +184,7 @@ const EnhancedBookingPage: React.FC = () => {
       return;
     }
 
-    const completedItems = cart.filter((item) => item.status === "completed"); // Updated to "completed"
+    const completedItems = cart.filter((item) => item.status === "completed");
     if (completedItems.length === 0) {
       toast.error("No completed items in the cart to checkout.");
       return;
@@ -220,7 +236,7 @@ const EnhancedBookingPage: React.FC = () => {
 
       await Promise.all(
         cart
-          .filter((item) => item.status === "completed") // Updated to "completed"
+          .filter((item) => item.status === "completed")
           .map((item) =>
             fetch(`${API_BASE_URL}/cart/${item.CartID}`, {
               method: "PUT",
@@ -248,15 +264,17 @@ const EnhancedBookingPage: React.FC = () => {
   useEffect(() => {
     const fetchService = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/products/`, {
+        if (!id) {
+          throw new Error("Service ID is missing.");
+        }
+        const response = await fetch(`${API_BASE_URL}/products/${id}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
         if (!response.ok)
           throw new Error(`Failed to fetch service: ${response.status}`);
-        const productsData = await response.json();
-        const foundService = productsData.find((s: Service) => s._id === id);
-        setService(foundService || null);
+        const serviceData = await response.json();
+        setService(serviceData || null);
       } catch (error) {
         console.error("Error fetching service data:", error);
         toast.error("Không thể tải dịch vụ.");
@@ -355,6 +373,14 @@ const EnhancedBookingPage: React.FC = () => {
 
     console.log("📌 Selected Date from Form:", selectedDate);
 
+    const totalPrice = service.discountedPrice ?? (
+      typeof service.price === "number"
+        ? service.price
+        : service.price?.$numberDecimal
+        ? parseFloat(service.price.$numberDecimal)
+        : 0
+    );
+
     const bookingData = {
       username: user.username,
       service_id: service.service_id,
@@ -366,12 +392,7 @@ const EnhancedBookingPage: React.FC = () => {
       customerPhone,
       notes: notes || undefined,
       Skincare_staff: selectedTherapist?.name || undefined,
-      totalPrice:
-        typeof service.price === "number"
-          ? service.price
-          : service.price?.$numberDecimal
-          ? parseFloat(service.price.$numberDecimal)
-          : 0,
+      totalPrice,
       status: "pending",
     };
 
@@ -412,7 +433,7 @@ const EnhancedBookingPage: React.FC = () => {
                 </h3>
                 <ul className="space-y-4">
                   {cart
-                    .filter((item) => item.status === "completed") // Updated to "completed"
+                    .filter((item) => item.status === "completed")
                     .map((item, index) => (
                       <li
                         key={item.CartID || index}
@@ -432,7 +453,7 @@ const EnhancedBookingPage: React.FC = () => {
                           )}
                         </div>
                         <span className="font-bold text-gray-800">
-                          {item.totalPrice?.toLocaleString("vi-VN")} VNĐ
+                          {formatPriceDisplay(item.originalPrice || item.totalPrice || 0, item.discountedPrice)}
                         </span>
                       </li>
                     ))}
@@ -440,11 +461,18 @@ const EnhancedBookingPage: React.FC = () => {
                 <div className="text-right text-xl font-bold mt-6 text-gray-800">
                   Total: {formatTotal()}
                 </div>
-                <div className="mt-6">
-                  <p className="text-lg font-semibold mb-2">
-                    Scan QR Code to Pay:
-                  </p>
-                </div>
+                {qrCode && (
+                  <div className="mt-6 text-center">
+                    <p className="text-lg font-semibold mb-2">
+                      Scan QR Code to Pay:
+                    </p>
+                    <img
+                      src={qrCode}
+                      alt="QR Code"
+                      className="mx-auto max-w-[180px]"
+                    />
+                  </div>
+                )}
                 <p className="mt-4 text-blue-600 text-center">
                   <a
                     href={paymentUrl}
@@ -510,7 +538,7 @@ const EnhancedBookingPage: React.FC = () => {
                   <div className="flex justify-between items-center mb-4">
                     <div>
                       <p className="text-xl font-semibold text-yellow-500">
-                        Price: {formatPrice(service.price)}
+                        Price: {formatPriceDisplay(service.price, service.discountedPrice)}
                       </p>
                       <p className="text-lg text-gray-600">
                         Duration: {service.duration || "N/A"} minutes
@@ -660,45 +688,41 @@ const EnhancedBookingPage: React.FC = () => {
               </motion.button>
             </form>
           </motion.div>
-
-          <motion.div className="container mx-auto py-16 px-6 relative">
-            {isAuthenticated && (
-              <CartComponent handleCheckout={handleCheckout} isBookingPage={true} />  // Changed to use the actual handleCheckout
-            )}
-
-            <div className="mt-12 bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">
-                Reviews
-              </h3>
-              {loadingRatings ? (
-                <p className="text-gray-600 text-center">Loading ratings...</p>
-              ) : ratings.length === 0 ? (
-                <p className="text-gray-600 text-center">
-                  No ratings available for this service.
-                </p>
-              ) : (
-                <div className="space-y-6">
-                  {ratings.map((rating) => (
-                    <div
-                      key={rating._id}
-                      className="p-4 border rounded-lg shadow-md bg-gray-50 hover:bg-gray-100 transition duration-300"
-                    >
-                      <p className="font-bold text-lg text-blue-600">
-                        {rating.createName}
-                      </p>
-                      <p className="text-yellow-500 text-lg">
-                        Rating: {rating.serviceRating} ⭐
-                      </p>
-                      <p className="text-gray-600 mt-2">
-                        {rating.serviceContent}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.div>
         </div>
+
+        <motion.div className="container mx-auto py-16 px-6 relative">
+          <div className="mt-12 bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">
+              Reviews
+            </h3>
+            {loadingRatings ? (
+              <p className="text-gray-600 text-center">Loading ratings...</p>
+            ) : ratings.length === 0 ? (
+              <p className="text-gray-600 text-center">
+                No ratings available for this service.
+              </p>
+            ) : (
+              <div className="space-y-6">
+                {ratings.map((rating) => (
+                  <div
+                    key={rating._id}
+                    className="p-4 border rounded-lg shadow-md bg-gray-50 hover:bg-gray-100 transition duration-300"
+                  >
+                    <p className="font-bold text-lg text-blue-600">
+                      {rating.createName}
+                    </p>
+                    <p className="text-yellow-500 text-lg">
+                      Rating: {rating.serviceRating} ⭐
+                    </p>
+                    <p className="text-gray-600 mt-2">
+                      {rating.serviceContent}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </motion.div>
       </motion.div>
     </Layout>
   );

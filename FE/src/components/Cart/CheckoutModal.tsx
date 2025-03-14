@@ -30,6 +30,21 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   setQrCode,
   API_BASE_URL,
 }) => {
+  const formatPriceDisplay = (originalPrice: number, discountedPrice?: number | null): JSX.Element => {
+    return (
+      <>
+        <span style={{ textDecoration: discountedPrice != null ? "line-through" : "none" }}>
+          {originalPrice.toLocaleString("vi-VN")} VNĐ
+        </span>
+        {discountedPrice != null && (
+          <span style={{ color: "green", marginLeft: "8px" }}>
+            {discountedPrice.toLocaleString("vi-VN")} VNĐ
+          </span>
+        )}
+      </>
+    );
+  };
+
   const calculateTotal = (): number => {
     return cart
       .filter((item) => item.status === "completed")
@@ -165,7 +180,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                             )}
                           </div>
                           <span className="font-bold text-gray-800 whitespace-nowrap">
-                            {item.totalPrice?.toLocaleString("vi-VN")} VNĐ
+                            {formatPriceDisplay(item.originalPrice || item.totalPrice || 0, item.discountedPrice)}
                           </span>
                         </li>
                       ))}
@@ -180,8 +195,6 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   {qrCode && (
                     <div className="mt-6 text-center">
                       <p className="text-lg font-semibold mb-2">Quét QR để thanh toán:</p>
-                      {/* Uncomment nếu sử dụng gói QRCode */}
-                      {/* <QRCode value={paymentUrl} size={180} className="mx-auto" /> */}
                       <img src={qrCode} alt="QR Code" className="mx-auto max-w-[180px]" />
                       <p className="mt-4 text-blue-600">
                         <a href={paymentUrl} target="_blank" rel="noopener noreferrer">
@@ -198,16 +211,8 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       onClick={() => setShowModal(false)}
                       className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-300 text-gray-800"
                     >
-                      Hủy
+                      Cancel
                     </motion.button>
-                    {/* <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handlePayment}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300"
-                    >
-                      Xác Nhận
-                    </motion.button> */}
                   </div>
                 </>
               )}

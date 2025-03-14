@@ -22,6 +22,14 @@ const calculateEndTime = (startTime, duration) => {
   return `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
 };
 
+const calculateDiscount = async (price, discountCode) => {
+  const voucher = await Voucher.findOne({ code: discountCode });
+  if (voucher) {
+    return voucher.discountAmount || (price * (voucher.discountPercentage || 0));
+  }
+  return 0;
+};
+
 // Create a new cart
 exports.createCart = async (req, res) => {
   try {
@@ -58,6 +66,23 @@ exports.createCart = async (req, res) => {
       return res.status(404).json({ message: "Sản phẩm không tồn tại" });
     }
 
+    // Lấy giá gốc và giá giảm từ Product
+    const originalPrice = typeof product.price === "object" && product.price.$numberDecimal
+      ? parseFloat(product.price.$numberDecimal)
+      : product.price || 0;
+    const discountedPrice = product.discountedPrice || null;
+
+    // Tính toán totalPrice dựa trên discountedPrice hoặc discountCode
+    let finalPrice = originalPrice;
+    let finalDiscountedPrice = discountedPrice;
+    if (discountedPrice !== null) {
+      finalPrice = discountedPrice;
+    } else if (discountCode) {
+      const discountAmount = await calculateDiscount(originalPrice, discountCode);
+      finalPrice = originalPrice - discountAmount;
+      finalDiscountedPrice = finalPrice; // Lưu giá sau khi áp dụng discountCode
+    }
+
     const newCart = new Cart({
       CartID: uuidv4(),
       BookingID,
@@ -68,17 +93,18 @@ exports.createCart = async (req, res) => {
       notes,
       service_id,
       serviceName: product.name,
-      serviceType: product.category.name,
+      serviceType: product.category?.name,
       bookingDate,
       startTime,
       endTime: calculateEndTime(startTime, product.duration),
       duration: product.duration,
-      totalPrice:
-        product.price - (discountCode ? calculateDiscount(product.price, discountCode) : 0),
+      originalPrice: originalPrice, // Lưu giá gốc
+      totalPrice: finalPrice, // Giá thực tế thanh toán
+      discountedPrice: finalDiscountedPrice, // Giá sau khi giảm
       currency: "VND",
       discountCode,
       Skincare_staff,
-      status: "pending", // Explicitly set to ensure it's always present
+      status: "pending",
     });
 
     await newCart.save();

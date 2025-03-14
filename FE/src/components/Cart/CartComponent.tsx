@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 import { Booking } from "../../types/booking";
 
-// Define a minimal type for the user object from useAuth
 type AuthUser = {
   username?: string;
   email?: string;
@@ -43,14 +42,27 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
     };
   }, [fetchCart, user]);
 
-  // Filter cart items for the current user
   const userCart = cart.filter((item) => item.username === (user as AuthUser)?.username);
 
-  // Debug: Log the cart data
   useEffect(() => {
     console.log("Cart data:", cart);
     console.log("User cart filtered:", userCart);
   }, [cart, userCart]);
+
+  const formatPriceDisplay = (originalPrice: number, discountedPrice?: number | null): JSX.Element => {
+    return (
+      <>
+        <span style={{ textDecoration: discountedPrice != null ? "line-through" : "none" }}>
+          {originalPrice.toLocaleString("vi-VN")} VNĐ
+        </span>
+        {discountedPrice != null && (
+          <span style={{ color: "green", marginLeft: "8px" }}>
+            {discountedPrice.toLocaleString("vi-VN")} VNĐ
+          </span>
+        )}
+      </>
+    );
+  };
 
   const calculateTotal = (): number => {
     return userCart
@@ -63,7 +75,6 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
     return `${totalValue.toLocaleString("vi-VN")} VNĐ`;
   };
 
-  // Map status to user-friendly Vietnamese labels
   const getStatusLabel = (status: string | undefined): string => {
     switch (status) {
       case "pending":
@@ -77,12 +88,11 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
       case "cancel":
         return "Đã hủy";
       default:
-        console.warn("Unexpected status value:", status); // Debug log
+        console.warn("Unexpected status value:", status);
         return "Không xác định";
     }
   };
 
-  // Map status to corresponding colors
   const getStatusColor = (status: string | undefined): string => {
     switch (status) {
       case "pending":
@@ -113,8 +123,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
         throw new Error("Bạn cần đăng nhập để hủy giỏ hàng.");
       }
 
-      console.log(`Attempting to cancel cart item with ID: ${cartID}`); // Debug log
-
+      console.log(`Attempting to cancel cart item with ID: ${cartID}`);
       const response = await fetch(`${API_BASE_URL}/cart/${cartID}`, {
         method: "PUT",
         headers: {
@@ -130,9 +139,8 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
       }
 
       const data = await response.json();
-      console.log(`Successfully canceled cart item with ID: ${cartID}`, data); // Debug log
+      console.log(`Successfully canceled cart item with ID: ${cartID}`, data);
 
-      // Làm mới giỏ hàng từ server
       await fetchCart();
       toast.success("Giỏ hàng đã được hủy thành công!");
     } catch (error) {
@@ -182,14 +190,12 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
                   >
                     <p className="font-semibold text-gray-800">{item.serviceName}</p>
                     <p className="text-gray-600">Ngày đặt: {item.bookingDate} - {item.startTime}</p>
-                    <p className="text-gray-600">
-                      Khách hàng: {item.customerName}
-                    </p>
+                    <p className="text-gray-600">Khách hàng: {item.customerName}</p>
                     {item.Skincare_staff && (
                       <p className="text-gray-600">Nhân viên: {item.Skincare_staff}</p>
                     )}
                     <p className="text-gray-600">
-                      Tổng tiền: {item.totalPrice?.toLocaleString("vi-VN") || "N/A"} VNĐ
+                      Tổng tiền: {formatPriceDisplay(item.originalPrice || item.totalPrice || 0, item.discountedPrice)}
                     </p>
                     <p className={`${getStatusColor(item.status)}`}>
                       Trạng thái: {getStatusLabel(item.status)}

@@ -6,15 +6,15 @@ export type Service = {
   description: string;
   image?: string;
   duration?: number;
-  price?: number | { $numberDecimal: string }; // Support both number and MongoDB Decimal128 format
-  category: {
+  price?: number | { $numberDecimal: string };
+  discountedPrice?: number | null | undefined; // Thêm dòng này
+  category?: {
     _id: string;
     name: string;
     description: string;
   };
   createDate?: string;
-  __v?: number;
-};
+}
 
 export type Therapist = {
   id: string;
@@ -38,7 +38,9 @@ export type Booking = {
   endTime?: string;
   selectedTherapist?: Therapist | null; // From EnhancedBookingPage
   Skincare_staff?: string; // From EnhancedBookingPage, optional therapist name
+  originalPrice?: number; // Thêm: Giá gốc
   totalPrice?: number;
+  discountedPrice: number | null;
   status: "pending" | "checked-in" | "completed" | "checked-out" | "cancel";
   action?: "checkin" | "checkout" | null; // From EnhancedBookingPage
 };

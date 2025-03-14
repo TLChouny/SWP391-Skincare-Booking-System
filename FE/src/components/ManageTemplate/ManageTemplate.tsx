@@ -9,6 +9,7 @@ interface Columns {
   title: string;
   dataIndex: string;
   key: string;
+  render?: (value: any, record: any) => React.ReactNode;
 }
 
 interface ManageTemplateProps {
@@ -19,6 +20,8 @@ interface ManageTemplateProps {
     | ((editingId: string | null) => React.ReactElement);
   apiEndpoint: string;
   mode?: "full" | "view-only" | "create-only" | "delete-only";
+  dataSource?: any[];
+  setDataSource?: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 function ManageTemplate({
@@ -27,10 +30,12 @@ function ManageTemplate({
   formItems,
   apiEndpoint,
   mode = "full",
+  dataSource: externalDataSource,
+  setDataSource: setExternalDataSource,
 }: ManageTemplateProps) {
   const { token } = useAuth();
   const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [form] = Form.useForm();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -42,38 +47,42 @@ function ManageTemplate({
     }
     try {
       setLoading(true);
-      console.log("Fetching data with token:", token);
       const res = await api.get(apiEndpoint, {
         headers: { "x-auth-token": token },
       });
-      console.log("API Response Data:", res.data);
       const responseData = Array.isArray(res.data)
         ? res.data
         : res.data.data
         ? res.data.data
         : [];
       setData(responseData);
+      if (setExternalDataSource) {
+        setExternalDataSource(responseData);
+      }
     } catch (error: any) {
       console.error("Fetch error:", error.response?.data || error);
       message.error(error.response?.data?.message || `Error fetching ${title}`);
       setData([]);
+      if (setExternalDataSource) {
+        setExternalDataSource([]);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, [apiEndpoint, token]);
+    if (externalDataSource !== undefined) {
+      setData(externalDataSource);
+    }
+  }, [externalDataSource]);
 
   const handleCreate = async (values: any) => {
     if (!token || mode === "view-only") return;
     try {
-      console.log("Sending Data to API:", JSON.stringify(values, null, 2));
       const response = await api.post(apiEndpoint, values, {
         headers: { "x-auth-token": token, "Content-Type": "application/json" },
       });
-      console.log("API Response:", response.data);
       toast.success(`${title} created successfully`);
       form.resetFields();
       setShowModal(false);
@@ -129,16 +138,17 @@ function ManageTemplate({
             render: (_: any, record: any) => (
               <Space>
                 <Button
-                  type='link'
+                  type="link"
                   icon={<EditOutlined />}
                   onClick={() => startEdit(record)}
                 />
                 <Popconfirm
                   title={`Are you sure you want to delete this ${title}?`}
                   onConfirm={() => handleDelete(record._id)}
-                  okText='Yes'
-                  cancelText='No'>
-                  <Button type='link' danger icon={<DeleteOutlined />} />
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button type="link" danger icon={<DeleteOutlined />} />
                 </Popconfirm>
               </Space>
             ),
@@ -154,30 +164,31 @@ function ManageTemplate({
               <Popconfirm
                 title={`Are you sure you want to delete this ${title}?`}
                 onConfirm={() => handleDelete(record._id)}
-                okText='Yes'
-                cancelText='No'>
-                <Button type='link' danger icon={<DeleteOutlined />} />
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button type="link" danger icon={<DeleteOutlined />} />
               </Popconfirm>
             ),
           },
         ]
       : mode === "create-only"
       ? [...columns]
-      : columns; // "view-only" -> No actions
+      : columns;
 
   return (
     <div style={{ padding: "24px" }}>
       <ToastContainer />
-
       {(mode === "full" || mode === "create-only") && (
         <Button
-          type='primary'
+          type="primary"
           onClick={() => {
             setEditingId(null);
             form.resetFields();
             setShowModal(true);
           }}
-          style={{ marginBottom: "16px" }}>
+          style={{ marginBottom: "16px" }}
+        >
           Create new {title}
         </Button>
       )}
@@ -186,7 +197,7 @@ function ManageTemplate({
         columns={columnsWithActions}
         dataSource={data}
         loading={loading}
-        rowKey='_id'
+        rowKey="_id"
       />
 
       {mode !== "view-only" && formItems && (
@@ -198,11 +209,13 @@ function ManageTemplate({
             setEditingId(null);
             form.resetFields();
           }}
-          onOk={() => form.submit()}>
+          onOk={() => form.submit()}
+        >
           <Form
             form={form}
             labelCol={{ span: 24 }}
-            onFinish={editingId ? handleEdit : handleCreate}>
+            onFinish={editingId ? handleEdit : handleCreate}
+          >
             {typeof formItems === "function" ? formItems(editingId) : formItems}
           </Form>
         </Modal>
