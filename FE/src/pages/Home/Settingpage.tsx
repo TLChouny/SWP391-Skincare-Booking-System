@@ -3,6 +3,7 @@ import { Button, Input, Avatar, Spin, message, Upload } from "antd";
 import { UploadOutlined, LogoutOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext"; // Lấy token từ AuthContext
+import { toast } from "react-toastify";
 
 const SettingPage = () => {
   const { token } = useAuth(); // ✅ Dùng token từ context thay vì localStorage
@@ -90,8 +91,9 @@ const SettingPage = () => {
       setOldPassword("");
       setNewPassword("");
     } catch (error) {
-      message.error(error.response?.data?.msg || "Lỗi khi đổi mật khẩu!");
-    }
+          const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+          toast.error(`Fail to change password: ${errorMessage}`);
+        }
   };
 
   // Xử lý đăng xuất
