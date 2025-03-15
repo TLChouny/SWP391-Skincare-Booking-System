@@ -30,10 +30,12 @@ const Forgot_password: React.FC = () => {
     setLoading(true);
 
     try {
-      await axios.post(
-        "http://localhost:5000/api/auth/forgot-password/send-otp",
-        { email }
-      );
+      const API_URL =
+        window.location.hostname === "localhost"
+          ? "http://localhost:5000/api"
+          : "https://luluspa-production.up.railway.app/api";
+
+      await axios.post(`${API_URL}/auth/forgot-password/send-otp`, { email });
 
       toast.success("Mã OTP đã được gửi, vui lòng kiểm tra email!");
       setIsOtpModalOpen(true);
@@ -68,15 +70,17 @@ const Forgot_password: React.FC = () => {
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/forgot-password/reset",
-        {
-          email,
-          otp,
-          new_password: newPassword,
-          confirm_password: confirmPassword,
-        }
-      );
+      const API_URL =
+        window.location.hostname === "localhost"
+          ? "http://localhost:5000/api"
+          : "https://luluspa-production.up.railway.app/api";
+
+      const response = await axios.post(`${API_URL}/auth/forgot-password/reset`, {
+        email,
+        otp,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      });
 
       message.success(response.data.msg);
 

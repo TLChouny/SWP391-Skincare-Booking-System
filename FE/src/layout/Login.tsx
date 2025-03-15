@@ -32,7 +32,12 @@ const Login: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const API_URL =
+        window.location.hostname === "localhost"
+          ? "http://localhost:5000/api"
+          : "https://luluspa-production.up.railway.app/api";
+
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -120,9 +125,8 @@ const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`flex items-center justify-center w-full py-4 mt-5 font-semibold tracking-wide text-gray-100 transition-all duration-300 ease-in-out rounded-lg ${
-                  loading ? "bg-gray-500" : "bg-blue-900 hover:bg-indigo-700"
-                }`}
+                className={`flex items-center justify-center w-full py-4 mt-5 font-semibold tracking-wide text-gray-100 transition-all duration-300 ease-in-out rounded-lg ${loading ? "bg-gray-500" : "bg-blue-900 hover:bg-indigo-700"
+                  }`}
               >
                 {loading ? "Đang xử lý..." : "Đăng nhập"}
               </button>
