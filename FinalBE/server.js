@@ -2,6 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
+
 const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/auth");
@@ -15,23 +17,52 @@ const reviewRoutes = require("./routes/reviewRoutes");
 const questionRoutes = require("./routes/questionRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const blogRoutes = require("./routes/blogRoutes");
-const app = express();
-const path = require("path");
-app.use(express.json({ limit: "10mb" })); // Cho phép body JSON lên đến 10MB
-app.use(express.urlencoded({ extended: true, limit: "10mb" })); // Tăng giới hạn URL-encoded
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Middleware
-app.use(express.json());
-app.use(cors());
-app.use(express.urlencoded({ extended: false }));
+const app = express();
+
+// ✅ Cấu hình CORS (Đặt đúng vị trí)
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://swp-391-skincare-booking-system.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
+// ✅ Middleware
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/", express.static("public"));
 
-// payment
+// ✅ Định tuyến API
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/vouchers", voucherRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/questions", questionRoutes);
+app.use("/api/blogs", blogRoutes);
+app.use("/api/ratings", ratingRoutes);
 app.use("/api/payments/webhook", webhookRoutes);
 app.use("/api/payments", paymentRoutes);
+
+// ✅ Payment API (Sửa `YOUR_DOMAIN`)
 app.post("/create-payment-link", async (req, res) => {
-  const YOUR_DOMAIN = "http://localhost:5000";
+  const YOUR_DOMAIN = process.env.CLIENT_URL || "http://localhost:3000"; // 🔥 Sửa lỗi hardcode
+
   const body = {
     orderCode: Number(String(Date.now()).slice(-6)),
     amount: 1000,
@@ -45,34 +76,11 @@ app.post("/create-payment-link", async (req, res) => {
     res.redirect(paymentLinkResponse.checkoutUrl);
   } catch (error) {
     console.error(error);
-    res.send("Something went error");
+    res.status(500).send("Something went wrong");
   }
 });
-//user
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-//product
-app.use("/api/categories", categoryRoutes);
-app.use("/api/products", productRoutes);
 
-//voucher
-app.use("/api/vouchers", voucherRoutes);
-
-//cart
-app.use("/api/cart", cartRoutes);
-
-//review
-app.use("/api/reviews", reviewRoutes);
-
-//question
-app.use("/api/questions", questionRoutes);
-
-//blog
-app.use("/api/blogs", blogRoutes);
-
-//rating
-app.use("/api/ratings", ratingRoutes);
-// Connect DB
+// ✅ Connect DB
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -81,6 +89,7 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB Connection Error:", err));
 
+// ✅ Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
 
