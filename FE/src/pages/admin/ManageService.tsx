@@ -2,8 +2,10 @@ import { Form, Input, InputNumber, Select, Button, Modal, Tag } from "antd";
 import { useEffect, useState } from "react";
 import api from "../../api/apiService";
 import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
+import { useAuth } from "../../context/AuthContext"; // Thêm useAuth để lấy token
 
 function ManageService() {
+  const { token } = useAuth(); // Lấy token từ context
   const title = "Service";
   const [categories, setCategories] = useState<{ _id: string; name: string }[]>([]);
   const [vouchers, setVouchers] = useState<{ _id: string; code: string; discountPercentage: number }[]>([]);
@@ -11,45 +13,58 @@ function ManageService() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
   const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!token) return;
+      setLoading(true);
       try {
-        const res = await api.get("/products");
+        const res = await api.get("/products", {
+          headers: { "x-auth-token": token },
+        });
+        console.log("Fetched Products:", res.data);
         setProducts(res.data || []);
-      } catch (error) {
-        console.error("Error fetching products:", error);
+      } catch (error: any) {
+        console.error("Error fetching products:", error.response?.data || error.message);
       } finally {
         setLoading(false);
       }
     };
     fetchProducts();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     const fetchCategories = async () => {
+      if (!token) return;
       try {
-        const res = await api.get("/categories");
+        const res = await api.get("/categories", {
+          headers: { "x-auth-token": token },
+        });
+        console.log("Fetched Categories:", res.data);
         setCategories(res.data || []);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
+      } catch (error: any) {
+        console.error("Error fetching categories:", error.response?.data || error.message);
       }
     };
     fetchCategories();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     const fetchVouchers = async () => {
+      if (!token) return;
       try {
-        const res = await api.get("/vouchers");
+        const res = await api.get("/vouchers", {
+          headers: { "x-auth-token": token },
+        });
+        console.log("Fetched Vouchers:", res.data);
         setVouchers(res.data || []);
-      } catch (error) {
-        console.error("Error fetching vouchers:", error);
+      } catch (error: any) {
+        console.error("Error fetching vouchers:", error.response?.data || error.message);
       }
     };
     fetchVouchers();
-  }, []);
+  }, [token]);
 
   const columns = [
     { title: "Service Name", dataIndex: "name", key: "name" },
@@ -129,15 +144,19 @@ function ManageService() {
       <Form.Item name="duration" label="Duration (minutes)" rules={[{ required: true, message: "Please input duration" }]}>
         <InputNumber min={1} style={{ width: "100%" }} />
       </Form.Item>
-      {/* <Form.Item name="category" label="Category" rules={[{ required: true, message: "Please select a category" }]}> */}
-        {/* <Select placeholder="Select category">
+      <Form.Item
+        name="category"
+        label="Category"
+        rules={[{ required: true, message: "Please select a category" }]}
+      >
+        <Select placeholder="Select category">
           {categories.map((cat) => (
             <Select.Option key={cat._id} value={cat._id}>
               {cat.name}
             </Select.Option>
           ))}
-        </Select> */}
-      {/* </Form.Item> */}
+        </Select>
+      </Form.Item>
       <Form.Item name="image" label="Image URL">
         <Input placeholder="Enter image URL" />
       </Form.Item>
@@ -145,29 +164,36 @@ function ManageService() {
   );
 
   const handleAddVoucher = async () => {
-    if (!selectedProductId || !selectedVoucher) return;
+    if (!token || !selectedProductId || !selectedVoucher) return;
     try {
       setLoading(true);
-      await api.post(`/products/${selectedProductId}/vouchers`, { voucherId: selectedVoucher });
+      await api.post(
+        `/products/${selectedProductId}/vouchers`,
+        { voucherId: selectedVoucher },
+        { headers: { "x-auth-token": token } }
+      );
       setIsModalVisible(false);
       setSelectedVoucher(null);
-      const res = await api.get("/products");
+      const res = await api.get("/products", { headers: { "x-auth-token": token } });
       setProducts(res.data);
-    } catch (error) {
-      console.error("Error adding voucher:", error);
+    } catch (error: any) {
+      console.error("Error adding voucher:", error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleRemoveVoucher = async (productId: string, voucherId: string) => {
+    if (!token) return;
     try {
       setLoading(true);
-      await api.delete(`/products/${productId}/vouchers/${voucherId}`);
-      const res = await api.get("/products");
+      await api.delete(`/products/${productId}/vouchers/${voucherId}`, {
+        headers: { "x-auth-token": token },
+      });
+      const res = await api.get("/products", { headers: { "x-auth-token": token } });
       setProducts(res.data);
-    } catch (error) {
-      console.error("Error removing voucher:", error);
+    } catch (error: any) {
+      console.error("Error removing voucher:", error.response?.data || error.message);
     } finally {
       setLoading(false);
     }

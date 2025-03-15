@@ -116,7 +116,7 @@ const ServicePage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-6 py-16">
+      <div className="container mx-auto px-8 py-16">
         {recommendedType && (
           <div className="mb-8 p-4 bg-purple-50 border border-purple-200 rounded-lg">
             <h3 className="text-xl font-semibold text-purple-800">
@@ -131,7 +131,7 @@ const ServicePage: React.FC = () => {
         <h2 className="text-4xl font-bold mb-12 text-center text-gray-800">
           Skincare Combo Packages
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {loading ? (
             <div className="col-span-3 text-xl font-semibold text-center text-gray-500">
               Loading services...
@@ -140,8 +140,9 @@ const ServicePage: React.FC = () => {
             services.map((service) => (
               <motion.div
                 key={service._id}
-                className={`relative bg-white p-6 rounded-lg shadow-lg overflow-hidden ${service.isRecommended ? "border-2 border-purple-500" : ""
-                  }`}
+                className={`relative bg-white p-4 rounded-lg shadow-lg overflow-hidden ${
+                  service.isRecommended ? "border-2 border-purple-500" : ""
+                }`}
                 onClick={() => handleServiceClick(service._id)}
                 onMouseEnter={() => setHoveredService(service._id)}
                 onMouseLeave={() => setHoveredService(null)}
@@ -155,7 +156,7 @@ const ServicePage: React.FC = () => {
                 )}
                 <h3 className="text-2xl font-semibold text-gray-800 mb-4">{service.name}</h3>
                 <img
-                  className="w-full h-48 object-cover rounded-lg mb-4"
+                  className="w-80 h-35 object-cover rounded-lg mb-6"
                   src={service.image || "/default-image.jpg"}
                   alt={service.name}
                   onError={(e) => {

@@ -5,6 +5,7 @@ import BookingPage from "../pages/Home/Bookingpage";
 import Login from "../layout/Login";
 import Header from "../layout/Header";
 import Register from "../layout/Register";
+import Forgot_password from "../layout/Forgot_password";
 import { AuthProvider } from "../context/AuthContext";
 //homepage
 import ServicePage from "../pages/Home/Servicepage";
@@ -23,6 +24,10 @@ import ManageRating from "../pages/admin/ManageRating";
 import AdminOverview from "../pages/admin/AdminOverview";
 import AdminDashboard from "../components/Admin/AdminDashboard";
 import ManageQuestion from "../pages/admin/ManageQuestion";
+import ManageService from "../pages/admin/ManageService";
+import ManageVoucher from "../pages/admin/ManageVoucher";
+
+
 
 //staff
 import CheckIn from "../pages/Staff/CheckIn";
@@ -36,12 +41,9 @@ import ServiceHistory from "../pages/Therapist/ServiceHistory";
 import TherapistManagement from "../components/Therapist/TherapistManagement";
 import ListOfAssigned from "../pages/Therapist/ListOfAssigned";
 import PerformService from "../pages/Therapist/PerformService";
-import Forgot_password from "../layout/Forgot_password";
-import ManageService from "../pages/admin/ManageService";
 
 //customer
 import ProfileUser from "../pages/Customer/Customer_profile";
-import ManageVoucher from "../pages/admin/ManageVoucher";
 
 const AppRoutes: React.FC = () => {
   return (
