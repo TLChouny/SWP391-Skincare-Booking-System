@@ -20,6 +20,7 @@ export enum Role {
     phone_number?: string;
     gender?: Gender; // Tùy chọn để hỗ trợ giá trị mặc định "other"
     address?: string;
+    Description?: string;
     role: Role;
     avatar: string;
     otp?: string;

@@ -30,8 +30,8 @@ const buttonVariants = {
 const therapistCardVariants = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
-  hover: { 
-    scale: 1.03, 
+  hover: {
+    scale: 1.03,
     boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
     transition: { duration: 0.3 }
   }
@@ -52,8 +52,8 @@ const HomePage: React.FC = () => {
   const [paymentUrl, setPaymentUrl] = useState<string>("");
   const [qrCode, setQrCode] = useState<string>("");
   const API_BASE_URL = window.location.hostname === "localhost"
-  ? "http://localhost:5000/api"
-  : "https://luluspa-production.up.railway.app/api";
+    ? "http://localhost:5000/api"
+    : "https://luluspa-production.up.railway.app/api";
 
   // Hàm format giá để hiển thị giá gốc và giá giảm theo cột (dọc)
   const formatPriceDisplay = (
@@ -216,11 +216,11 @@ const HomePage: React.FC = () => {
     if (description.length > 25) description = description.substring(0, 25);
 
     const BASE_URL = window.location.hostname === "localhost"
-  ? "http://localhost:5000"
-  : "https://luluspa-production.up.railway.app";
+      ? "http://localhost:5000"
+      : "https://luluspa-production.up.railway.app";
 
-const returnUrl = `${BASE_URL}/success.html`;
-const cancelUrl = `${BASE_URL}/cancel.html`;
+    const returnUrl = `${BASE_URL}/success.html`;
+    const cancelUrl = `${BASE_URL}/cancel.html`;
 
 
     try {

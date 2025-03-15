@@ -34,8 +34,8 @@ const EnhancedBookingPage: React.FC = () => {
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [loadingRatings, setLoadingRatings] = useState<boolean>(true);
   const API_BASE_URL = window.location.hostname === "localhost"
-  ? "http://localhost:5000/api"
-  : "https://luluspa-production.up.railway.app/api";
+    ? "http://localhost:5000/api"
+    : "https://luluspa-production.up.railway.app/api";
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -66,8 +66,7 @@ const EnhancedBookingPage: React.FC = () => {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          `Failed to add to cart: ${response.status} - ${
-            errorData.message || "Bad Request"
+          `Failed to add to cart: ${response.status} - ${errorData.message || "Bad Request"
           }`
         );
       }
@@ -203,11 +202,11 @@ const EnhancedBookingPage: React.FC = () => {
     if (description.length > 25) description = description.substring(0, 25);
 
     const BASE_URL = window.location.hostname === "localhost"
-  ? "http://localhost:5000"
-  : "https://luluspa-production.up.railway.app";
+      ? "http://localhost:5000"
+      : "https://luluspa-production.up.railway.app";
 
-const returnUrl = `${BASE_URL}/success.html`;
-const cancelUrl = `${BASE_URL}/cancel.html`;
+    const returnUrl = `${BASE_URL}/success.html`;
+    const cancelUrl = `${BASE_URL}/cancel.html`;
 
 
     try {
@@ -314,8 +313,7 @@ const cancelUrl = `${BASE_URL}/cancel.html`;
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            `Failed to fetch therapists: ${response.status} - ${
-              errorData.message || "Unknown error"
+            `Failed to fetch therapists: ${response.status} - ${errorData.message || "Unknown error"
             }`
           );
         }
@@ -384,8 +382,8 @@ const cancelUrl = `${BASE_URL}/cancel.html`;
       typeof service.price === "number"
         ? service.price
         : service.price?.$numberDecimal
-        ? parseFloat(service.price.$numberDecimal)
-        : 0
+          ? parseFloat(service.price.$numberDecimal)
+          : 0
     );
 
     const bookingData = {
@@ -631,11 +629,10 @@ const cancelUrl = `${BASE_URL}/cancel.html`;
                       key={slot}
                       type="button"
                       onClick={() => setSelectedSlot(slot)}
-                      className={`p-2 border rounded-lg ${
-                        selectedSlot === slot
+                      className={`p-2 border rounded-lg ${selectedSlot === slot
                           ? "bg-blue-500 text-white"
                           : "bg-gray-100"
-                      }`}
+                        }`}
                     >
                       {slot}
                     </motion.button>

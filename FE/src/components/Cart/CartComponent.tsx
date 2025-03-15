@@ -18,8 +18,10 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
   const { cart, fetchCart, loadingCart, cartError, user, token } = useAuth();
   const [showCart, setShowCart] = useState<boolean>(false);
 
-  const API_BASE_URL = "http://localhost:5000/api";
-
+  const API_BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://luluspa-production.up.railway.app/api";
   useEffect(() => {
     let isMounted = true;
 
