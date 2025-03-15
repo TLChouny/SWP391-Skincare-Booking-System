@@ -69,8 +69,13 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
     let description = `Dịch vụ ${orderName.substring(0, 25)}`;
     if (description.length > 25) description = description.substring(0, 25);
 
-    const returnUrl = "http://localhost:5000/success.html";
-    const cancelUrl = "http://localhost:5000/cancel.html";
+    const BASE_DOMAIN = window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://luluspa-production.up.railway.app";
+  
+  const returnUrl = `${BASE_DOMAIN}/success.html`;
+  const cancelUrl = `${BASE_DOMAIN}/cancel.html`;
+  
 
     try {
       const response = await fetch(`${API_BASE_URL}/payments/create`, {

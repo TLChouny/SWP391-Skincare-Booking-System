@@ -51,7 +51,9 @@ const HomePage: React.FC = () => {
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [paymentUrl, setPaymentUrl] = useState<string>("");
   const [qrCode, setQrCode] = useState<string>("");
-  const API_BASE_URL = "http://localhost:5000/api";
+  const API_BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:5000/api"
+  : "https://luluspa-production.up.railway.app/api";
 
   // Hàm format giá để hiển thị giá gốc và giá giảm theo cột (dọc)
   const formatPriceDisplay = (
@@ -213,8 +215,13 @@ const HomePage: React.FC = () => {
     let description = `Dịch vụ ${orderName.substring(0, 25)}`;
     if (description.length > 25) description = description.substring(0, 25);
 
-    const returnUrl = "http://localhost:5000/success.html";
-    const cancelUrl = "http://localhost:5000/cancel.html";
+    const BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:5000"
+  : "https://luluspa-production.up.railway.app";
+
+const returnUrl = `${BASE_URL}/success.html`;
+const cancelUrl = `${BASE_URL}/cancel.html`;
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/payments/create`, {

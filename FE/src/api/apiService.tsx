@@ -1,7 +1,11 @@
 import axios from "axios";
 import { Service } from "../types/service";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://luluspa-production.up.railway.app/api";
+
 const api = axios.create({
   baseURL: API_URL,
   headers: {

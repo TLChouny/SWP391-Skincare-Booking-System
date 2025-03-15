@@ -60,8 +60,12 @@ const ServicePage: React.FC = () => {
 
   const fetchServices = async () => {
     setLoading(true);
+    const API_BASE_URL = window.location.hostname === "localhost"
+      ? "http://localhost:5000/api"
+      : "https://luluspa-production.up.railway.app/api";
+
     try {
-      const response = await axios.get("http://localhost:5000/api/products/");
+      const response = await axios.get(`${API_BASE_URL}/products/`);
       setServices(formatServices(response.data));
     } catch (error) {
       console.error("Error fetching services:", error);
@@ -76,8 +80,8 @@ const ServicePage: React.FC = () => {
       price: typeof service.price === "object" && service.price?.$numberDecimal
         ? Number.parseFloat(service.price.$numberDecimal)
         : typeof service.price === "string"
-        ? Number.parseFloat(service.price.replace(/\./g, ""))
-        : service.price || 0,
+          ? Number.parseFloat(service.price.replace(/\./g, ""))
+          : service.price || 0,
       discountedPrice: service.discountedPrice ?? null, // Chuyển undefined thành null
       isRecommended: recommendedType
         ? service.category?.name.toLowerCase().includes(recommendedType)
@@ -136,9 +140,8 @@ const ServicePage: React.FC = () => {
             services.map((service) => (
               <motion.div
                 key={service._id}
-                className={`relative bg-white p-6 rounded-lg shadow-lg overflow-hidden ${
-                  service.isRecommended ? "border-2 border-purple-500" : ""
-                }`}
+                className={`relative bg-white p-6 rounded-lg shadow-lg overflow-hidden ${service.isRecommended ? "border-2 border-purple-500" : ""
+                  }`}
                 onClick={() => handleServiceClick(service._id)}
                 onMouseEnter={() => setHoveredService(service._id)}
                 onMouseLeave={() => setHoveredService(null)}

@@ -15,7 +15,7 @@ const Forgot_password: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
-  
+
   const isValidGmail = (email: string) => {
     return /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
   };
@@ -29,12 +29,12 @@ const Forgot_password: React.FC = () => {
     }
 
     setLoading(true);
-
+    const API_BASE_URL = window.location.hostname === "localhost"
+      ? "http://localhost:5000/api"
+      : "https://luluspa-production.up.railway.app/api";
     try {
-      await axios.post(
-        "http://localhost:5000/api/auth/forgot-password/send-otp",
-        { email }
-      );
+      await axios.post(`${API_BASE_URL}/auth/forgot-password/send-otp`, { email });
+
 
       toast.success("Mã OTP đã được gửi, vui lòng kiểm tra email!");
       setIsOtpModalOpen(true);
@@ -73,10 +73,12 @@ const Forgot_password: React.FC = () => {
       message.error("Mật khẩu xác nhận không khớp!");
       return;
     }
-
+    const API_BASE_URL = window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://luluspa-production.up.railway.app/api";
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/forgot-password/reset",
+      const response = await axios.post(`${API_BASE_URL}/auth/forgot-password/reset`, 
+
         {
           email,
           otp,

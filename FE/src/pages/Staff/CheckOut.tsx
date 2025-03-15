@@ -149,7 +149,9 @@ const StaffCheckOut: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(1);
   const paymentsPerPage = 15;
-  const API_BASE_URL = "http://localhost:5000/api";
+  const API_BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:5000/api"
+  : "https://luluspa-production.up.railway.app/api";
 
   useEffect(() => {
     fetchPayments();

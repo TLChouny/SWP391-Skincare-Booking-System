@@ -118,17 +118,17 @@ const Register: React.FC = () => {
       setLoading(false);
     }
   };
-
+  const API_BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:5000/api"
+  : "https://luluspa-production.up.railway.app/api";
   const handleOtpSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
     try {
       setLoading(true);
-      const response = await fetch(
-        "http://localhost:5000/api/auth/verify-otp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+      const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
           },
           body: JSON.stringify({
             email: formData.email,
