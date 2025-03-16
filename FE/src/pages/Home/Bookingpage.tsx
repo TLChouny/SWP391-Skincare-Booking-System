@@ -9,6 +9,7 @@ import Layout from "../../layout/Layout";
 import CartComponent from "../../components/Cart/CartComponent";
 import { useAuth } from "../../context/AuthContext";
 import { Service, Therapist, Booking, Rating } from "../../types/booking";
+import { JSX } from "react/jsx-runtime";
 
 const EnhancedBookingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

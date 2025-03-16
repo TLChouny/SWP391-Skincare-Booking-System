@@ -11,6 +11,7 @@ import { toast } from "react-toastify"
 import { useAuth } from "../../context/AuthContext"
 import type { Booking, Service, Therapist, Blog } from "../../types/booking"
 import video1 from "../../assets/video/invideo-ai-1080 Discover the Magic of LuLuSpa_ Your Skin 2025-01-10.mp4"
+import { JSX } from "react/jsx-runtime"
 
 // Animation variants
 const sectionVariants = {
@@ -445,7 +446,7 @@ const HomePage: React.FC = () => {
                                   </div>
                                 </>
                               ) : (
-                                <div className="text-lg font-bold text-gray-800">
+                                <div className="text-lg font-bold text-yellow-500">
                                   {(service.price as number).toLocaleString("vi-VN")} VNĐ
                                 </div>
                               )}
