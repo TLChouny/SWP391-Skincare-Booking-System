@@ -27,16 +27,21 @@ const EnhancedBookingPage: React.FC = () => {
   const [notes, setNotes] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
+  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(
+    null
+  );
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [paymentUrl, setPaymentUrl] = useState<string>("");
   const [qrCode, setQrCode] = useState<string>("");
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [loadingRatings, setLoadingRatings] = useState<boolean>(true);
-  const API_BASE_URL = window.location.hostname === "localhost"
-    ? "http://localhost:5000/api"
-    : "https://luluspa-production.up.railway.app/api";
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+
+  const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api"
+      : "https://luluspa-production.up.railway.app/api";
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -46,6 +51,39 @@ const EnhancedBookingPage: React.FC = () => {
   useEffect(() => {
     setCustomerEmail(user?.email || user?.username || "");
   }, [user]);
+
+  useEffect(() => {
+    const fetchBookedSlots = async () => {
+      if (!selectedDate || !selectedTherapist) return;
+
+      console.log(
+        "📌 Gửi request lấy giờ đã đặt:",
+        selectedDate,
+        selectedTherapist.name
+      );
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/cart/booked-slots?date=${encodeURIComponent(
+            selectedDate
+          )}&staff=${encodeURIComponent(selectedTherapist.name)}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`API lỗi: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("📌 API trả về giờ đã đặt:", data);
+        setBookedSlots(data || []);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách giờ đã đặt:", error);
+        setBookedSlots([]);
+      }
+    };
+
+    fetchBookedSlots();
+  }, [selectedDate, selectedTherapist]); // Cập nhật khi đổi ngày hoặc nhân viên
 
   const addToCart = async (bookingData: any) => {
     try {
@@ -67,7 +105,8 @@ const EnhancedBookingPage: React.FC = () => {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          `Failed to add to cart: ${response.status} - ${errorData.message || "Bad Request"
+          `Failed to add to cart: ${response.status} - ${
+            errorData.message || "Bad Request"
           }`
         );
       }
@@ -120,7 +159,11 @@ const EnhancedBookingPage: React.FC = () => {
 
     return (
       <>
-        <span style={{ textDecoration: discountedPrice != null ? "line-through" : "none" }}>
+        <span
+          style={{
+            textDecoration: discountedPrice != null ? "line-through" : "none",
+          }}
+        >
           {priceValue.toLocaleString("vi-VN")} VNĐ
         </span>
         {discountedPrice != null && (
@@ -163,20 +206,26 @@ const EnhancedBookingPage: React.FC = () => {
         const slot = `${hour.toString().padStart(2, "0")}:${minute
           .toString()
           .padStart(2, "0")}`;
+
         if (isToday) {
           const slotHour = parseInt(slot.split(":")[0]);
           const slotMinute = parseInt(slot.split(":")[1]);
+
           if (
-            slotHour > currentHour ||
-            (slotHour === currentHour && slotMinute > currentMinute)
+            slotHour < currentHour ||
+            (slotHour === currentHour && slotMinute < currentMinute)
           ) {
-            slots.push(slot);
+            continue;
           }
-        } else {
+        }
+
+        // 🔥 Nếu giờ đã đặt bởi nhân viên này → Ẩn giờ đó
+        if (!bookedSlots.includes(slot)) {
           slots.push(slot);
         }
       }
     }
+
     return slots;
   };
 
@@ -202,13 +251,13 @@ const EnhancedBookingPage: React.FC = () => {
     let description = `Dịch vụ ${orderName.substring(0, 25)}`;
     if (description.length > 25) description = description.substring(0, 25);
 
-    const BASE_URL = window.location.hostname === "localhost"
-      ? "http://localhost:5000"
-      : "https://luluspa-production.up.railway.app";
+    const BASE_URL =
+      window.location.hostname === "localhost"
+        ? "http://localhost:5000"
+        : "https://luluspa-production.up.railway.app";
 
     const returnUrl = `${BASE_URL}/success.html`;
     const cancelUrl = `${BASE_URL}/cancel.html`;
-
 
     try {
       const response = await fetch(`${API_BASE_URL}/payments/create`, {
@@ -314,7 +363,8 @@ const EnhancedBookingPage: React.FC = () => {
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            `Failed to fetch therapists: ${response.status} - ${errorData.message || "Unknown error"
+            `Failed to fetch therapists: ${response.status} - ${
+              errorData.message || "Unknown error"
             }`
           );
         }
@@ -379,13 +429,13 @@ const EnhancedBookingPage: React.FC = () => {
 
     console.log("📌 Selected Date from Form:", selectedDate);
 
-    const totalPrice = service.discountedPrice ?? (
-      typeof service.price === "number"
+    const totalPrice =
+      service.discountedPrice ??
+      (typeof service.price === "number"
         ? service.price
         : service.price?.$numberDecimal
-          ? parseFloat(service.price.$numberDecimal)
-          : 0
-    );
+        ? parseFloat(service.price.$numberDecimal)
+        : 0);
 
     const bookingData = {
       username: user.username,
@@ -397,7 +447,7 @@ const EnhancedBookingPage: React.FC = () => {
       customerEmail,
       customerPhone,
       notes: notes || undefined,
-      Skincare_staff: selectedTherapist?.name || undefined,
+      Skincare_staff: selectedTherapist ? selectedTherapist.name : undefined, // ✅ Nếu không chọn thì gửi `undefined`
       totalPrice,
       status: "pending",
     };
@@ -459,7 +509,10 @@ const EnhancedBookingPage: React.FC = () => {
                           )}
                         </div>
                         <span className="font-bold text-gray-800">
-                          {formatPriceDisplay(item.originalPrice || item.totalPrice || 0, item.discountedPrice)}
+                          {formatPriceDisplay(
+                            item.originalPrice || item.totalPrice || 0,
+                            item.discountedPrice
+                          )}
                         </span>
                       </li>
                     ))}
@@ -544,7 +597,11 @@ const EnhancedBookingPage: React.FC = () => {
                   <div className="flex justify-between items-center mb-4">
                     <div>
                       <p className="text-xl font-semibold text-yellow-500">
-                        Price: {formatPriceDisplay(service.price, service.discountedPrice)}
+                        Price:{" "}
+                        {formatPriceDisplay(
+                          service.price,
+                          service.discountedPrice
+                        )}
                       </p>
                       <p className="text-lg text-gray-600">
                         Duration: {service.duration || "N/A"} minutes
@@ -630,10 +687,11 @@ const EnhancedBookingPage: React.FC = () => {
                       key={slot}
                       type="button"
                       onClick={() => setSelectedSlot(slot)}
-                      className={`p-2 border rounded-lg ${selectedSlot === slot
+                      className={`p-3 border rounded-lg text-lg transition font-medium ${
+                        selectedSlot === slot
                           ? "bg-blue-500 text-white"
-                          : "bg-gray-100"
-                        }`}
+                          : "bg-gray-100 hover:bg-gray-200"
+                      }`}
                     >
                       {slot}
                     </motion.button>
@@ -655,6 +713,7 @@ const EnhancedBookingPage: React.FC = () => {
                       const therapist = therapists.find(
                         (t) => t.id === e.target.value
                       );
+                      console.log("📌 Nhân viên được chọn:", therapist);
                       setSelectedTherapist(therapist || null);
                     }}
                     className="w-full p-3 border rounded-lg"

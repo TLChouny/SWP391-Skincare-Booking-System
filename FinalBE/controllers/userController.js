@@ -94,12 +94,8 @@ const createUser = [
           { expiresIn: "24h" }
         );
 
-        const API_BASE_URL = window.location.hostname === "localhost"
-        ? "http://localhost:5000/api"
-        : "https://luluspa-production.up.railway.app/api";
-      
-      const verifyLink = `${API_BASE_URL}/auth/auto-verify?token=${verifyToken}`;
-              await sendAdminVerificationEmail(email, verifyLink);
+        const verifyLink = `http://localhost:5000/api/auth/auto-verify?token=${verifyToken}`;
+        await sendAdminVerificationEmail(email, verifyLink);
       } else {
         // ✅ Tạo OTP cho User bình thường
         const otp = Math.floor(100000 + Math.random() * 900000).toString();

@@ -11,5 +11,5 @@ router.get("/therapist/:username", cartController.getCartsByTherapist);
 router.put("/:cartID", cartController.updateCart);
 router.delete("/:cartID", cartController.deleteCart);
 // router.put("/:cartID/cancel", cartController.cancelCart);
-
+router.get("/cart/booked-slots", cartController.getBookedSlots);
 module.exports = router;
