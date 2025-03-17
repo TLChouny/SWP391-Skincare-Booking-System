@@ -7,6 +7,7 @@ export default defineConfig({
     outDir: 'dist'
   },
   server: {
-    port: 3000
-  }
+    port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
+    host: true, // Cho phép truy cập từ mạng
+  },
 });
