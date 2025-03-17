@@ -766,7 +766,7 @@ const HomePage: React.FC = () => {
                             </div>
                           </div>
                           <motion.button
-                            onClick={() => navigate(`/blog/${blogs[0].id}`)}
+                            onClick={() => navigate(`/blog/${blogs[0]._id}`)}
                             className="px-6 py-3 bg-yellow-400 text-gray-900 rounded-lg font-semibold hover:bg-yellow-300 transition duration-300 w-full md:w-auto"
                             variants={buttonVariants}
                             whileHover="hover"
@@ -786,7 +786,7 @@ const HomePage: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                     {blogs.slice(1, 4).map((blog) => (
                       <motion.div
-                        key={blog.id}
+                        key={blog._id}
                         className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full"
                         variants={serviceCardVariants}
                         initial="hidden"
@@ -815,7 +815,7 @@ const HomePage: React.FC = () => {
                           </h3>
                           <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">{blog.description}</p>
                           <motion.button
-                            onClick={() => navigate(`/blog/${blog.id}`)}
+                            onClick={() => navigate(`/blog/${blog._id}`)}
                             className="mt-auto text-yellow-600 font-medium hover:text-yellow-700 flex items-center"
                             variants={buttonVariants}
                             whileHover="hover"
