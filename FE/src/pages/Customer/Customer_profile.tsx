@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import Layout from "../../layout/Layout";
-import { Skeleton, Modal, Rate, Input, Button, message } from "antd";
+import { Skeleton, Modal, Rate, Input, Button, message, Select } from "antd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Booking } from "../../types/booking";
+import { motion } from "framer-motion";
 
 // Define status styles
 const statusStyles = {
@@ -21,10 +22,13 @@ const CustomerProfile: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 15;
-  const API_BASE_URL = window.location.hostname === "localhost"
-  ? "http://localhost:5000/api"
-  : "https://luluspa-production.up.railway.app/api";
+  const [searchOrderId, setSearchOrderId] = useState<string>(""); // State cho tìm kiếm Order ID
+  const [sortStatus, setSortStatus] = useState<string>("All"); // State cho sắp xếp Status
+  const ordersPerPage = 10;
+  const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api"
+      : "https://luluspa-production.up.railway.app/api";
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Booking | null>(null);
@@ -35,14 +39,14 @@ const CustomerProfile: React.FC = () => {
     if (user?.username) {
       fetchOrders();
     } else {
-      setOrders([]); // Đặt orders rỗng nếu user chưa đăng nhập
+      setOrders([]);
       setLoading(false);
     }
   }, [user]);
 
   const fetchOrders = async () => {
     if (!user?.username) {
-      setError("Bạn cần đăng nhập để xem lịch sử đơn hàng.");
+      setError("You need to log in to view your order history.");
       setLoading(false);
       return;
     }
@@ -52,7 +56,7 @@ const CustomerProfile: React.FC = () => {
     try {
       const token = localStorage.getItem("authToken");
       if (!token) {
-        throw new Error("Bạn cần đăng nhập để xem lịch sử đơn hàng.");
+        throw new Error("You need to log in to view your order history.");
       }
 
       const response = await fetch(
@@ -67,25 +71,23 @@ const CustomerProfile: React.FC = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Không thể tải đơn hàng.");
+        throw new Error("Unable to load orders.");
       }
 
       const data: Booking[] = await response.json();
       setOrders(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Đã xảy ra lỗi không xác định.");
+      setError(err instanceof Error ? err.message : "An unknown error occurred.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Open Modal for review
   const openReviewModal = (order: Booking) => {
     setSelectedOrder(order);
     setIsModalOpen(true);
   };
 
-  // Close Modal
   const closeReviewModal = () => {
     setIsModalOpen(false);
     setSelectedOrder(null);
@@ -93,10 +95,9 @@ const CustomerProfile: React.FC = () => {
     setReviewText("");
   };
 
-  // Handle Review Submission
   const handleSubmitReview = async () => {
     if (!selectedOrder || !user?.username) {
-      message.error("Lỗi: Không có đơn hàng được chọn hoặc chưa đăng nhập.");
+      message.error("Error: No order selected or not logged in.");
       return;
     }
 
@@ -111,7 +112,7 @@ const CustomerProfile: React.FC = () => {
     try {
       const token = localStorage.getItem("authToken");
       if (!token) {
-        throw new Error("Bạn cần đăng nhập để gửi đánh giá.");
+        throw new Error("You need to log in to submit a review.");
       }
 
       const response = await fetch(`${API_BASE_URL}/ratings`, {
@@ -124,91 +125,238 @@ const CustomerProfile: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Không thể gửi đánh giá.");
+        throw new Error("Unable to submit review.");
       }
 
-      toast.success("Đánh giá đã được gửi thành công!");
+      toast.success("Review submitted successfully!");
       closeReviewModal();
     } catch (err) {
-      toast.error("Lỗi khi gửi đánh giá.");
-      console.error("Lỗi khi gửi đánh giá:", err);
+      toast.error("Error submitting review.");
+      console.error("Error submitting review:", err);
     }
+  };
+
+  // Logic lọc và sắp xếp
+  const filteredAndSortedOrders = orders
+    .filter((order) =>
+      searchOrderId
+        ? (order.BookingID || "N/A")
+            .toLowerCase()
+            .includes(searchOrderId.toLowerCase())
+        : true
+    )
+    .filter((order) =>
+      sortStatus === "All" ? true : order.status === sortStatus
+    );
+
+  // Pagination logic
+  const indexOfLastOrder = currentPage * ordersPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+  const currentOrders = filteredAndSortedOrders.slice(
+    indexOfFirstOrder,
+    indexOfLastOrder
+  );
+  const totalPages = Math.ceil(filteredAndSortedOrders.length / ordersPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
     <Layout>
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold text-center mb-6">Lịch Sử Đơn Hàng</h1>
+      <div className="container mx-auto p-8 bg-gray-50 min-h-screen">
+        <motion.h1
+          className="text-4xl font-extrabold text-center mb-10 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          Order History
+          <div className="mt-2 h-1 w-24 bg-gradient-to-r from-yellow-600 to-white-500 rounded mx-auto"></div>
+        </motion.h1>
 
-        <div className="overflow-x-auto min-h-[500px]">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          {/* Bộ lọc và sắp xếp */}
+          <div className="p-6 flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Search by Order ID
+              </label>
+              <Input
+                placeholder="Enter Order ID"
+                value={searchOrderId}
+                onChange={(e) => {
+                  setSearchOrderId(e.target.value);
+                  setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
+                }}
+                className="rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-400"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sort by Status
+              </label>
+              <Select
+                value={sortStatus}
+                onChange={(value) => {
+                  setSortStatus(value);
+                  setCurrentPage(1); // Reset về trang 1 khi sắp xếp
+                }}
+                className="w-full"
+                options={[
+                  { value: "All", label: "All Statuses" },
+                  { value: "pending", label: "Pending" },
+                  { value: "checked-in", label: "Checked In" },
+                  { value: "completed", label: "Completed" },
+                  { value: "cancel", label: "Cancel" },
+                  { value: "checked-out", label: "Checked Out" },
+                ]}
+              />
+            </div>
+          </div>
+
           {loading ? (
-            <Skeleton active paragraph={{ rows: 10 }} />
+            <Skeleton active paragraph={{ rows: 10 }} className="p-6" />
           ) : error ? (
-            <p className="text-center text-red-600">{error}</p>
-          ) : orders.length === 0 ? (
-            <p className="text-center text-gray-600">Không có đơn hàng nào</p>
+            <p className="text-center text-red-600 p-6">{error}</p>
+          ) : filteredAndSortedOrders.length === 0 ? (
+            <p className="text-center text-gray-600 p-6">No orders found</p>
           ) : (
-            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="py-3 px-4 border-b text-left">Mã Đơn</th>
-                  <th className="py-3 px-4 border-b text-left">Tên Dịch Vụ</th>
-                  <th className="py-3 px-4 border-b text-left">Khách Hàng</th>
-                  <th className="py-3 px-4 border-b text-left">Trạng Thái</th>
-                  <th className="py-3 px-4 border-b text-left">Đánh Giá</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr key={order.CartID} className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b">{order.BookingID || "N/A"}</td>
-                    <td className="py-2 px-4 border-b">{order.serviceName}</td>
-                    <td className="py-2 px-4 border-b">{order.customerName}</td>
-                    <td className="py-2 px-4 border-b">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-sm ${
-                          statusStyles[order.status]?.bg || "bg-gray-100"
-                        } ${statusStyles[order.status]?.text || "text-gray-800"}`}
-                      >
-                        {statusStyles[order.status]?.icon || "⏳"} {order.status}
-                      </span>
-                    </td>
-                    <td className="py-2 px-4 border-b">
-                      {order.status === "checked-out" ? (
-                        <Button type="primary" onClick={() => openReviewModal(order)}>
-                          Đánh Giá
-                        </Button>
-                      ) : (
-                        <span className="text-gray-400">Chưa thể đánh giá</span>
-                      )}
-                    </td>
+            <>
+              <table className="min-w-full">
+                <thead className="bg-gradient-to-r from-blue-50 to-green-50">
+                  <tr>
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                      Order ID
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                      Service Name
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                      Customer
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                      Status
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                      Review
+                    </th>
                   </tr>
+                </thead>
+                <tbody>
+                  {currentOrders.map((order) => (
+                    <motion.tr
+                      key={order.CartID}
+                      className="border-b border-gray-200 hover:bg-gray-100 transition-colors duration-200"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <td className="py-4 px-6 text-gray-800">
+                        {order.BookingID || "N/A"}
+                      </td>
+                      <td className="py-4 px-6 text-gray-800">
+                        {order.serviceName}
+                      </td>
+                      <td className="py-4 px-6 text-gray-800">
+                        {order.customerName}
+                      </td>
+                      <td className="py-4 px-6">
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                            statusStyles[order.status]?.bg || "bg-gray-100"
+                          } ${statusStyles[order.status]?.text || "text-gray-800"}`}
+                        >
+                          {statusStyles[order.status]?.icon || "⏳"}
+                          <span className="ml-1">{order.status}</span>
+                        </span>
+                      </td>
+                      <td className="py-4 px-6">
+                        {order.status === "checked-out" ? (
+                          <Button
+                            type="primary"
+                            onClick={() => openReviewModal(order)}
+                            className="bg-blue-600 hover:bg-blue-700 rounded-lg"
+                          >
+                            Review
+                          </Button>
+                        ) : (
+                          <span className="text-gray-400">Not yet reviewable</span>
+                        )}
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Pagination */}
+              <div className="flex justify-center py-6">
+                <Button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="mx-2 w-10 h-10 rounded-full border-none bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                >
+                  ←
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <Button
+                    key={i + 1}
+                    onClick={() => handlePageChange(i + 1)}
+                    type={currentPage === i + 1 ? "primary" : "default"}
+                    className={`mx-2 w-10 h-10 rounded-full ${
+                      currentPage === i + 1
+                        ? "bg-blue-600 hover:bg-blue-700"
+                        : "bg-gray-200 hover:bg-gray-300"
+                    }`}
+                  >
+                    {i + 1}
+                  </Button>
                 ))}
-              </tbody>
-            </table>
+                <Button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="mx-2 w-10 h-10 rounded-full border-none bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                >
+                  →
+                </Button>
+              </div>
+            </>
           )}
         </div>
       </div>
 
-      {/* Modal đánh giá */}
+      {/* Review Modal */}
       <Modal
-        title="Đánh Giá Dịch Vụ"
+        title={<span className="text-xl font-semibold">Service Review</span>}
         open={isModalOpen}
         onCancel={closeReviewModal}
         onOk={handleSubmitReview}
-        okText="Gửi"
-        cancelText="Hủy"
+        okText="Submit"
+        cancelText="Cancel"
+        className="rounded-lg"
+        bodyStyle={{ padding: "24px" }}
       >
-        <p>
-          <b>{selectedOrder?.serviceName || "Không có tên dịch vụ"}</b>
-        </p>
-        <Rate value={rating} onChange={(value) => setRating(value)} />
-        <Input.TextArea
-          placeholder="Nhập nội dung đánh giá..."
-          value={reviewText}
-          onChange={(e) => setReviewText(e.target.value)}
-          className="mt-4"
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <p className="mb-4">
+            <b>{selectedOrder?.serviceName || "No service name"}</b>
+          </p>
+          <Rate
+            value={rating}
+            onChange={(value) => setRating(value)}
+            className="mb-4"
+          />
+          <Input.TextArea
+            placeholder="Enter your review..."
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+            className="mt-4 rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-400"
+            rows={4}
+          />
+        </motion.div>
       </Modal>
     </Layout>
   );

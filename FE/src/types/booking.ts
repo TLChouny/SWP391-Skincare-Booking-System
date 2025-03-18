@@ -6,7 +6,7 @@ export type Service = {
   description: string;
   image?: string;
   duration?: number;
-  price?: number | { $numberDecimal: string };
+  price?: number;
   discountedPrice?: number | null | undefined; // Thêm dòng này
   category?: {
     _id: string;
@@ -47,9 +47,9 @@ export type Booking = {
 
 export type Blog = {
   createdAt: number;
-  id: string;
+  _id: string;
   title: string;
-  author: string;
+  createName: string;
   description: string;
   image?: string;
   content?: string;

@@ -9,10 +9,10 @@ import { Divider, Dropdown, Menu } from "antd";
 import { ChevronDown, User } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useAuth } from "../context/AuthContext"; // Import useAuth từ AuthContext
+import { useAuth } from "../context/AuthContext";
 
 const Header: React.FC = () => {
-  const { token, setToken, setUser, setCart, fetchCart } = useAuth(); // Lấy các phương thức từ AuthContext
+  const { token, setToken, setUser, setCart, fetchCart } = useAuth();
   const [user, setLocalUser] = useState<{ username: string; role?: string } | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -28,11 +28,11 @@ const Header: React.FC = () => {
       setLocalUser(null);
       setRole(null);
     }
-  }, [token]); // Cập nhật khi token thay đổi
+  }, [token]);
 
   const handleBookNow = () => {
     if (!user) {
-      toast.error("Bạn cần đăng nhập trước khi đặt dịch vụ!");
+      toast.error("You need to log in before booking a service!");
       setTimeout(() => navigate("/login"), 3000);
     } else {
       navigate("/services");
@@ -40,12 +40,11 @@ const Header: React.FC = () => {
   };
 
   const handleLogout = () => {
-    // Reset toàn bộ trạng thái trong AuthContext
-    setToken(null); // Điều này sẽ kích hoạt useEffect trong AuthContext để xóa localStorage và reset cart
-    setLocalUser(null); // Reset state cục bộ trong Header
+    setToken(null);
+    setLocalUser(null);
     setRole(null);
     navigate("/login");
-    toast.success("Đã đăng xuất thành công!");
+    toast.success("Logged out successfully!");
   };
 
   const getDashboardLink = () => {
@@ -60,7 +59,7 @@ const Header: React.FC = () => {
       case "skincare_staff":
         return "/therapist";
       case "user":
-        return "/dashboard";
+        return "/dashboard"; // Vẫn trỏ đến dashboard, nhưng tiêu đề sẽ thay đổi
       default:
         return "/dashboard";
     }
@@ -76,7 +75,7 @@ const Header: React.FC = () => {
       <Menu.Item key="dashboard" onClick={handleProfileClick} className="hover:bg-yellow-50">
         <div className="px-4 py-2 flex items-center gap-2 text-gray-700">
           <User size={16} />
-          <span>My Profile</span>
+          <span>{role === "user" ? "Order History" : "My Dashboard"}</span>
         </div>
       </Menu.Item>
       <Menu.Item key="settings" className="hover:bg-yellow-50">
@@ -221,10 +220,18 @@ const Header: React.FC = () => {
             </form>
 
             <div className="mt-6 text-left">
-              <p className="text-gray-600 font-medium">🏡 Store Name: <span className="font-semibold">LuLuSpa</span></p>
-              <p className="text-gray-600">📞 Phone: <span className="font-semibold">123-456-789</span></p>
-              <p className="text-gray-600">📧 Email: <span className="font-semibold">info@luluspa.com</span></p>
-              <p className="text-gray-600">⏰ Working Hours: <span className="font-semibold">Mon - Sat, 9:00 - 17:30</span></p>
+              <p className="text-gray-600 font-medium">
+                🏡 Store Name: <span className="font-semibold">LuLuSpa</span>
+              </p>
+              <p className="text-gray-600">
+                📞 Phone: <span className="font-semibold">123-456-789</span>
+              </p>
+              <p className="text-gray-600">
+                📧 Email: <span className="font-semibold">info@luluspa.com</span>
+              </p>
+              <p className="text-gray-600">
+                ⏰ Working Hours: <span className="font-semibold">Mon - Sat, 9:00 - 17:30</span>
+              </p>
               <a href="https://facebook.com/luluspa" className="text-blue-600 hover:underline mt-2 inline-block">
                 🌐 Visit our Facebook
               </a>

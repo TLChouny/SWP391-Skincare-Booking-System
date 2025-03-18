@@ -142,7 +142,7 @@ router.post("/submit", async (req, res) => {
     );
 
     res.json({
-      message: "Bài kiểm tra hoàn thành!",
+      message: "Test completed!",
       scores: skinScores,
       bestMatch: bestSkinType,
     });

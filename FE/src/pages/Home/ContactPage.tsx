@@ -54,15 +54,20 @@ const ContactPage: React.FC = () => {
                 ✖
               </button>
 
-              {/* Tiêu đề */}
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+              {/* Title */}
+              <motion.h3
+                className="text-4xl md:text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+              >
                 Contact Information
-              </h3>
+              </motion.h3>
 
-              {/* Giờ làm việc */}
+              {/* Working Hours */}
               <div className="bg-gray-100 p-4 rounded-lg mb-6">
                 <p className="text-gray-700 text-lg font-semibold flex items-center justify-center">
-                  🕒 Giờ làm việc: <span className="ml-2">Thứ 2 - Thứ 7: <strong>9h00 - 17h30</strong></span>
+                  🕒 Working Hours: <span className="ml-2">Monday - Saturday: <strong>9:00 AM - 5:30 PM</strong></span>
                 </p>
               </div>
 
@@ -70,13 +75,13 @@ const ContactPage: React.FC = () => {
               <form onSubmit={handleSubmit}>
                 <input
                   type="text"
-                  placeholder="Nhập họ và tên"
+                  placeholder="Enter your full name"
                   className="mb-4 p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                   required
                 />
                 <input
                   type="text"
-                  placeholder="Số điện thoại"
+                  placeholder="Phone number"
                   className="mb-4 p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                   required
                 />

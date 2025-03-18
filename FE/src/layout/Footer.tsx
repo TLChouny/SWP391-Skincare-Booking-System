@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
             href="https://facebook.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-pink-400 ml-2 hover:underline"
+            className="text-yellow-400 ml-2 hover:underline"
           >
             Facebook
           </a>{" "}
@@ -20,7 +20,7 @@ const Footer: React.FC = () => {
             href="https://instagram.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-pink-400 ml-2 hover:underline"
+            className="text-yellow-400 ml-2 hover:underline"
           >
             Instagram
           </a>
