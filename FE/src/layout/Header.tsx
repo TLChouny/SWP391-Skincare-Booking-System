@@ -234,7 +234,7 @@ const Header: React.FC = () => {
                   to="/register"
                   className="hover:text-yellow-300 transition duration-300"
                 >
-                  <span>Signup</span>
+                  <span>Sign Up</span>
                 </Link>
               </>
             )}
