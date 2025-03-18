@@ -6,24 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import Layout from "../../layout/Layout";
 import { useAuth } from "../../context/AuthContext";
 import { JSX } from "react/jsx-runtime";
-
-interface Service {
-  _id: string;
-  service_id: number;
-  name: string;
-  description: string;
-  image?: string;
-  duration?: number;
-  price?: number | { $numberDecimal: string };
-  discountedPrice?: number | null | undefined;
-  category: {
-    _id: string;
-    name: string;
-    description: string;
-  };
-  createDate?: string;
-  isRecommended?: boolean;
-}
+import { Service } from "../../types/booking";
+import SearchFilter from "../../components/Home/SearchFilter";
 
 // Animation variants từ HomePage
 const cardVariants = {
@@ -43,7 +27,8 @@ const buttonVariants = {
 
 const ServicePage: React.FC = () => {
   const [selectedService, setSelectedService] = useState<string | null>(null);
-  const [services, setServices] = useState<Service[]>([]);
+  const [services, setServices] = useState<Service[]>([]); // Danh sách gốc từ API
+  const [filteredServices, setFilteredServices] = useState<Service[]>([]); // Danh sách đã lọc
   const [loading, setLoading] = useState<boolean>(true);
   const [recommendedType, setRecommendedType] = useState<string | null>(null);
   const [hoveredService, setHoveredService] = useState<string | null>(null);
@@ -84,7 +69,9 @@ const ServicePage: React.FC = () => {
 
     try {
       const response = await axios.get(`${API_BASE_URL}/products/`);
-      setServices(formatServices(response.data));
+      const formattedServices = formatServices(response.data);
+      setServices(formattedServices);
+      setFilteredServices(formattedServices); // Khởi tạo filteredServices với danh sách gốc
     } catch (error) {
       console.error("Error fetching services:", error);
     } finally {
@@ -92,7 +79,7 @@ const ServicePage: React.FC = () => {
     }
   };
 
-  const formatServices = (data: any[]) => {
+  const formatServices = (data: any[]): Service[] => {
     return data.map((service) => ({
       ...service,
       price:
@@ -103,7 +90,7 @@ const ServicePage: React.FC = () => {
           : service.price || 0,
       discountedPrice: service.discountedPrice ?? null,
       isRecommended: recommendedType
-        ? service.category?.name.toLowerCase().includes(recommendedType)
+        ? service.category?.name.toUpperCase().includes(recommendedType)
         : false,
     }));
   };
@@ -150,6 +137,11 @@ const ServicePage: React.FC = () => {
     }
   };
 
+  // Hàm xử lý filter từ SearchFilter
+  const handleFilter = (filtered: Service[]) => {
+    setFilteredServices(filtered);
+  };
+
   return (
     <Layout>
       <motion.section
@@ -178,16 +170,17 @@ const ServicePage: React.FC = () => {
 
           <div className="text-center mb-16">
             <motion.h2
-              className="text-5xl font-extrabold text-gray-900 mb-4"
-              variants={cardVariants}
+               className="text-4xl md:text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+               initial={{ opacity: 0, y: -50 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.8 }}
+               variants={cardVariants}
             >
               Skincare Combo Packages
             </motion.h2>
-            <div className="w-24 h-1 bg-yellow-400 mx-auto"></div>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-              Discover our premium skincare treatments designed to rejuvenate and transform your skin
-            </p>
           </div>
+
+          <SearchFilter services={services} onFilter={handleFilter} />
 
           {loading ? (
             <div className="flex justify-center items-center h-64">
@@ -195,12 +188,10 @@ const ServicePage: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-              {services.map((service) => (
+              {filteredServices.map((service) => (
                 <motion.div
                   key={service._id}
-                  className={`bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 ${
-                    service.isRecommended ? "border-2 border-purple-500" : ""
-                  }`}
+                  className="bg-white rounded-xl shadow-lg overflow-hidden relative" // Thêm relative để chứa hover
                   variants={cardVariants}
                   initial="hidden"
                   animate="visible"
@@ -209,14 +200,10 @@ const ServicePage: React.FC = () => {
                   onMouseEnter={() => setHoveredService(service._id)}
                   onMouseLeave={() => setHoveredService(null)}
                 >
-                  <div className="relative">
-                    {service.isRecommended && (
-                      <div className="absolute top-4 left-4 bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold z-10">
-                        Recommended
-                      </div>
-                    )}
+                  {/* Nội dung chính */}
+                  <div className="relative z-10">
                     {service.discountedPrice != null && (
-                      <div className="absolute top-4 right-4 z-10 flex items-center justify-center">
+                      <div className="absolute top-4 right-4 z-20 flex items-center justify-center">
                         <div className="bg-red-500 text-white font-bold rounded-full h-16 w-16 flex items-center justify-center transform rotate-12 shadow-lg">
                           <span className="text-lg">
                             {Math.round(
@@ -239,13 +226,13 @@ const ServicePage: React.FC = () => {
                       }}
                     />
                     {service.discountedPrice != null && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-red-500/80 to-transparent text-white py-2 px-4">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-red-500/80 to-transparent text-white py-2 px-4 z-20">
                         <span className="font-semibold">Special Offer</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="p-6 flex flex-col">
+                  <div className="p-6 flex flex-col relative z-10">
                     <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2 min-h-[2.5rem]">
                       {service.name}
                     </h3>
@@ -288,14 +275,15 @@ const ServicePage: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Nội dung hover */}
                   <AnimatePresence>
                     {hoveredService === service._id && (
                       <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="absolute inset-0 bg-white bg-opacity-95 flex flex-col justify-center p-6 rounded-lg shadow-md"
+                        className="absolute inset-0 bg-white bg-opacity-95 flex flex-col justify-center p-6 rounded-xl shadow-md z-30 pointer-events-none" // pointer-events-none để không chặn click
                       >
                         <h3 className="text-2xl font-semibold text-gray-900 mb-2">{service.name}</h3>
                         <p className="text-md text-gray-700 mb-4">{service.description}</p>

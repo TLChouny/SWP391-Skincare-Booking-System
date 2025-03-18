@@ -146,7 +146,7 @@ const HomePage: React.FC = () => {
       } catch (error: any) {
         console.error("Error fetching therapists:", error.message)
         setTherapistError("Unable to load specialist list. Please try again later.")
-        toast.error("Unable to load specialist list. Please try again later.")
+        // toast.error("Unable to load specialist list. Please try again later.")
       } finally {
         setLoadingTherapists(false)
       }
@@ -311,7 +311,7 @@ const HomePage: React.FC = () => {
             onError={(e) => {
               console.error("Video failed to load:", e)
               toast.error("Video failed to load. Please try again later.")
-              ;(e.target as HTMLVideoElement).style.display = "none"
+                ; (e.target as HTMLVideoElement).style.display = "none"
             }}
           >
             <source src={video1} type="video/mp4" />
@@ -359,8 +359,13 @@ const HomePage: React.FC = () => {
         >
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-5xl font-extrabold text-gray-900 mb-4">Luxurious Skincare Packages</h2>
-              <div className="w-24 h-1 bg-yellow-400 mx-auto"></div>
+              <motion.h1
+                className="text-4xl md:text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+              >Luxurious Skincare Packages</motion.h1>
+              <div className="mt-2 h-1 w-24 bg-gradient-to-r from-yellow-600 to-white-400 rounded mx-auto"></div>
               <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
                 Discover our premium skincare treatments designed to rejuvenate and transform your skin
               </p>
@@ -393,9 +398,8 @@ const HomePage: React.FC = () => {
                       animate="visible"
                     >
                       <div
-                        className={`bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col h-full ${
-                          service.discountedPrice != null ? "" : "hover:translate-y-[-4px]"
-                        }`}
+                        className={`bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col h-full ${service.discountedPrice != null ? "" : "hover:translate-y-[-4px]"
+                          }`}
                       >
                         <div className="relative">
                           {service.discountedPrice != null && (
@@ -405,7 +409,7 @@ const HomePage: React.FC = () => {
                                   {Math.round(
                                     (((service.price as number) - service.discountedPrice!) /
                                       (service.price as number)) *
-                                      100,
+                                    100,
                                   )}
                                   %
                                 </span>
@@ -418,7 +422,7 @@ const HomePage: React.FC = () => {
                             alt={service.name}
                             className="w-full h-80 object-cover"
                             onError={(e) => {
-                              ;(e.target as HTMLImageElement).src = "/default-service.jpg"
+                              ; (e.target as HTMLImageElement).src = "/default-service.jpg"
                             }}
                           />
                           {service.discountedPrice != null && (
@@ -471,11 +475,10 @@ const HomePage: React.FC = () => {
                               </div>
                               <motion.button
                                 onClick={() => handleBookNow(service._id)}
-                                className={`px-4 py-2 rounded-lg font-semibold text-sm transition duration-300 ${
-                                  service.discountedPrice != null
-                                    ? "bg-red-500 text-white hover:bg-red-600"
-                                    : "bg-yellow-400 text-gray-900 hover:bg-yellow-300"
-                                }`}
+                                className={`px-4 py-2 rounded-lg font-semibold text-sm transition duration-300 ${service.discountedPrice != null
+                                  ? "bg-red-500 text-white hover:bg-red-600"
+                                  : "bg-yellow-400 text-gray-900 hover:bg-yellow-300"
+                                  }`}
                                 variants={buttonVariants}
                                 whileHover="hover"
                                 whileTap="tap"
@@ -500,8 +503,13 @@ const HomePage: React.FC = () => {
           {/* Therapist Section */}
           <div className="container mx-auto px-4 mt-24">
             <div className="text-center mb-16">
-              <h3 className="text-4xl font-extrabold text-gray-900 mb-4">Our Skincare Experts</h3>
-              <div className="w-24 h-1 bg-gradient-to-r from-yellow-400 to-pink-500 mx-auto"></div>
+              <motion.h1
+                className="text-4xl md:text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+              >Our Skincare Experts</motion.h1>
+              <div className="mt-2 h-1 w-24 bg-gradient-to-r from-yellow-600 to-white-400 rounded mx-auto"></div>
               <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
                 Meet our team of certified specialists with years of experience in skincare treatments
               </p>
@@ -525,13 +533,13 @@ const HomePage: React.FC = () => {
                     whileHover="hover"
                   >
                     <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-pink-500/20 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-white-500/20 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <img
                         src={therapist.image || "/placeholder.svg?height=300&width=400"}
                         alt={therapist.name}
                         className="w-full h-60 object-contain transition-transform duration-500 group-hover:scale-100"
                         onError={(e) => {
-                          ;(e.target as HTMLImageElement).src = "/default-avatar.png"
+                          ; (e.target as HTMLImageElement).src = "/default-avatar.png"
                         }}
                       />
                       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-transparent to-black/60"></div>
@@ -579,17 +587,9 @@ const HomePage: React.FC = () => {
                           Experience
                         </h5>
                         <p className="text-sm text-gray-600">
-                          {therapist.Description?.includes("năm")
-                            ? therapist.Description.match(/\d+\s+năm/)?.[0] || "Nhiều năm"
-                            : "Nhiều năm"}{" "}
-                          kinh nghiệm chuyên sâu
+                          {therapist.Description}
                         </p>
                       </div>
-
-                      <p className="text-gray-600 text-sm line-clamp-3 flex-grow">
-                        {therapist.Description ||
-                          "Chuyên gia tận tâm với nhiều năm kinh nghiệm trong lĩnh vực chăm sóc da."}
-                      </p>
 
                       <div className="mt-4 flex justify-between items-center">
                         <div className="flex space-x-2">
@@ -700,8 +700,13 @@ const HomePage: React.FC = () => {
         >
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-5xl font-extrabold text-gray-900 mb-4">Latest Blog Posts</h2>
-              <div className="w-24 h-1 bg-yellow-400 mx-auto"></div>
+              <motion.h1
+                className="text-4xl md:text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+              >Latest Blog Posts</motion.h1>
+              <div className="mt-2 h-1 w-24 bg-gradient-to-r from-yellow-600 to-white-400 rounded mx-auto"></div>
               <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
                 Stay updated with the latest skincare trends, tips, and insights from our experts
               </p>
@@ -723,8 +728,8 @@ const HomePage: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2">
                       <div className="relative h-full">
                         <img
-                          src={blogs[0].image || "/placeholder.svg?height=600&width=800"}
-                          alt={blogs[0].title}
+                          src={blogs[9].image || "/placeholder.svg?height=600&width=800"}
+                          alt={blogs[9].title}
                           className="w-full h-full object-cover min-h-[300px]"
                         />
                         <div className="absolute top-4 left-4 bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-sm font-semibold">
@@ -733,8 +738,8 @@ const HomePage: React.FC = () => {
                       </div>
                       <div className="p-8 flex flex-col justify-between">
                         <div>
-                          <h3 className="text-2xl font-bold text-gray-900 mb-4">{blogs[0].title}</h3>
-                          <p className="text-gray-600 mb-6 line-clamp-4">{blogs[0].description}</p>
+                          <h3 className="text-2xl font-bold text-gray-900 mb-4">{blogs[9].title}</h3>
+                          <p className="text-gray-600 mb-6 line-clamp-4">{blogs[9].description}</p>
                         </div>
                         <div className="mt-auto">
                           <div className="flex items-center mb-4">
@@ -755,18 +760,18 @@ const HomePage: React.FC = () => {
                               </svg>
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-900">Admin</p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(blogs[0].createdAt || Date.now()).toLocaleDateString("vi-VN", {
+                              <p className="text-sm font-medium text-gray-900">{blogs[9].createName}</p>
+                              {/* <p className="text-xs text-gray-500">
+                                {new Date(blogs[9].createdAt || Date.now()).toLocaleDateString("vi-VN", {
                                   year: "numeric",
                                   month: "long",
                                   day: "numeric",
                                 })}
-                              </p>
+                              </p> */}
                             </div>
                           </div>
                           <motion.button
-                            onClick={() => navigate(`/blog/${blogs[0]._id}`)}
+                            onClick={() => navigate(`/blog/${blogs[9]._id}`)}
                             className="px-6 py-3 bg-yellow-400 text-gray-900 rounded-lg font-semibold hover:bg-yellow-300 transition duration-300 w-full md:w-auto"
                             variants={buttonVariants}
                             whileHover="hover"
