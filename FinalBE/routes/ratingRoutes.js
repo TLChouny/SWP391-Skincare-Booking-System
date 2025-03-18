@@ -19,4 +19,6 @@ router.put("/:id", ratingController.updateRating);
 // API xóa đánh giá
 router.delete("/:id", ratingController.deleteRating);
 
+// 🔥 API kiểm tra xem người dùng đã đánh giá dịch vụ chưa
+router.get("/check-review", ratingController.checkUserReview);
 module.exports = router;

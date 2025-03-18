@@ -1,34 +1,76 @@
 const Rating = require("../models/Rating");
 const Product = require("../models/Product");
 const User = require("../models/User");
-
+const Cart = require("../models/cartModel");
 exports.createRating = async (req, res) => {
   try {
-    const { serviceID, serviceRating, serviceContent, images, createName } =
-      req.body;
-
-    // Lấy tên sản phẩm từ Product
-    const product = await Product.findOne({ service_id: serviceID });
-    if (!product) return res.status(404).json({ error: "Product not found" });
-
-    // Lấy tên người dùng từ User
-    const user = await User.findOne({ username: createName });
-
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    const newRating = new Rating({
-      serviceID,
-      serviceName: product.name, // Lấy từ Product
+    const {
+      bookingID,
+      service_id,
       serviceRating,
       serviceContent,
       images,
-      createName: user.username, // Lấy từ User
+      createName,
+    } = req.body;
+
+    if (
+      !bookingID ||
+      !service_id ||
+      !serviceRating ||
+      !serviceContent ||
+      !createName
+    ) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const existingRating = await Rating.findOne({ bookingID, createName });
+
+    if (existingRating) {
+      return res
+        .status(400)
+        .json({ error: "You have already reviewed this order." });
+    }
+
+    const cart = await Cart.findOne({ BookingID: bookingID });
+
+    if (!cart) {
+      return res.status(404).json({ error: "Order not found." });
+    }
+
+    if (!cart.service_id) {
+      return res.status(400).json({ error: "Service ID is missing in order." });
+    }
+
+    if (cart.status !== "checked-out") {
+      return res
+        .status(400)
+        .json({
+          error: "You can only review orders that have been checked-out.",
+        });
+    }
+
+    const newRating = new Rating({
+      bookingID,
+      service_id: cart.service_id,
+      serviceName: cart.serviceName,
+      serviceRating,
+      serviceContent,
+      images,
+      createName,
+      status: "reviewed",
     });
 
     await newRating.save();
-    res.status(201).json(newRating);
+
+    cart.status = "reviewed";
+    await cart.save();
+
+    return res
+      .status(201)
+      .json({ message: "Review submitted successfully!", rating: newRating });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("❌ Error creating rating:", err.message);
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -102,5 +144,30 @@ exports.deleteRating = async (req, res) => {
     res.json({ message: "Rating deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+// Kiểm tra xem người dùng đã đánh giá dịch vụ này chưa
+exports.checkUserReview = async (req, res) => {
+  try {
+    const { bookingID, username } = req.query;
+
+    if (!bookingID || !username) {
+      return res.status(400).json({ error: "Missing required parameters" });
+    }
+
+    // ✅ Kiểm tra nếu rating tồn tại
+    const existingRating = await Rating.findOne({
+      bookingID,
+      createName: username,
+    });
+
+    if (existingRating) {
+      return res.status(200).json({ reviewed: true });
+    } else {
+      return res.status(200).json({ reviewed: false });
+    }
+  } catch (error) {
+    console.error("❌ Error checking user review:", error.message);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

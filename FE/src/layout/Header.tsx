@@ -62,7 +62,7 @@ const Header: React.FC = () => {
       case "skincare_staff":
         return "/therapist";
       case "user":
-        return "/dashboard"; // Vẫn trỏ đến dashboard, nhưng tiêu đề sẽ thay đổi
+        return "/dashboard"; 
       default:
         return "/dashboard";
     }

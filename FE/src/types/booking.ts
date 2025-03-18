@@ -14,7 +14,7 @@ export type Service = {
     description: string;
   };
   createDate?: string;
-}
+};
 
 export type Therapist = {
   id: string;
@@ -24,7 +24,7 @@ export type Therapist = {
 };
 
 export type Booking = {
-  BookingID?:string;
+  BookingID?: string;
   username: string | undefined;
   CartID?: string;
   service_id: number;
@@ -41,8 +41,15 @@ export type Booking = {
   originalPrice?: number; // Thêm: Giá gốc
   totalPrice?: number;
   discountedPrice: number | null;
-  status: "pending" | "checked-in" | "completed" | "checked-out" | "cancel";
-  action?: "checkin" | "checkout" | null; // From EnhancedBookingPage
+  status:
+    | "pending"
+    | "checked-in"
+    | "completed"
+    | "checked-out"
+    | "cancel"
+    | "reviewed";
+  action?: "checkin" | "checkout" | null;
+  reviewed?: boolean;
 };
 
 export type Blog = {
@@ -64,4 +71,4 @@ export type Rating = {
   images: string[];
   createAt: Date;
   createName: string;
-}
+};

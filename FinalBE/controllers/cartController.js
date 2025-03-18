@@ -165,6 +165,8 @@ exports.getCartsByUsername = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy giỏ hàng nào!" });
     }
 
+    console.log("📌 Orders Data from DB:", carts); // 🛑 Kiểm tra dữ liệu từ MongoDB
+
     res.status(200).json(carts);
   } catch (error) {
     console.error("Lỗi khi lấy giỏ hàng theo username:", error);
@@ -173,6 +175,11 @@ exports.getCartsByUsername = async (req, res) => {
       .json({ message: "Lỗi khi lấy giỏ hàng!", error: error.message });
   }
 };
+
+
+
+
+
 
 // Get carts by therapist (for therapists)
 exports.getCartsByTherapist = async (req, res) => {

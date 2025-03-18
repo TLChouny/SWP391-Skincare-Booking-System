@@ -13,6 +13,7 @@ const statusStyles = {
   completed: { bg: "bg-green-100", text: "text-green-800", icon: "✔" },
   cancel: { bg: "bg-red-100", text: "text-red-800", icon: "✖" },
   "checked-out": { bg: "bg-green-100", text: "text-purple-800", icon: "✔" },
+  reviewed: { bg: "bg-gray-100", text: "text-gray-800", icon: "⭐" },
 } as const;
 
 const CustomerProfile: React.FC = () => {
@@ -33,17 +34,19 @@ const CustomerProfile: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Booking | null>(null);
   const [rating, setRating] = useState<number>(5);
   const [reviewText, setReviewText] = useState<string>("");
-  const [reviewedOrders, setReviewedOrders] = useState<string[]>([]);
+  // const [reviewedOrders, setReviewedOrders] = useState<string[]>([]);
+  // const [reviewedServices, setReviewedServices] = useState<{
+  //   [key: string]: boolean;
+  // }>({});
+
   useEffect(() => {
     if (user?.username) {
       fetchOrders();
-      loadReviewedOrders();
     } else {
       setOrders([]);
       setLoading(false);
     }
   }, [user]);
-
   const fetchOrders = async () => {
     if (!user?.username) {
       setError("You need to log in to view your order history.");
@@ -75,6 +78,8 @@ const CustomerProfile: React.FC = () => {
       }
 
       const data: Booking[] = await response.json();
+      console.log("📌 Orders Data from API:", data); 
+
       setOrders(data);
     } catch (err) {
       setError(
@@ -85,32 +90,26 @@ const CustomerProfile: React.FC = () => {
     }
   };
 
-  const loadReviewedOrders = () => {
-    const storedReviews = localStorage.getItem("reviewedOrders");
-    if (storedReviews) {
-      setReviewedOrders(JSON.parse(storedReviews));
-    }
-  };
+  // const loadReviewedOrders = () => {
+  //   const storedReviews = localStorage.getItem("reviewedOrders");
+  //   if (storedReviews) {
+  //     setReviewedOrders(JSON.parse(storedReviews));
+  //   }
+  // };
 
-  const saveReviewedOrders = (updatedReviewedOrders: string[]) => {
-    localStorage.setItem(
-      "reviewedOrders",
-      JSON.stringify(updatedReviewedOrders)
-    );
-    setReviewedOrders(updatedReviewedOrders);
-  };
+  // const saveReviewedOrders = (updatedReviewedOrders: string[]) => {
+  //   localStorage.setItem(
+  //     "reviewedOrders",
+  //     JSON.stringify(updatedReviewedOrders)
+  //   );
+  //   setReviewedOrders(updatedReviewedOrders);
+  // };
 
   const openReviewModal = (order: Booking) => {
     if (!order.BookingID) {
       message.warning("Invalid order ID.");
       return;
     }
-
-    if (reviewedOrders.includes(order.BookingID)) {
-      message.warning("You have already reviewed this order.");
-      return;
-    }
-
     setSelectedOrder(order);
     setIsModalOpen(true);
   };
@@ -121,20 +120,30 @@ const CustomerProfile: React.FC = () => {
     setRating(5);
     setReviewText("");
   };
-
   const handleSubmitReview = async () => {
     if (!selectedOrder || !user?.username) {
       message.error("Error: No order selected or not logged in.");
       return;
     }
 
+    console.log("📌 Selected Order Data:", selectedOrder); // 🛑 Log dữ liệu order
+
     const reviewData = {
-      serviceID: selectedOrder.service_id,
+      bookingID: selectedOrder.BookingID,
+      service_id: selectedOrder.service_id, // 🛑 Dùng `service_id` thay vì `serviceID`
       serviceName: selectedOrder.serviceName,
       serviceRating: rating,
       serviceContent: reviewText,
       createName: user.username,
     };
+
+    console.log("📌 Sending Review Data:", reviewData); // 🛑 Kiểm tra dữ liệu trước khi gửi API
+
+    if (!reviewData.service_id) {
+      console.error("❌ Error: Service ID is missing!");
+      message.error("Error: Service ID is missing.");
+      return;
+    }
 
     try {
       const token = localStorage.getItem("authToken");
@@ -151,19 +160,21 @@ const CustomerProfile: React.FC = () => {
         body: JSON.stringify(reviewData),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        throw new Error("Unable to submit review.");
+        throw new Error(responseData.error || "Unable to submit review.");
       }
 
       toast.success("Review submitted successfully!");
 
-      if (selectedOrder?.BookingID) {
-        const updatedReviewedOrders = [
-          ...reviewedOrders,
-          selectedOrder.BookingID,
-        ];
-        saveReviewedOrders(updatedReviewedOrders);
-      }
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.BookingID === selectedOrder.BookingID
+            ? { ...order, status: "reviewed" }
+            : order
+        )
+      );
 
       closeReviewModal();
     } catch (err) {
@@ -307,25 +318,19 @@ const CustomerProfile: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-4 px-6">
-                        {order.status === "checked-out" ? (
+                        {order.status === "checked-out" && !order.reviewed ? (
                           <Button
                             type="primary"
                             onClick={() => openReviewModal(order)}
-                            disabled={
-                              order.BookingID
-                                ? reviewedOrders.includes(order.BookingID)
-                                : false
-                            }
                           >
-                            {order.BookingID &&
-                            reviewedOrders.includes(order.BookingID)
-                              ? "Reviewed"
-                              : "Review"}
+                            Review
                           </Button>
-                        ) : (
-                          <span className="text-gray-400">
-                            Not yet reviewable
+                        ) : order.reviewed ? (
+                          <span className="text-green-500 font-bold">
+                            Reviewed
                           </span>
+                        ) : (
+                          <span className="text-gray-400">{order.status}</span>
                         )}
                       </td>
                     </motion.tr>
@@ -369,14 +374,13 @@ const CustomerProfile: React.FC = () => {
       </div>
 
       <Modal
-        title={<span className="text-xl font-semibold">Service Review</span>}
+        title="Review Order"
         open={isModalOpen}
         onCancel={closeReviewModal}
         onOk={handleSubmitReview}
         okText="Submit"
         cancelText="Cancel"
-        className="rounded-lg"
-        bodyStyle={{ padding: "24px" }}
+        styles={{ body: { padding: "24px" } }} // ✅ DÙNG styles THAY VÌ bodyStyle
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}

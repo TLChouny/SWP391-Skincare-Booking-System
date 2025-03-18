@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
-import { Booking } from "../../types/booking";
-
+// import { Booking } from "../../types/booking";
+import { JSX } from "react/jsx-runtime";
 type AuthUser = {
   username?: string;
   email?: string;
@@ -14,14 +14,17 @@ interface CartComponentProps {
   isBookingPage?: boolean;
 }
 
-const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBookingPage = false }) => {
+const CartComponent: React.FC<CartComponentProps> = ({
+  handleCheckout,
+  // isBookingPage = false,
+}) => {
   const { cart, fetchCart, loadingCart, cartError, user, token } = useAuth();
   const [showCart, setShowCart] = useState<boolean>(false);
 
   const API_BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000/api"
-    : "https://luluspa-production.up.railway.app/api";
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api"
+      : "https://luluspa-production.up.railway.app/api";
   useEffect(() => {
     let isMounted = true;
 
@@ -44,17 +47,26 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
     };
   }, [fetchCart, user]);
 
-  const userCart = cart.filter((item) => item.username === (user as AuthUser)?.username);
+  const userCart = cart.filter(
+    (item) => item.username === (user as AuthUser)?.username
+  );
 
   useEffect(() => {
     console.log("Cart data:", cart);
     console.log("User cart filtered:", userCart);
   }, [cart, userCart]);
 
-  const formatPriceDisplay = (originalPrice: number, discountedPrice?: number | null): JSX.Element => {
+  const formatPriceDisplay = (
+    originalPrice: number,
+    discountedPrice?: number | null
+  ): JSX.Element => {
     return (
       <>
-        <span style={{ textDecoration: discountedPrice != null ? "line-through" : "none" }}>
+        <span
+          style={{
+            textDecoration: discountedPrice != null ? "line-through" : "none",
+          }}
+        >
           {originalPrice.toLocaleString("vi-VN")} VNĐ
         </span>
         {discountedPrice != null && (
@@ -89,6 +101,8 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
         return "Đã thanh toán";
       case "cancel":
         return "Đã hủy";
+      case "reviewed":
+        return "Đã đánh giá";
       default:
         console.warn("Unexpected status value:", status);
         return "Không xác định";
@@ -107,6 +121,8 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
         return "text-purple-500";
       case "cancel":
         return "text-red-500";
+      case "reviewed": 
+      return "text-orange-500"
       default:
         return "text-gray-500";
     }
@@ -137,7 +153,9 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Không thể hủy giỏ hàng: Lỗi server");
+        throw new Error(
+          errorData.message || "Không thể hủy giỏ hàng: Lỗi server"
+        );
       }
 
       const data = await response.json();
@@ -147,7 +165,9 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
       toast.success("Giỏ hàng đã được hủy thành công!");
     } catch (error) {
       console.error("Lỗi khi hủy giỏ hàng:", error);
-      toast.error(error instanceof Error ? error.message : "Không thể hủy giỏ hàng.");
+      toast.error(
+        error instanceof Error ? error.message : "Không thể hủy giỏ hàng."
+      );
     }
   };
 
@@ -176,7 +196,9 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
             exit={{ opacity: 0, x: 100 }}
             className="fixed top-36 right-4 bg-white p-6 rounded-lg shadow-xl w-full max-w-md max-h-[70vh] overflow-y-auto z-50"
           >
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Giỏ hàng của bạn</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              Giỏ hàng của bạn
+            </h3>
             {loadingCart ? (
               <p className="text-gray-600">Đang tải giỏ hàng...</p>
             ) : cartError ? (
@@ -190,14 +212,26 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
                     animate={{ opacity: 1 }}
                     className="mb-4 border-b pb-2"
                   >
-                    <p className="font-semibold text-gray-800">{item.serviceName}</p>
-                    <p className="text-gray-600">Ngày đặt: {item.bookingDate} - {item.startTime}</p>
-                    <p className="text-gray-600">Khách hàng: {item.customerName}</p>
+                    <p className="font-semibold text-gray-800">
+                      {item.serviceName}
+                    </p>
+                    <p className="text-gray-600">
+                      Ngày đặt: {item.bookingDate} - {item.startTime}
+                    </p>
+                    <p className="text-gray-600">
+                      Khách hàng: {item.customerName}
+                    </p>
                     {item.Skincare_staff && (
-                      <p className="text-gray-600">Nhân viên: {item.Skincare_staff}</p>
+                      <p className="text-gray-600">
+                        Nhân viên: {item.Skincare_staff}
+                      </p>
                     )}
                     <p className="text-gray-600">
-                      Tổng tiền: {formatPriceDisplay(item.originalPrice || item.totalPrice || 0, item.discountedPrice)}
+                      Tổng tiền:{" "}
+                      {formatPriceDisplay(
+                        item.originalPrice || item.totalPrice || 0,
+                        item.discountedPrice
+                      )}
                     </p>
                     <p className={`${getStatusColor(item.status)}`}>
                       Trạng thái: {getStatusLabel(item.status)}
@@ -214,12 +248,19 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout, isBooking
                     )}
                   </motion.div>
                 ))}
-                <p className="text-lg font-semibold text-gray-800 mt-4">Tổng: {formatTotal()}</p>
+                <p className="text-lg font-semibold text-gray-800 mt-4">
+                  Tổng: {formatTotal()}
+                </p>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={handleCheckout || (() => (window.location.href = "/booking"))}
-                  disabled={!userCart.some((item) => item.status === "completed")}
+                  onClick={
+                    handleCheckout ||
+                    (() => (window.location.href = "/booking"))
+                  }
+                  disabled={
+                    !userCart.some((item) => item.status === "completed")
+                  }
                   className={`w-full p-3 rounded-lg mt-4 ${
                     !userCart.some((item) => item.status === "completed")
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"

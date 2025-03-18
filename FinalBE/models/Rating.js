@@ -1,13 +1,14 @@
 const mongoose = require("mongoose");
 
 const ratingSchema = new mongoose.Schema({
-  serviceID: { type: String, required: true },
-  serviceName: { type: String, required: true },
-  serviceRating: { type: Number, required: true, min: 1, max: 5 },
+  bookingID: { type: String, required: true },
+  serviceID: { type: String }, // Loại bỏ required: true nếu không cần thiết
+  serviceName: { type: String },
+  serviceRating: { type: Number, required: true },
   serviceContent: { type: String, required: true },
-  images: [String],
-  createAt: { type: Date, default: Date.now },
+  images: [{ type: String }],
   createName: { type: String, required: true },
+  status: { type: String, default: "reviewed" },
 });
 
 module.exports = mongoose.model("Rating", ratingSchema);
