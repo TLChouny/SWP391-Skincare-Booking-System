@@ -2,26 +2,31 @@
 
 import type React from "react";
 import { useEffect, useState } from "react";
-import { Layout, Avatar, Dropdown, Menu, Badge } from "antd";
-import {
-  UserOutlined,
-  BellOutlined,
-  LogoutOutlined,
-  SettingOutlined,
-} from "@ant-design/icons";
+import { Layout, Avatar, Dropdown, MenuProps, Divider } from "antd";
+import { UserOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo7.png";
+import { ChevronDown } from "lucide-react";
 
 const { Header } = Layout;
 
+interface User {
+  username: string;
+  avatar?: string;
+}
+
 const AdminHeader: React.FC = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{ username: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      setUser({
+        username: parsedUser.username,
+        avatar: parsedUser.avatar || undefined,
+      });
     }
   }, []);
 
@@ -31,151 +36,82 @@ const AdminHeader: React.FC = () => {
     navigate("/login");
   };
 
-  // Custom styles for the dropdown menu
-  const dropdownMenuStyle = {
-    menu: {
-      backgroundColor: "white",
-      borderRadius: "8px",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-      border: "1px solid #f0f0f0",
-      padding: "4px 0",
-      width: "200px",
+  const userMenuItems: MenuProps["items"] = [
+    {
+      key: "settings",
+      icon: <SettingOutlined className="text-lg" />,
+      label: <span className="text-gray-700">Settings</span>,
+      className: "hover:bg-yellow-50 py-2 px-4",
+      onClick: () => navigate("/settings"),
     },
-    item: {
-      padding: "10px 16px",
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      transition: "all 0.2s",
+    {
+      type: "divider",
+      className: "my-1",
     },
-    icon: {
-      fontSize: "16px",
+    {
+      key: "logout",
+      icon: <LogoutOutlined className="text-lg text-red-600" />,
+      label: <span className="text-red-600">Log Out</span>,
+      className: "hover:bg-yellow-50 py-2 px-4",
+      onClick: handleLogout,
     },
-    divider: {
-      margin: "4px 0",
-    },
-    logoutText: {
-      color: "#f5222d",
-    },
-  };
-
-  // Custom menu component to apply our styles
-  const userMenu = (
-    <Menu
-      style={dropdownMenuStyle.menu}
-      items={[
-        {
-          key: "profile",
-          icon: <UserOutlined style={dropdownMenuStyle.icon} />,
-          label: "My Profile",
-          style: dropdownMenuStyle.item,
-          className: "hover:bg-yellow-50",
-        },
-        {
-          key: "settings",
-          icon: <SettingOutlined style={dropdownMenuStyle.icon} />,
-          label: "Settings",
-          style: dropdownMenuStyle.item,
-          className: "hover:bg-yellow-50",
-          onClick: () => navigate("/settings"),
-        },
-        {
-          type: "divider",
-          style: dropdownMenuStyle.divider,
-        },
-        {
-          key: "logout",
-          icon: (
-            <LogoutOutlined
-              style={{ ...dropdownMenuStyle.icon, color: "#f5222d" }}
-            />
-          ),
-          label: <span style={dropdownMenuStyle.logoutText}>Log Out</span>,
-          onClick: handleLogout,
-          style: dropdownMenuStyle.item,
-          className: "hover:bg-yellow-50",
-        },
-      ]}
-    />
-  );
+  ];
 
   return (
     <Header
-      style={{
-        background: "#fff",
-        padding: "0 24px",
-        position: "fixed",
-        zIndex: 1,
-        width: "100%",
-        height: "78px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-      }}>
-      <div className='flex items-center'>
-        <Link to='/'>
+      className="bg-[#dad5c9] py-2 shadow-lg sticky top-0 z-50 flex items-center justify-between px-20"
+    >
+      <div className="flex items-center space-x-3">
+        <Link to="/">
           <img
             src={logo || "/placeholder.svg"}
-            alt='LuLuSpa Logo'
-            className='w-16 h-16 rounded-full'
+            alt="LuLuSpa Logo"
+            className="w-12 h-12 rounded-full"
           />
         </Link>
-        <div className='text-xl font-semibold ml-4 p'>Welcome</div>
+        <span className="text-xl font-semibold text-gray-800">Welcome</span>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-        <Badge count={5} size='small'>
-          <BellOutlined
-            style={{
-              fontSize: "20px",
-              cursor: "pointer",
-              padding: "8px",
-              backgroundColor: "rgba(250, 204, 21, 0.2)",
-              borderRadius: "50%",
-            }}
-          />
-        </Badge>
-
-        <Dropdown
-          overlay={userMenu}
-          placement='bottomRight'
-          trigger={["click"]}>
-          <div
-            style={{
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              backgroundColor: "rgba(250, 204, 21, 0.2)",
-              padding: "6px 12px",
-              borderRadius: "8px",
-              transition: "all 0.2s",
-            }}
-            className='hover:bg-yellow-300/30'>
-            <Avatar
-              icon={<UserOutlined />}
-              style={{
-                backgroundColor: "#facc15",
-                color: "#000",
-              }}
-            />
-            {user && <span style={{ fontWeight: 500 }}>{user.username}</span>}
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              width='16'
-              height='16'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              style={{ color: "#666" }}>
-              <path d='m6 9 6 6 6-6' />
-            </svg>
-          </div>
-        </Dropdown>
+      <div className="flex items-center space-x-8 mr-19">
+        <div className="flex items-center space-x-3">
+          {user ? (
+            <Dropdown menu={{ items: userMenuItems }} trigger={["click"]} placement="bottomRight">
+              <button className="flex items-center gap-2 bg-yellow-300/20 hover:bg-yellow-300/30 text-black px-2 py-1 rounded-lg transition-all duration-200">
+                <div className="bg-yellow-300 rounded-full w-12 h-12 flex items-center justify-center overflow-hidden">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt="User Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-black font-semibold text-lg">
+                      {user.username.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <span className="text-base font-medium">{user.username}</span>
+                <ChevronDown size={24} className="text-gray-600" />
+              </button>
+            </Dropdown>
+          ) : (
+            <div className="flex items-center space-x-3">
+              <Link
+                to="/login"
+                className="text-base font-semibold hover:text-yellow-300 transition duration-300"
+              >
+                <span>Login</span>
+              </Link>
+              <Divider type="vertical" className="border-black mt-1 h-6" />
+              <Link
+                to="/register"
+                className="text-base font-semibold hover:text-yellow-300 transition duration-300"
+              >
+                <span>Sign Up</span>
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </Header>
   );
