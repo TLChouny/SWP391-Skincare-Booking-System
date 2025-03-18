@@ -7,7 +7,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { Booking } from "../../types/booking";
 import { motion } from "framer-motion";
 
-// Define status styles
 const statusStyles = {
   pending: { bg: "bg-yellow-100", text: "text-yellow-800", icon: "⏳" },
   "checked-in": { bg: "bg-blue-100", text: "text-blue-800", icon: "✔" },
