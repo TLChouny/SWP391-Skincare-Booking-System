@@ -3,11 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
-import { useAuth } from "../context/AuthContext"; // Import useAuth
+import { useAuth } from "../context/AuthContext";
 import layerImage from "../assets/logo7.png";
 
 const Login: React.FC = () => {
-  const { setToken, setUser } = useAuth(); // Get setToken and setUser from context
+  const { setToken, setUser } = useAuth();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -54,11 +54,20 @@ const Login: React.FC = () => {
       const data = await response.json();
       toast.success("Login successful");
 
-      // Save token and user to AuthContext
+      // Lưu đầy đủ thông tin user vào AuthContext
+      const userData = {
+        username: data.username,
+        role: data.role,
+        avatar: data.avatar || null, // Lấy avatar từ API, fallback về null nếu không có
+      };
       setToken(data.token);
-      setUser({ username: data.username, role: data.role });
+      setUser(userData);
 
-      // Redirect based on user role
+      // Lưu thông tin user vào localStorage
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", data.token);
+
+      // Redirect dựa trên role
       if (data.role === "user") {
         navigate("/");
       } else if (data.role === "admin") {
@@ -125,8 +134,9 @@ const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`flex items-center justify-center w-full py-4 mt-5 font-semibold tracking-wide text-gray-100 transition-all duration-300 ease-in-out rounded-lg ${loading ? "bg-gray-500" : "bg-blue-900 hover:bg-indigo-700"
-                  }`}
+                className={`flex items-center justify-center w-full py-4 mt-5 font-semibold tracking-wide text-gray-100 transition-all duration-300 ease-in-out rounded-lg ${
+                  loading ? "bg-gray-500" : "bg-blue-900 hover:bg-indigo-700"
+                }`}
               >
                 {loading ? "Processing..." : "Login"}
               </button>
