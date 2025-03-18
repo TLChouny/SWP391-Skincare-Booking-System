@@ -180,12 +180,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          `Không thể tải giỏ hàng: ${response.status} - ${
-            errorData.message || "Lỗi server không xác định"
-          }`
-        );
+       return ;
       }
 
       const data = await response.json();

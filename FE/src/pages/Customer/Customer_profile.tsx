@@ -71,7 +71,7 @@ const CustomerProfile: React.FC = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Unable to load orders.");
+       return;
       }
 
       const data: Booking[] = await response.json();
