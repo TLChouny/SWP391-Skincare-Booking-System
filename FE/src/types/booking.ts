@@ -50,6 +50,7 @@ export type Booking = {
     | "reviewed";
   action?: "checkin" | "checkout" | null;
   reviewed?: boolean;
+  description?: string;
 };
 
 export type Blog = {

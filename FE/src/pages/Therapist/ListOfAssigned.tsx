@@ -3,24 +3,30 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../context/AuthContext";
 import { Booking } from "../../types/booking";
-
+import { Modal, Input } from "antd";
 const statusStyles = {
   pending: { bg: "bg-yellow-100", text: "text-yellow-800", icon: "⏳" },
   "checked-in": { bg: "bg-blue-100", text: "text-blue-800", icon: "✔" },
   completed: { bg: "bg-green-100", text: "text-green-800", icon: "✔" },
   "checked-out": { bg: "bg-purple-100", text: "text-purple-800", icon: "🚪" },
   cancel: { bg: "bg-red-100", text: "text-red-800", icon: "✖" },
+  reviewed: { bg: "bg-indigo-100", text: "text-indigo-800", icon: "📝" }, 
 } as const;
+
 
 const ListOfAssign: React.FC = () => {
   const { user, cart, setCart, fetchCart, loadingCart, cartError } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const bookingsPerPage = 5;
-  const API_BASE_URL = window.location.hostname === "localhost"
-  ? "http://localhost:5000/api"
-  : "https://luluspa-production.up.railway.app/api";
-
+  const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api"
+      : "https://luluspa-production.up.railway.app/api";
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [resultText, setResultText] = useState("");
+  const [isViewMode, setIsViewMode] = useState(false);
   useEffect(() => {
     if (user) {
       fetchCart();
@@ -28,8 +34,65 @@ const ListOfAssign: React.FC = () => {
   }, [user, fetchCart]);
 
   useEffect(() => {
-    setBookings(cart); // Use cart directly as it’s filtered by Skincare_staff for therapists
+    setBookings(cart);
   }, [cart]);
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      setResultText(""); 
+      setSelectedBooking(null); 
+    }
+  }, [isModalOpen]);
+
+  const openModal = (booking: Booking, viewOnly = false) => {
+    setSelectedBooking(booking);
+
+    setResultText(viewOnly ? booking.description || "No result available" : "");
+
+    setIsViewMode(viewOnly);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => {
+      setResultText(""); 
+      setSelectedBooking(null); 
+    }, 300);
+  };
+
+  const saveResult = async () => {
+    if (!selectedBooking) return;
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/cart/${selectedBooking.CartID}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ description: resultText }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update result");
+      }
+
+      toast.success("Result updated successfully");
+
+      setResultText("");
+      setSelectedBooking(null);
+
+      closeModal();
+
+      await fetchCart();
+    } catch (error) {
+      toast.error("Error updating result");
+      console.error(error);
+    }
+  };
 
   const handleComplete = async (cartId: string) => {
     if (!cartId) {
@@ -76,7 +139,7 @@ const ListOfAssign: React.FC = () => {
         )
       );
       toast.success("Booking marked as completed!");
-      await fetchCart(); // Refresh to sync with server
+      await fetchCart(); 
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
@@ -137,11 +200,11 @@ const ListOfAssign: React.FC = () => {
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-              <thead className="bg-gray-100">
+            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md ">
+              <thead className="bg-gray-100 ">
                 <tr>
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap sticky left-0 bg-gray-100 z-10">
-                    CartID
+                    Booking
                   </th>
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Customer Name
@@ -163,6 +226,9 @@ const ListOfAssign: React.FC = () => {
                   </th>
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Action
+                  </th>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
+                    Result
                   </th>
                 </tr>
               </thead>
@@ -202,14 +268,44 @@ const ListOfAssign: React.FC = () => {
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
                         {booking.status === "checked-in" ? (
-                          <button
-                            onClick={() => handleComplete(booking.CartID || "")}
-                            className="bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600 transition-all duration-300 whitespace-nowrap"
-                          >
-                            Complete
-                          </button>
+                          booking.description &&
+                          booking.description.trim() !== "" ? (
+                            <button
+                              onClick={() =>
+                                handleComplete(booking.CartID || "")
+                              }
+                              className="bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600 transition-all duration-300 whitespace-nowrap"
+                            >
+                              Complete
+                            </button>
+                          ) : (
+                            <span className="text-red-500 text-sm">
+                              Please send report before complete
+                            </span>
+                          )
                         ) : (
                           <span className="text-gray-500">No Action</span>
+                        )}
+                      </td>
+
+                      <td className="py-2 px-4 border-b">
+                        <button
+                          onClick={() => openModal(booking, true)}
+                          className="bg-gray-500 text-white py-1 px-3 rounded hover:bg-gray-600 transition-all mr-2"
+                        >
+                          View
+                        </button>
+                        {booking.status === "checked-in" ? (
+                          <>
+                            <button
+                              onClick={() => openModal(booking, false)}
+                              className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600 transition-all mr-2"
+                            >
+                              Update result
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-gray-500"></span>
                         )}
                       </td>
                     </tr>
@@ -256,6 +352,27 @@ const ListOfAssign: React.FC = () => {
           </div>
         </>
       )}
+      <Modal
+        title={isViewMode ? "View Result" : "Update Result"}
+        open={isModalOpen}
+        onCancel={closeModal}
+        onOk={!isViewMode ? saveResult : closeModal} 
+        okText={isViewMode ? "Close" : "Save"} 
+        cancelButtonProps={{
+          style: { display: isViewMode ? "none" : "inline-block" },
+        }} 
+      >
+        {isViewMode ? (
+          <p className="text-lg text-gray-700">{resultText}</p> 
+        ) : (
+          <Input.TextArea
+            value={resultText}
+            onChange={(e) => setResultText(e.target.value)}
+            rows={4}
+            placeholder="Enter result description..."
+          />
+        )}
+      </Modal>
     </div>
   );
 };

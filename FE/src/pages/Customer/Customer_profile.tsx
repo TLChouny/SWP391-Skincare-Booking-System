@@ -78,7 +78,7 @@ const CustomerProfile: React.FC = () => {
       }
 
       const data: Booking[] = await response.json();
-      console.log("📌 Orders Data from API:", data); 
+      // console.log("📌 Orders Data from API:", data); 
 
       setOrders(data);
     } catch (err) {
@@ -126,21 +126,21 @@ const CustomerProfile: React.FC = () => {
       return;
     }
 
-    console.log("📌 Selected Order Data:", selectedOrder); // 🛑 Log dữ liệu order
+    // console.log("📌 Selected Order Data:", selectedOrder); 
 
     const reviewData = {
       bookingID: selectedOrder.BookingID,
-      service_id: selectedOrder.service_id, // 🛑 Dùng `service_id` thay vì `serviceID`
+      service_id: selectedOrder.service_id, 
       serviceName: selectedOrder.serviceName,
       serviceRating: rating,
       serviceContent: reviewText,
       createName: user.username,
     };
 
-    console.log("📌 Sending Review Data:", reviewData); // 🛑 Kiểm tra dữ liệu trước khi gửi API
+    // console.log("📌 Sending Review Data:", reviewData);
 
     if (!reviewData.service_id) {
-      console.error("❌ Error: Service ID is missing!");
+      // console.error("❌ Error: Service ID is missing!");
       message.error("Error: Service ID is missing.");
       return;
     }
@@ -285,6 +285,9 @@ const CustomerProfile: React.FC = () => {
                     <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
                       Review
                     </th>
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                      Received result
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -333,6 +336,11 @@ const CustomerProfile: React.FC = () => {
                           <span className="text-gray-400">{order.status}</span>
                         )}
                       </td>
+                      <td className="py-4 px-6 text-gray-800">
+                        {order.description
+                          ? order?.description
+                          : "No result yet"}
+                      </td>
                     </motion.tr>
                   ))}
                 </tbody>
@@ -380,7 +388,7 @@ const CustomerProfile: React.FC = () => {
         onOk={handleSubmitReview}
         okText="Submit"
         cancelText="Cancel"
-        styles={{ body: { padding: "24px" } }} // ✅ DÙNG styles THAY VÌ bodyStyle
+        styles={{ body: { padding: "24px" } }} 
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}

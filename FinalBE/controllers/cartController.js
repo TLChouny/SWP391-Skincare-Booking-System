@@ -44,8 +44,9 @@ exports.createCart = async (req, res) => {
       notes,
       service_id,
       startTime,
-      Skincare_staff, // 👈 Có thể không bắt buộc
+      Skincare_staff,
       bookingDate,
+      description,
     } = req.body;
 
     if (
@@ -78,15 +79,12 @@ exports.createCart = async (req, res) => {
 
     const endTime = calculateEndTime(startTime, product.duration);
 
-    // 🔥 Nếu chọn nhân viên, kiểm tra lịch làm việc
     if (Skincare_staff) {
       const existingBooking = await Cart.findOne({
         bookingDate,
         Skincare_staff,
-        status: { $in: ["pending", "checked-in"] }, // Chỉ kiểm tra lịch chưa hoàn thành
-        $or: [
-          { startTime: { $lt: endTime }, endTime: { $gt: startTime } }, // 📌 Trùng thời gian với lịch khác
-        ],
+        status: { $in: ["pending", "checked-in"] },
+        $or: [{ startTime: { $lt: endTime }, endTime: { $gt: startTime } }],
       });
 
       if (existingBooking) {
@@ -127,6 +125,7 @@ exports.createCart = async (req, res) => {
       currency: "VND",
       Skincare_staff: Skincare_staff,
       status: "pending",
+      description,
     });
 
     await newCart.save();
@@ -175,11 +174,6 @@ exports.getCartsByUsername = async (req, res) => {
       .json({ message: "Lỗi khi lấy giỏ hàng!", error: error.message });
   }
 };
-
-
-
-
-
 
 // Get carts by therapist (for therapists)
 exports.getCartsByTherapist = async (req, res) => {
@@ -234,11 +228,13 @@ exports.deleteCart = async (req, res) => {
 exports.updateCart = async (req, res) => {
   try {
     const { cartID } = req.params;
-    const { status, Skincare_staff } = req.body;
+    const { status, Skincare_staff, description } = req.body;
 
     const cart = await Cart.findOne({ CartID: cartID });
     if (!cart) return res.status(404).json({ message: "Không tìm thấy Cart!" });
-
+    if (description !== undefined) {
+      cart.description = description;
+    }
     // Status transition validation
     if (status === "checked-in" && cart.status !== "pending") {
       return res

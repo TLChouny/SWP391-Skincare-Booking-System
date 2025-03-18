@@ -16,16 +16,24 @@ const cartSchema = new mongoose.Schema({
   endTime: { type: String },
   duration: { type: Number },
   originalPrice: { type: Number },
-  totalPrice: { type: Number, required: true }, 
-  discountedPrice: { type: Number }, 
+  totalPrice: { type: Number, required: true },
+  discountedPrice: { type: Number },
   currency: { type: String, default: "VND" },
   discountCode: { type: String },
   Skincare_staff: { type: String },
   status: {
     type: String,
-    enum: ["pending", "checked-in", "completed", "checked-out", "cancel", "reviewed"],
+    enum: [
+      "pending",
+      "checked-in",
+      "completed",
+      "checked-out",
+      "cancel",
+      "reviewed",
+    ],
     default: "pending",
   },
+  description: { type: String },
 });
 
 module.exports = mongoose.model("Cart", cartSchema);
