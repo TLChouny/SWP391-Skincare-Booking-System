@@ -13,7 +13,7 @@ import { useAuth } from "../context/AuthContext";
 
 const Header: React.FC = () => {
   const { token, setToken, setUser, setCart, fetchCart } = useAuth();
-  const [user, setLocalUser] = useState<{
+  const [localUser, setLocalUser] = useState<{
     avatar?: string;
     username: string;
     role?: string;
@@ -22,27 +22,11 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
-  // useEffect(() => {
-  //   const storedUser = localStorage.getItem("user");
-  //   if (storedUser) {
-  //     const parsedUser = JSON.parse(storedUser);
-  //     setLocalUser({
-  //       username: parsedUser.username,
-  //       role: parsedUser.role || null,
-  //       avatar: parsedUser.avatar || null,
-  //     });
-  //     setRole(parsedUser.role || null);
-  //   } else {
-  //     setLocalUser(null);
-  //     setRole(null);
-  //   }
-  // }, [token]);
-
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
-      console.log("User data:", parsedUser); // Kiểm tra dữ liệu
+      console.log("User data:", parsedUser);
       setLocalUser({
         username: parsedUser.username,
         role: parsedUser.role || null,
@@ -56,7 +40,7 @@ const Header: React.FC = () => {
   }, [token]);
 
   const handleBookNow = () => {
-    if (!user) {
+    if (!localUser) {
       toast.error("You need to log in before booking a service!");
       setTimeout(() => navigate("/login"), 3000);
     } else {
@@ -68,8 +52,8 @@ const Header: React.FC = () => {
     setToken(null);
     setLocalUser(null);
     setRole(null);
-    localStorage.removeItem("user"); // Xóa user khỏi localStorage khi logout
-    localStorage.removeItem("token"); // Xóa token nếu có
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     navigate("/login");
     toast.success("Logged out successfully!");
   };
@@ -101,10 +85,7 @@ const Header: React.FC = () => {
     {
       key: "dashboard",
       label: (
-        <div
-          className="px-4 py-2 flex items-center gap-2 text-gray-700 hover:bg-yellow-50"
-          onClick={handleProfileClick}
-        >
+        <div className="px-4 py-2 flex items-center gap-2 text-gray-700 hover:bg-yellow-50" onClick={handleProfileClick}>
           <User size={16} />
           <span>{role === "user" ? "Order History" : "My Dashboard"}</span>
         </div>
@@ -136,10 +117,7 @@ const Header: React.FC = () => {
     {
       key: "logout",
       label: (
-        <div
-          className="px-4 py-2 flex items-center gap-2 text-red-600 hover:bg-yellow-50"
-          onClick={handleLogout}
-        >
+        <div className="px-4 py-2 flex items-center gap-2 text-red-600 hover:bg-yellow-50" onClick={handleLogout}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -162,20 +140,24 @@ const Header: React.FC = () => {
   ];
 
   return (
-    <header className="bg-[#dad5c9] text-black py-4 shadow-lg sticky top-0 z-50">
-      <div className="container mx-auto flex justify-between items-center px-6">
+    <header className="bg-[#dad5c9] text-black py-2 shadow-lg sticky top-0 z-50">
+      <div className="container mx-auto flex justify-between items-center px-2">
         <div className="flex items-center space-x-3">
           <Link to="/">
-            <img src={logo || "/placeholder.svg"} alt="LuLuSpa Logo" className="w-16 h-16 rounded-full" />
+            <img
+              src={logo || "/placeholder.svg"}
+              alt="LuLuSpa Logo"
+              className="w-12 h-12 rounded-full"
+            />
           </Link>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-wide">
+          <h1 className="text-xl md:text-2xl font-extrabold tracking-wide">
             <span className="text-black-300">LuLu</span>
             <span className="text-yellow-300">Spa</span>
           </h1>
         </div>
 
         <nav>
-          <ul className="hidden md:flex space-x-8 text-lg font-medium">
+          <ul className="hidden md:flex space-x-16 text-base font-medium">
             <li>
               <Link to="/" className="hover:text-yellow-300 transition duration-300">
                 Home
@@ -199,7 +181,7 @@ const Header: React.FC = () => {
             <li>
               <button
                 onClick={() => setShowModal(true)}
-                className="hover:text-yellow-300 transition duration-300"
+                className="hover:text-yellow-300 transition duration-300 text-base"
               >
                 Contact
               </button>
@@ -211,44 +193,44 @@ const Header: React.FC = () => {
           <button
             title="Book your appointment now"
             onClick={handleBookNow}
-            className="hidden md:block bg-yellow-300 text-black py-2 px-6 rounded-lg shadow-md hover:bg-yellow-400 transition duration-300"
+            className="hidden md:block bg-yellow-300 text-black py-1 px-4 rounded-lg shadow-md hover:bg-yellow-400 transition duration-300 text-sm"
           >
             Book Now
           </button>
 
           <div className="flex items-center space-x-3">
-            {user ? (
+            {localUser ? (
               <Dropdown menu={{ items: userMenuItems }} trigger={["click"]} placement="bottomRight">
-                <button className="flex items-center gap-2 bg-yellow-300/20 hover:bg-yellow-300/30 text-black px-3 py-2 rounded-lg transition-all duration-200">
-                  <div className="bg-yellow-300 rounded-full w-14 h-12 flex items-center justify-center overflow-hidden">
-                    {user.avatar ? (
+                <button className="flex items-center gap-2 bg-yellow-300/20 hover:bg-yellow-300/30 text-black px-2 py-1 rounded-lg transition-all duration-200">
+                  <div className="bg-yellow-300 rounded-full w-12 h-12 flex items-center justify-center overflow-hidden">
+                    {localUser.avatar ? (
                       <img
-                        src={user.avatar}
+                        src={localUser.avatar}
                         alt="User Avatar"
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <span className="text-black font-semibold text-lg">
-                        {user.username.charAt(0).toUpperCase()}
+                        {localUser.username.charAt(0).toUpperCase()}
                       </span>
                     )}
                   </div>
-                  <span className="font-medium">{user.username}</span>
-                  <ChevronDown size={16} className="text-gray-600" />
+                  <span className="text-base font-medium">{localUser.username}</span>
+                  <ChevronDown size={24} className="text-gray-600" />
                 </button>
               </Dropdown>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
                 <Link
                   to="/login"
-                  className="text-lg font-semibold hover:text-yellow-300 transition duration-300 px-2"
+                  className="text-base font-semibold hover:text-yellow-300 transition duration-300"
                 >
                   <span>Login</span>
                 </Link>
-                <Divider type="vertical" className="border-black mt-1 h-7" />
+                <Divider type="vertical" className="border-black mt-1 h-6" />
                 <Link
                   to="/register"
-                  className="text-lg font-semibold hover:text-yellow-300 transition duration-300 px-2"
+                  className="text-base font-semibold hover:text-yellow-300 transition duration-300"
                 >
                   <span>Sign Up</span>
                 </Link>
@@ -260,7 +242,7 @@ const Header: React.FC = () => {
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center px-4">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg relative">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
             <button
               onClick={() => setShowModal(false)}
               className="absolute top-3 right-3 text-2xl text-gray-600 hover:text-gray-900"
@@ -268,42 +250,42 @@ const Header: React.FC = () => {
               ×
             </button>
 
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">
               Contact Us
             </h3>
 
-            <form className="space-y-4">
+            <form className="space-y-3">
               <input
                 type="text"
                 placeholder="Your Name"
-                className="p-2 border w-full rounded-md"
+                className="p-2 border w-full rounded-md text-sm"
               />
               <input
                 type="text"
                 placeholder="Your Phone Number"
-                className="p-2 border w-full rounded-md"
+                className="p-2 border w-full rounded-md text-sm"
               />
-              <button className="py-2 px-4 bg-blue-500 text-white rounded-lg w-full hover:bg-blue-600 transition">
+              <button className="py-1 px-4 bg-blue-500 text-white rounded-lg w-full hover:bg-blue-600 transition text-sm">
                 Submit
               </button>
             </form>
 
-            <div className="mt-6 text-left">
-              <p className="text-gray-600 font-medium">
+            <div className="mt-4 text-left">
+              <p className="text-gray-600 font-medium text-sm">
                 🏡 Store Name: <span className="font-semibold">LuLuSpa</span>
               </p>
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-sm">
                 📞 Phone: <span className="font-semibold">123-456-789</span>
               </p>
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-sm">
                 📧 Email: <span className="font-semibold">info@luluspa.com</span>
               </p>
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-sm">
                 ⏰ Working Hours: <span className="font-semibold">Mon - Sat, 9:00 - 17:30</span>
               </p>
               <a
                 href="https://facebook.com/luluspa"
-                className="text-blue-600 hover:underline mt-2 inline-block"
+                className="text-blue-600 hover:underline mt-2 inline-block text-sm"
               >
                 🌐 Visit our Facebook
               </a>

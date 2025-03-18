@@ -158,6 +158,56 @@ router.post(
 );
 
 // Đăng nhập tài khoản
+// router.post(
+//   "/login",
+//   [
+//     check("email", "Email không hợp lệ").isEmail(),
+//     check("password", "Vui lòng nhập mật khẩu").exists(),
+//   ],
+//   async (req, res) => {
+//     const { email, password } = req.body;
+
+//     try {
+//       let user = await User.findOne({ email });
+//       if (!user) {
+//         return res.status(400).json({ msg: "Sai email hoặc mật khẩu" });
+//       }
+
+//       if (!user.isVerified) {
+//         return res.status(400).json({ msg: "Email chưa được xác thực!" });
+//       }
+
+//       const isMatch = await bcrypt.compare(password, user.password);
+//       if (!isMatch) {
+//         return res.status(400).json({ msg: "Sai email hoặc mật khẩu" });
+//       }
+
+//       const payload = {
+//         user: {
+//           id: user.id,
+//           username: user.username,
+//           role: user.role,
+//           avatar: user.avatar,
+//         },
+//       };
+
+//       // 🔥 Tạo token
+//       const token = jwt.sign(payload, process.env.JWT_SECRET, {
+//         expiresIn: "1h",
+//       });
+
+//       // 🔥 Lưu token vào DB
+//       user.token = token;
+//       await user.save();
+
+//       res.json({ token, username: user.username, role: user.role });
+//     } catch (err) {
+//       console.error(err.message);
+//       res.status(500).send("Lỗi máy chủ");
+//     }
+//   }
+// );
+// Đăng nhập tài khoản
 router.post(
   "/login",
   [
@@ -187,26 +237,38 @@ router.post(
           id: user.id,
           username: user.username,
           role: user.role,
+          avatar: user.avatar,
         },
       };
 
-      // 🔥 Tạo token
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "1h",
       });
 
-      // 🔥 Lưu token vào DB
       user.token = token;
       await user.save();
 
-      res.json({ token, username: user.username, role: user.role });
+      // Tạo URL đầy đủ cho avatar
+      const baseUrl =
+        process.env.NODE_ENV === "production"
+          ? "https://luluspa-production.up.railway.app"
+          : "http://localhost:5000";
+      const avatarUrl = user.avatar
+        ? `${baseUrl}${user.avatar}` // URL tuyệt đối nếu có avatar
+        : `${baseUrl}/default-avatar.png`; // Fallback nếu không có avatar
+
+      res.json({
+        token,
+        username: user.username,
+        role: user.role,
+        avatar: avatarUrl, // Trả về URL đầy đủ
+      });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");
     }
   }
 );
-
 const authMiddleware = (req, res, next) => {
   const token = req.header("x-auth-token");
   if (!token) {
@@ -260,6 +322,46 @@ router.get("/me", authMiddleware, async (req, res) => {
 });
 
 // Cập nhật thông tin cá nhân
+// router.put(
+//   "/update-profile",
+//   authMiddleware,
+//   upload.single("avatar"),
+//   async (req, res) => {
+//     try {
+//       let user = await User.findById(req.user.id);
+//       if (!user) {
+//         return res.status(404).json({ msg: "Người dùng không tồn tại" });
+//       }
+
+//       const { username, email } = req.body;
+//       let avatarPath = user.avatar;
+
+//       // Nếu có file mới tải lên thì cập nhật đường dẫn
+//       if (req.file) {
+//         avatarPath = `/uploads/users/${req.user.id}/${req.file.filename}`;
+//       }
+
+//       if (username) user.username = username;
+//       if (email) user.email = email;
+//       user.avatar = avatarPath; // Cập nhật avatar vào database
+
+//       await user.save();
+
+//       res.status(200).json({
+//         msg: "Cập nhật thành công!",
+//         user: {
+//           username: user.username,
+//           email: user.email,
+//           avatar: avatarPath,
+//         },
+//       });
+//     } catch (err) {
+//       console.error("Lỗi Backend:", err);
+//       res.status(500).json({ msg: "Lỗi máy chủ!", error: err.message });
+//     }
+//   }
+// );
+// Cập nhật thông tin cá nhân
 router.put(
   "/update-profile",
   authMiddleware,
@@ -285,12 +387,21 @@ router.put(
 
       await user.save();
 
+      // Tạo URL đầy đủ cho avatar
+      const baseUrl =
+        process.env.NODE_ENV === "production"
+          ? "https://luluspa-production.up.railway.app"
+          : "http://localhost:5000";
+      const avatarUrl = avatarPath
+        ? `${baseUrl}${avatarPath}`
+        : `${baseUrl}/default-avatar.png`;
+
       res.status(200).json({
         msg: "Cập nhật thành công!",
         user: {
           username: user.username,
           email: user.email,
-          avatar: avatarPath,
+          avatar: avatarUrl, // Trả về URL đầy đủ
         },
       });
     } catch (err) {

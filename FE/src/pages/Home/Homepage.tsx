@@ -52,6 +52,7 @@ const HomePage: React.FC = () => {
     cartError,
     setCart,
     token,
+    user,
   } = useAuth();
   const navigate = useNavigate();
   const [services, setServices] = useState<Service[]>([]);
@@ -64,7 +65,11 @@ const HomePage: React.FC = () => {
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [paymentUrl, setPaymentUrl] = useState<string>("");
   const [qrCode, setQrCode] = useState<string>("");
-  const [API_BASE_URL] = useState<string>("http://localhost:5000/api");
+  const [API_BASE_URL] = useState<string>(
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api"
+      : "https://luluspa-production.up.railway.app/api"
+  );
   const carouselRef = useRef<HTMLDivElement>(null);
 
   // Hàm format giá
@@ -113,7 +118,7 @@ const HomePage: React.FC = () => {
     );
   };
 
-  // Fetch dữ liệu
+  // Fetch dữ liệu services
   useEffect(() => {
     fetch(`${API_BASE_URL}/products/`, {
       method: "GET",
@@ -137,6 +142,7 @@ const HomePage: React.FC = () => {
       });
   }, [API_BASE_URL]);
 
+  // Fetch dữ liệu therapists
   useEffect(() => {
     const fetchTherapists = async () => {
       try {
@@ -156,12 +162,18 @@ const HomePage: React.FC = () => {
         if (!response.ok)
           throw new Error(`Failed to fetch therapists: ${response.status}`);
         const data = await response.json();
+        const baseUrl =
+          window.location.hostname === "localhost"
+            ? "http://localhost:5000"
+            : "https://luluspa-production.up.railway.app";
         setTherapists(
           data.map((staff: any) => ({
             id: staff._id,
             name: staff.username,
-            image: staff.avatar || "/default-avatar.png",
-            Description: staff.Description,
+            image: staff.avatar
+              ? `${baseUrl}${staff.avatar}` // Ghép base URL để tạo absolute URL
+              : `${baseUrl}/default-avatar.png`, // Fallback nếu không có avatar
+            Description: staff.Description || "Skincare expert",
           }))
         );
       } catch (error: any) {
@@ -169,7 +181,6 @@ const HomePage: React.FC = () => {
         setTherapistError(
           "Unable to load specialist list. Please try again later."
         );
-        // toast.error("Unable to load specialist list. Please try again later.")
       } finally {
         setLoadingTherapists(false);
       }
@@ -178,6 +189,7 @@ const HomePage: React.FC = () => {
     if (isAuthenticated) fetchTherapists();
   }, [isAuthenticated, token, API_BASE_URL]);
 
+  // Fetch dữ liệu blogs
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
@@ -205,6 +217,7 @@ const HomePage: React.FC = () => {
     fetchBlogs();
   }, [API_BASE_URL]);
 
+  // Fetch cart
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
@@ -409,7 +422,6 @@ const HomePage: React.FC = () => {
               </p>
             </div>
 
-            {/* Infinite Carousel for Services */}
             {services.length > 0 ? (
               <div className="relative overflow-hidden">
                 <motion.div
@@ -559,217 +571,221 @@ const HomePage: React.FC = () => {
               </p>
             )}
           </div>
-
-          {/* Therapist Section */}
-          <div className="container mx-auto px-4 mt-24">
-            <div className="text-center mb-16">
-              <motion.h1
-                className="text-4xl md:text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
-                initial={{ opacity: 0, y: -50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-              >
-                Our Skincare Experts
-              </motion.h1>
-              <div className="mt-2 h-1 w-24 bg-gradient-to-r from-yellow-600 to-white-400 rounded mx-auto"></div>
-              <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-                Meet our team of certified specialists with years of experience
-                in skincare treatments
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-              {loadingTherapists ? (
-                <div className="flex justify-center items-center h-64 col-span-3">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
-                </div>
-              ) : therapistError ? (
-                <p className="text-center text-red-600 col-span-3">
-                  {therapistError}
-                </p>
-              ) : isAuthenticated && therapists.length > 0 ? (
-                therapists
-                  .slice(
-                    currentTherapistIndex * 3,
-                    (currentTherapistIndex + 1) * 3
-                  )
-                  .map((therapist) => (
-                    <motion.div
-                      key={therapist.id}
-                      className="group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col h-full"
-                      variants={therapistCardVariants}
-                      initial="hidden"
-                      animate="visible"
-                      whileHover="hover"
-                    >
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-white-500/20 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <img
-                          src={
-                            therapist.image ||
-                            "/placeholder.svg?height=300&width=400"
-                          }
-                          alt={therapist.name}
-                          className="w-full h-60 object-contain transition-transform duration-500 group-hover:scale-100"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "/default-avatar.png";
-                          }}
-                        />
-                        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-transparent to-black/60"></div>
-                        <div className="absolute top-4 right-4 bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-sm font-semibold shadow-lg z-20">
-                          Expert
-                        </div>
-                      </div>
-
-                      <div className="p-6 text-left flex flex-col flex-grow relative z-10">
-                        <h4 className="text-2xl font-bold text-gray-800 mb-1">
-                          {therapist.name}
-                        </h4>
-                        <p className="text-base text-yellow-600 font-medium mb-4 flex items-center">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"
-                            />
-                          </svg>
-                          Skincare Specialist
-                        </p>
-
-                        <div className="bg-gray-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-r-lg">
-                          <h5 className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-4 w-4 mr-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                              />
-                            </svg>
-                            Experience
-                          </h5>
-                          <p className="text-sm text-gray-600">
-                            {therapist.Description}
-                          </p>
-                        </div>
-
-                        <div className="mt-4 flex justify-between items-center">
-                          <div className="flex space-x-2">
-                            <span className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 hover:bg-yellow-200 transition-colors">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                />
-                              </svg>
-                            </span>
-                            <span className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 hover:bg-pink-200 transition-colors">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"
-                                />
-                              </svg>
-                            </span>
-                          </div>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-4 w-4 mr-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                              />
-                            </svg>
-                            <span>5.0</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-8">
-                        <button className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-semibold px-6 py-2 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                          Xem Lịch
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))
-              ) : (
-                <p className="text-gray-600 text-center col-span-3 py-12">
-                  {isAuthenticated
-                    ? "Our skincare experts are being prepared. Please check back soon."
-                    : "Please log in to view the list of specialists."}
-                </p>
-              )}
-            </div>
-
-            {isAuthenticated && therapists.length > 3 && (
-              <div className="text-center mt-12">
-                <motion.button
-                  onClick={handleNextTherapists}
-                  className="px-8 py-3 bg-gray-800 text-white rounded-full font-semibold hover:bg-gray-700 transition duration-300 ease-in-out flex items-center mx-auto"
-                  variants={buttonVariants}
-                  whileHover="hover"
-                  whileTap="tap"
-                >
-                  <span>Explore More Specialists</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 ml-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </motion.button>
-              </div>
-            )}
-          </div>
         </motion.section>
       </AnimatePresence>
 
-      {/* Blogs Section */}
+      <AnimatePresence mode="wait">
+  <motion.section
+    key="therapists"
+    className="py-24 bg-gray-50"
+    variants={sectionVariants}
+    initial="hidden"
+    animate="visible"
+    exit="hidden"
+  >
+    <div className="container mx-auto px-4">
+      <div className="text-center mb-16">
+        <motion.h1
+          className="text-4xl md:text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          Our Skincare Experts
+        </motion.h1>
+        <div className="mt-2 h-1 w-24 bg-gradient-to-r from-yellow-600 to-white-400 rounded mx-auto"></div>
+        <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+          Meet our team of certified specialists with years of experience in
+          skincare treatments
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+        {loadingTherapists ? (
+          <div className="flex justify-center items-center h-64 col-span-3">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
+          </div>
+        ) : therapistError ? (
+          <p className="text-center text-red-600 col-span-3">{therapistError}</p>
+        ) : isAuthenticated && therapists.length > 0 ? (
+          therapists
+            .slice(currentTherapistIndex * 3, (currentTherapistIndex + 1) * 3)
+            .map((therapist) => (
+              <motion.div
+                key={therapist.id}
+                className="group relative bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col h-full"
+                variants={therapistCardVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover="hover"
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/20 to-white-500/20 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <img
+                    src={therapist.image}
+                    alt={therapist.name}
+                    className="w-full h-60 object-contain transition-transform duration-500 group-hover:scale-105" // Thay object-cover bằng object-contain
+                    onError={(e) => {
+                      console.error(
+                        `Failed to load image for ${therapist.name}:`,
+                        e
+                      );
+                      (e.target as HTMLImageElement).src = "/default-avatar.png";
+                    }}
+                  />
+                  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-transparent to-black/60"></div>
+                  <div className="absolute top-4 right-4 bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-sm font-semibold shadow-lg z-20">
+                    Expert
+                  </div>
+                </div>
+
+                <div className="p-6 text-left flex flex-col flex-grow relative z-10">
+                  <h4 className="text-2xl font-bold text-gray-800 mb-1">
+                    {therapist.name}
+                  </h4>
+                  <p className="text-base text-yellow-600 font-medium mb-4 flex items-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"
+                      />
+                    </svg>
+                    Skincare Specialist
+                  </p>
+
+                  <div className="bg-gray-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-r-lg">
+                    <h5 className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      Experience
+                    </h5>
+                    <p className="text-sm text-gray-600">
+                      {therapist.Description}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 flex justify-between items-center">
+                    <div className="flex space-x-2">
+                      <span className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 hover:bg-yellow-200 transition-colors">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </span>
+                      <span className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 hover:bg-pink-200 transition-colors">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                        />
+                      </svg>
+                      <span>5.0</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-8">
+                  <button className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-semibold px-6 py-2 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                    Slot time
+                  </button>
+                </div>
+              </motion.div>
+            ))
+        ) : (
+          <p className="text-gray-600 text-center col-span-3 py-12">
+            {isAuthenticated
+              ? "Our skincare experts are being prepared. Please check back soon."
+              : "Please log in to view the list of specialists."}
+          </p>
+        )}
+      </div>
+
+      {isAuthenticated && therapists.length > 3 && (
+        <div className="text-center mt-12">
+          <motion.button
+            onClick={handleNextTherapists}
+            className="px-8 py-3 bg-gray-800 text-white rounded-full font-semibold hover:bg-gray-700 transition duration-300 ease-in-out flex items-center mx-auto"
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+          >
+            <span>Explore More Specialists</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 ml-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </motion.button>
+        </div>
+      )}
+    </div>
+  </motion.section>
+</AnimatePresence>
+
       <AnimatePresence mode="wait">
         <motion.section
           key="blogs"
@@ -854,13 +870,6 @@ const HomePage: React.FC = () => {
                               <p className="text-sm font-medium text-gray-900">
                                 {blogs[0].createName}
                               </p>
-                              {/* <p className="text-xs text-gray-500">
-                                {new Date(blogs[9].createdAt || Date.now()).toLocaleDateString("vi-VN", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                })}
-                              </p> */}
                             </div>
                           </div>
                           <motion.button
@@ -1044,7 +1053,7 @@ const HomePage: React.FC = () => {
 
       <CheckoutModal
         showModal={showCheckoutModal}
-        setShowModal={setShowCheckoutModal} // Sửa để đồng bộ với state trong HomePage
+        setShowModal={setShowCheckoutModal}
         cart={cart as Booking[]}
         fetchCart={fetchCart}
         loadingCart={loadingCart}
