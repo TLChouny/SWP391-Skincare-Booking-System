@@ -71,7 +71,7 @@ const CustomerProfile: React.FC = () => {
       );
 
       if (!response.ok) {
-       return;
+        return;
       }
 
       const data: Booking[] = await response.json();
