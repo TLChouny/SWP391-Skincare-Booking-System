@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Button, Radio, message, Card, Steps } from "antd";
 import Layout from "../../layout/Layout";
+import { motion } from "framer-motion";
 
 const { Step } = Steps;
 
@@ -81,8 +82,13 @@ const SkinAssessmentQuiz: React.FC = () => {
 
   return (
     <Layout>
-      <div className="p-8 bg-gradient-to-r from-green-100 to-blue-200 rounded-lg shadow-xl max-w-4xl mx-auto transition-all duration-500">
-        <h2 className="text-4xl font-semibold text-center text-gray-800 mb-8">Trắc nghiệm đánh giá da</h2>
+      <div className="p-8 bg-gradient-to-r from-yellow-100 to-blue-200 rounded-lg shadow-xl max-w-4xl mx-auto transition-all duration-500">
+      <motion.h1
+            className="text-4xl md:text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >Skin Assessment Test</motion.h1>
         <Steps current={current} onChange={setCurrent} className="mb-6">
           {questions.map((_, index) => (
             <Step key={index} />
@@ -113,7 +119,7 @@ const SkinAssessmentQuiz: React.FC = () => {
                 onClick={() => setCurrent(Math.max(0, current - 1))}
                 className="px-8 py-3 bg-gray-300 text-gray-700 hover:bg-gray-400 transition-all duration-200"
               >
-                Quay lại
+                Back
               </Button>
               {current === questions.length - 1 ? (
                 <Button
@@ -122,7 +128,7 @@ const SkinAssessmentQuiz: React.FC = () => {
                   loading={loading}
                   className="px-8 py-3 bg-blue-600 hover:bg-blue-700 transition-all duration-200"
                 >
-                  Hoàn thành
+                  Finish
                 </Button>
               ) : (
                 <Button
@@ -130,7 +136,7 @@ const SkinAssessmentQuiz: React.FC = () => {
                   onClick={handleNext}
                   className="px-8 py-3 bg-blue-600 hover:bg-blue-700 transition-all duration-200"
                 >
-                  Tiếp tục
+                  Next
                 </Button>
               )}
             </div>
@@ -139,11 +145,11 @@ const SkinAssessmentQuiz: React.FC = () => {
 
         {result && (
           <div className="mt-8">
-            <Card title="Kết quả" bordered={false} className="shadow-lg mb-6 p-6 bg-white rounded-lg">
+            <Card title="Result" bordered={false} className="shadow-lg mb-6 p-6 bg-white rounded-lg">
               <p className="text-2xl text-green-600 font-semibold">{result}</p>
               {bestMatch && (
                 <div className="mt-4">
-                  <h4 className="text-xl font-medium">Kết quả phù hợp nhất:</h4>
+                  <h4 className="text-xl font-medium">Best Match:</h4>
                   <p className="text-lg">{bestMatch.charAt(0).toUpperCase() + bestMatch.slice(1)}</p>
                 </div>
               )}
