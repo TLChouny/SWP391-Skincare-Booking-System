@@ -22,8 +22,8 @@ const CustomerProfile: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchOrderId, setSearchOrderId] = useState<string>(""); // State cho tìm kiếm Order ID
-  const [sortStatus, setSortStatus] = useState<string>("All"); // State cho sắp xếp Status
+  const [searchOrderId, setSearchOrderId] = useState<string>("");
+  const [sortStatus, setSortStatus] = useState<string>("All");
   const ordersPerPage = 10;
   const API_BASE_URL =
     window.location.hostname === "localhost"
@@ -34,10 +34,11 @@ const CustomerProfile: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Booking | null>(null);
   const [rating, setRating] = useState<number>(5);
   const [reviewText, setReviewText] = useState<string>("");
-
+  const [reviewedOrders, setReviewedOrders] = useState<string[]>([]);
   useEffect(() => {
     if (user?.username) {
       fetchOrders();
+      loadReviewedOrders();
     } else {
       setOrders([]);
       setLoading(false);
@@ -77,13 +78,40 @@ const CustomerProfile: React.FC = () => {
       const data: Booking[] = await response.json();
       setOrders(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred.");
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred."
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  const loadReviewedOrders = () => {
+    const storedReviews = localStorage.getItem("reviewedOrders");
+    if (storedReviews) {
+      setReviewedOrders(JSON.parse(storedReviews));
+    }
+  };
+
+  const saveReviewedOrders = (updatedReviewedOrders: string[]) => {
+    localStorage.setItem(
+      "reviewedOrders",
+      JSON.stringify(updatedReviewedOrders)
+    );
+    setReviewedOrders(updatedReviewedOrders);
+  };
+
   const openReviewModal = (order: Booking) => {
+    if (!order.BookingID) {
+      message.warning("Invalid order ID.");
+      return;
+    }
+
+    if (reviewedOrders.includes(order.BookingID)) {
+      message.warning("You have already reviewed this order.");
+      return;
+    }
+
     setSelectedOrder(order);
     setIsModalOpen(true);
   };
@@ -129,6 +157,15 @@ const CustomerProfile: React.FC = () => {
       }
 
       toast.success("Review submitted successfully!");
+
+      if (selectedOrder?.BookingID) {
+        const updatedReviewedOrders = [
+          ...reviewedOrders,
+          selectedOrder.BookingID,
+        ];
+        saveReviewedOrders(updatedReviewedOrders);
+      }
+
       closeReviewModal();
     } catch (err) {
       toast.error("Error submitting review.");
@@ -136,7 +173,6 @@ const CustomerProfile: React.FC = () => {
     }
   };
 
-  // Logic lọc và sắp xếp
   const filteredAndSortedOrders = orders
     .filter((order) =>
       searchOrderId
@@ -149,7 +185,6 @@ const CustomerProfile: React.FC = () => {
       sortStatus === "All" ? true : order.status === sortStatus
     );
 
-  // Pagination logic
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
   const currentOrders = filteredAndSortedOrders.slice(
@@ -176,7 +211,6 @@ const CustomerProfile: React.FC = () => {
         </motion.h1>
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Bộ lọc và sắp xếp */}
           <div className="p-6 flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -187,7 +221,7 @@ const CustomerProfile: React.FC = () => {
                 value={searchOrderId}
                 onChange={(e) => {
                   setSearchOrderId(e.target.value);
-                  setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
+                  setCurrentPage(1);
                 }}
                 className="rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-400"
               />
@@ -200,7 +234,7 @@ const CustomerProfile: React.FC = () => {
                 value={sortStatus}
                 onChange={(value) => {
                   setSortStatus(value);
-                  setCurrentPage(1); // Reset về trang 1 khi sắp xếp
+                  setCurrentPage(1);
                 }}
                 className="w-full"
                 options={[
@@ -265,7 +299,9 @@ const CustomerProfile: React.FC = () => {
                         <span
                           className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                             statusStyles[order.status]?.bg || "bg-gray-100"
-                          } ${statusStyles[order.status]?.text || "text-gray-800"}`}
+                          } ${
+                            statusStyles[order.status]?.text || "text-gray-800"
+                          }`}
                         >
                           {statusStyles[order.status]?.icon || "⏳"}
                           <span className="ml-1">{order.status}</span>
@@ -276,12 +312,21 @@ const CustomerProfile: React.FC = () => {
                           <Button
                             type="primary"
                             onClick={() => openReviewModal(order)}
-                            className="bg-blue-600 hover:bg-blue-700 rounded-lg"
+                            disabled={
+                              order.BookingID
+                                ? reviewedOrders.includes(order.BookingID)
+                                : false
+                            }
                           >
-                            Review
+                            {order.BookingID &&
+                            reviewedOrders.includes(order.BookingID)
+                              ? "Reviewed"
+                              : "Review"}
                           </Button>
                         ) : (
-                          <span className="text-gray-400">Not yet reviewable</span>
+                          <span className="text-gray-400">
+                            Not yet reviewable
+                          </span>
                         )}
                       </td>
                     </motion.tr>
@@ -289,7 +334,6 @@ const CustomerProfile: React.FC = () => {
                 </tbody>
               </table>
 
-              {/* Pagination */}
               <div className="flex justify-center py-6">
                 <Button
                   onClick={() => handlePageChange(currentPage - 1)}
@@ -325,7 +369,6 @@ const CustomerProfile: React.FC = () => {
         </div>
       </div>
 
-      {/* Review Modal */}
       <Modal
         title={<span className="text-xl font-semibold">Service Review</span>}
         open={isModalOpen}
