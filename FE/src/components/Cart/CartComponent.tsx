@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
-// import { Booking } from "../../types/booking";
+import { Booking } from "../../types/booking";
 import { JSX } from "react/jsx-runtime";
 type AuthUser = {
   username?: string;
@@ -18,7 +18,8 @@ const CartComponent: React.FC<CartComponentProps> = ({
   handleCheckout,
   // isBookingPage = false,
 }) => {
-  const { cart, fetchCart, loadingCart, cartError, user, token } = useAuth();
+  const { cart, fetchCart, loadingCart, cartError, user, token, setCart } =
+    useAuth();
   const [showCart, setShowCart] = useState<boolean>(false);
 
   const API_BASE_URL =
@@ -121,8 +122,8 @@ const CartComponent: React.FC<CartComponentProps> = ({
         return "text-purple-500";
       case "cancel":
         return "text-red-500";
-      case "reviewed": 
-      return "text-orange-500"
+      case "reviewed":
+        return "text-orange-500";
       default:
         return "text-gray-500";
     }
@@ -160,8 +161,10 @@ const CartComponent: React.FC<CartComponentProps> = ({
 
       const data = await response.json();
       console.log(`Successfully canceled cart item with ID: ${cartID}`, data);
+      setCart((prevCart: Booking[]) =>
+        prevCart.filter((item) => item.CartID !== cartID)
+      );
 
-      await fetchCart();
       toast.success("Giỏ hàng đã được hủy thành công!");
     } catch (error) {
       console.error("Lỗi khi hủy giỏ hàng:", error);
@@ -177,7 +180,7 @@ const CartComponent: React.FC<CartComponentProps> = ({
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={toggleCart}
-        className="fixed top-28 right-4 p-3 bg-yellow-400 rounded-full shadow-lg hover:bg-yellow-500"
+        className="fixed top-36 right-4 p-3 bg-yellow-400 rounded-full shadow-lg hover:bg-yellow-500"
         aria-label="Toggle cart"
       >
         🛒
@@ -194,7 +197,7 @@ const CartComponent: React.FC<CartComponentProps> = ({
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 100 }}
-            className="fixed top-36 right-4 bg-white p-6 rounded-lg shadow-xl w-full max-w-md max-h-[70vh] overflow-y-auto z-50"
+            className="fixed top-48 right-16 bg-white p-6 rounded-lg shadow-xl w-full max-w-md max-h-[70vh] overflow-y-auto z-50"
           >
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               Giỏ hàng của bạn
