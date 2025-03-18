@@ -6,7 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import layerImage from "../assets/logo7.png";
 
-const Forgot_password: React.FC = () => {
+const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
@@ -15,6 +15,7 @@ const Forgot_password: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
+
   const isValidGmail = (email: string) => {
     return /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
   };
@@ -23,7 +24,7 @@ const Forgot_password: React.FC = () => {
     e.preventDefault();
 
     if (!isValidGmail(email)) {
-      toast.error("Vui lòng nhập email @gmail.com hợp lệ!");
+      toast.error("Please enter a valid @gmail.com email!");
       return;
     }
 
@@ -37,11 +38,11 @@ const Forgot_password: React.FC = () => {
 
       await axios.post(`${API_URL}/auth/forgot-password/send-otp`, { email });
 
-      toast.success("Mã OTP đã được gửi, vui lòng kiểm tra email!");
+      toast.success("OTP has been sent, please check your email!");
       setIsOtpModalOpen(true);
     } catch (error) {
-      console.error("Lỗi API:", error);
-      toast.warn("Không thể gửi OTP nhưng bạn vẫn có thể nhập mã!");
+      console.error("API Error:", error);
+      toast.warn("Unable to send OTP, but you can still enter the code!");
       setIsOtpModalOpen(true);
     } finally {
       setLoading(false);
@@ -50,22 +51,22 @@ const Forgot_password: React.FC = () => {
 
   const handleOtpSubmit = () => {
     if (otp.length === 6) {
-      message.success("Xác thực OTP thành công!");
+      message.success("OTP verified successfully!");
       setIsOtpModalOpen(false);
       setIsPasswordModalOpen(true);
     } else {
-      message.error("Mã OTP phải có 6 chữ số!");
+      message.error("OTP must be 6 digits!");
     }
   };
 
   const handlePasswordSubmit = async () => {
     if (newPassword.length < 8) {
-      message.error("Mật khẩu phải có ít nhất 8 ký tự!");
+      message.error("Password must be at least 8 characters long!");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      message.error("Mật khẩu xác nhận không khớp!");
+      message.error("Passwords do not match!");
       return;
     }
 
@@ -82,7 +83,7 @@ const Forgot_password: React.FC = () => {
         confirm_password: confirmPassword,
       });
 
-      message.success(response.data.msg);
+      message.success(response.data.msg || "Password reset successfully!");
 
       setIsPasswordModalOpen(false);
       setNewPassword("");
@@ -90,14 +91,13 @@ const Forgot_password: React.FC = () => {
       setOtp("");
       navigate("/login");
     } catch (error: any) {
-      console.error("Lỗi API:", error.response?.data || error.message);
-      message.error(error.response?.data?.msg || "Lỗi khi đặt lại mật khẩu!");
+      console.error("API Error:", error.response?.data || error.message);
+      message.error(error.response?.data?.msg || "Error resetting password!");
     }
   };
 
-
   return (
-    <div className="h-[86vh] flex items-center justify-center px-5 lg:px-0">
+    <div className="min-h-screen flex items-center justify-center px-5 lg:px-0">
       <ToastContainer />
       <div className="flex justify-center flex-1 max-w-screen-lg bg-white border shadow sm:rounded-lg">
         <div className="flex-1 hidden text-center md:flex">
@@ -111,7 +111,7 @@ const Forgot_password: React.FC = () => {
         <div className="p-4 lg:w-1/2 xl:w-1/2 sm:p-12 md:w-1/3">
           <div className="flex flex-col items-center">
             <h1 className="text-2xl font-extrabold text-blue-900 xl:text-4xl">
-              Forgot password
+              Forgot Password
             </h1>
             <form
               onSubmit={handleSubmit}
@@ -119,7 +119,7 @@ const Forgot_password: React.FC = () => {
             >
               <Input
                 type="email"
-                placeholder="Nhập email của bạn"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -130,16 +130,18 @@ const Forgot_password: React.FC = () => {
                 type="primary"
                 htmlType="submit"
                 block
-                className="mt-4 bg-blue-900"
+                className={`flex items-center justify-center w-full h-full py-4 mt-5 font-semibold tracking-wide text-gray-100 transition-all duration-300 ease-in-out rounded-lg ${
+                  loading ? "bg-gray-500" : "bg-blue-900 hover:bg-indigo-700"
+                }`}
                 loading={loading}
               >
-                {loading ? <Spin /> : "Forgot password"}
+                {loading ? <Spin /> : "Reset Password"}
               </Button>
 
               <p className="mt-6 text-xs text-center text-gray-600">
-                Bạn có tài khoản?{" "}
+                Have an account?{" "}
                 <Link to="/login" className="font-semibold text-blue-900">
-                  Đăng nhập
+                  Login
                 </Link>
               </p>
             </form>
@@ -148,7 +150,7 @@ const Forgot_password: React.FC = () => {
       </div>
 
       <Modal
-        title="Nhập mã OTP"
+        title="Enter OTP"
         open={isOtpModalOpen}
         onCancel={() => {
           setIsOtpModalOpen(false);
@@ -162,15 +164,15 @@ const Forgot_password: React.FC = () => {
               setOtp("");
             }}
           >
-            Hủy
+            Cancel
           </Button>,
           <Button key="submit" type="primary" onClick={handleOtpSubmit}>
-            Xác nhận
+            Verify
           </Button>,
         ]}
       >
         <p className="text-gray-600 mb-4">
-          Vui lòng nhập mã OTP được gửi đến email của bạn.
+          Please enter the OTP sent to your email.
         </p>
         <Input
           maxLength={6}
@@ -182,7 +184,7 @@ const Forgot_password: React.FC = () => {
       </Modal>
 
       <Modal
-        title="Đặt lại mật khẩu"
+        title="Reset Password"
         open={isPasswordModalOpen}
         onCancel={() => {
           setIsPasswordModalOpen(false);
@@ -198,22 +200,22 @@ const Forgot_password: React.FC = () => {
               setConfirmPassword("");
             }}
           >
-            Hủy
+            Cancel
           </Button>,
           <Button key="submit" type="primary" onClick={handlePasswordSubmit}>
-            Xác nhận
+            Submit
           </Button>,
         ]}
       >
-        <p className="text-gray-600 mb-4">Nhập mật khẩu mới của bạn.</p>
+        <p className="text-gray-600 mb-4">Enter your new password.</p>
         <Input.Password
-          placeholder="Mật khẩu mới"
+          placeholder="New Password"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           className="mb-3"
         />
         <Input.Password
-          placeholder="Xác nhận mật khẩu"
+          placeholder="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
@@ -222,4 +224,4 @@ const Forgot_password: React.FC = () => {
   );
 };
 
-export default Forgot_password;
+export default ForgotPassword;

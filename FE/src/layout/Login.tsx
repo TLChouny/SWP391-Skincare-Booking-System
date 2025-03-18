@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext"; // Import useAuth
 import layerImage from "../assets/logo7.png";
 
 const Login: React.FC = () => {
-  const { setToken, setUser } = useAuth(); // Lấy hàm setToken và setUser từ context
+  const { setToken, setUser } = useAuth(); // Get setToken and setUser from context
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -21,12 +21,12 @@ const Login: React.FC = () => {
     e.preventDefault();
 
     if (!validateEmail(email)) {
-      toast.error("Email không được để trống");
+      toast.error("Email cannot be empty");
       return;
     }
 
     if (!validatePassword(password)) {
-      toast.error("Mật khẩu phải có ít nhất 8 ký tự");
+      toast.error("Password must be at least 8 characters long");
       return;
     }
 
@@ -47,18 +47,18 @@ const Login: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        toast.error(errorData.msg || "Đăng nhập thất bại");
+        toast.error(errorData.msg || "Login failed");
         return;
       }
 
       const data = await response.json();
-      toast.success("Đăng nhập thành công");
+      toast.success("Login successful");
 
-      // Lưu token và user vào AuthContext
+      // Save token and user to AuthContext
       setToken(data.token);
       setUser({ username: data.username, role: data.role });
 
-      // Điều hướng dựa trên vai trò của người dùng
+      // Redirect based on user role
       if (data.role === "user") {
         navigate("/");
       } else if (data.role === "admin") {
@@ -69,15 +69,15 @@ const Login: React.FC = () => {
         navigate("/therapist");
       }
     } catch (error) {
-      console.error("Lỗi đăng nhập:", error);
-      toast.error("Đăng nhập thất bại");
+      console.error("Login error:", error);
+      toast.error("Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="h-[86vh] flex items-center justify-center px-5 lg:px-0">
+    <div className="min-h-screen flex items-center justify-center px-5 lg:px-0">
       <ToastContainer />
       <div className="flex justify-center flex-1 max-w-screen-lg bg-white border shadow sm:rounded-lg">
         <div className="flex-1 hidden text-center md:flex">
@@ -91,7 +91,7 @@ const Login: React.FC = () => {
         <div className="p-4 lg:w-1/2 xl:w-1/2 sm:p-12 md:w-1/3">
           <div className="flex flex-col items-center">
             <h1 className="text-2xl font-extrabold text-blue-900 xl:text-4xl">
-              Đăng nhập
+              Login
             </h1>
             <form
               onSubmit={handleSubmit}
@@ -100,7 +100,7 @@ const Login: React.FC = () => {
               <input
                 className="w-full px-5 py-3 text-sm font-medium placeholder-gray-500 bg-gray-100 border border-gray-200 rounded-lg"
                 type="email"
-                placeholder="Nhập email của bạn"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -109,7 +109,7 @@ const Login: React.FC = () => {
                 <input
                   className="w-full px-5 py-3 text-sm font-medium placeholder-gray-500 bg-gray-100 border border-gray-200 rounded-lg"
                   type={passwordVisible ? "text" : "password"}
-                  placeholder="Nhập mật khẩu"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -128,7 +128,7 @@ const Login: React.FC = () => {
                 className={`flex items-center justify-center w-full py-4 mt-5 font-semibold tracking-wide text-gray-100 transition-all duration-300 ease-in-out rounded-lg ${loading ? "bg-gray-500" : "bg-blue-900 hover:bg-indigo-700"
                   }`}
               >
-                {loading ? "Đang xử lý..." : "Đăng nhập"}
+                {loading ? "Processing..." : "Login"}
               </button>
               <div className="mt-1 text-center">
                 <Link
