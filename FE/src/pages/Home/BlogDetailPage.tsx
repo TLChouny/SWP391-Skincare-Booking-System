@@ -18,7 +18,7 @@ const BlogDetailPage: React.FC = () => {
   useEffect(() => {
     const fetchBlogDetail = async () => {
       try {
-        console.log(`Fetching blog with ID: ${_id}`);
+        // console.log(`Fetching blog with ID: ${_id}`);
         const response = await fetch(`${API_BASE_URL}/blogs/${_id}`, {
           method: "GET",
           headers: {

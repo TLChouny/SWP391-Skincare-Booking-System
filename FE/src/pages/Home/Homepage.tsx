@@ -226,7 +226,7 @@ const HomePage: React.FC = () => {
 
   // Hàm xử lý
   const handleCheckout = async () => {
-    console.log("Checking out with cart:", cart);
+    // console.log("Checking out with cart:", cart);
     if (!isAuthenticated) {
       toast.warning("Please log in to proceed with checkout.");
       navigate("/login");
@@ -626,10 +626,10 @@ const HomePage: React.FC = () => {
                     alt={therapist.name}
                     className="w-full h-60 object-contain transition-transform duration-500 group-hover:scale-105" // Thay object-cover bằng object-contain
                     onError={(e) => {
-                      console.error(
-                        `Failed to load image for ${therapist.name}:`,
-                        e
-                      );
+                      // console.error(
+                      //   `Failed to load image for ${therapist.name}:`,
+                      //   e
+                      // );
                       (e.target as HTMLImageElement).src = "/default-avatar.png";
                     }}
                   />

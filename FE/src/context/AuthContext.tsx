@@ -166,9 +166,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         );
       } else {
         endpoint = `${API_BASE_URL}/cart/user/${user.username}`;
-        console.log(
-          `Customer role detected - Fetching user carts from: ${endpoint}`
-        );
+        // console.log(
+        //   `Customer role detected - Fetching user carts from: ${endpoint}`
+        // );
       }
 
       const response = await fetch(endpoint, {
@@ -184,11 +184,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       }
 
       const data = await response.json();
-      console.log("Fetched cart data:", data);
       setCart(data);
       setCartError(null);
     } catch (error) {
-      console.error("Lỗi khi tải giỏ hàng:", error);
+      // console.error("Lỗi khi tải giỏ hàng:", error);
       const errorMessage =
         error instanceof Error ? error.message : "Lỗi không xác định";
       setCartError(errorMessage);

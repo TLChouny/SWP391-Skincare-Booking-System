@@ -53,8 +53,8 @@ const CartComponent: React.FC<CartComponentProps> = ({
   );
 
   useEffect(() => {
-    console.log("Cart data:", cart);
-    console.log("User cart filtered:", userCart);
+    // console.log("Cart data:", cart);
+    // console.log("User cart filtered:", userCart);
   }, [cart, userCart]);
 
   const formatPriceDisplay = (
@@ -142,7 +142,7 @@ const CartComponent: React.FC<CartComponentProps> = ({
         throw new Error("Bạn cần đăng nhập để hủy giỏ hàng.");
       }
 
-      console.log(`Attempting to cancel cart item with ID: ${cartID}`);
+      // console.log(`Attempting to cancel cart item with ID: ${cartID}`);
       const response = await fetch(`${API_BASE_URL}/cart/${cartID}`, {
         method: "PUT",
         headers: {
@@ -159,8 +159,8 @@ const CartComponent: React.FC<CartComponentProps> = ({
         );
       }
 
-      const data = await response.json();
-      console.log(`Successfully canceled cart item with ID: ${cartID}`, data);
+      // const data = await response.json();
+      // console.log(`Successfully canceled cart item with ID: ${cartID}`, data);
       setCart((prevCart: Booking[]) =>
         prevCart.filter((item) => item.CartID !== cartID)
       );

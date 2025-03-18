@@ -26,7 +26,7 @@ const Header: React.FC = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
-      console.log("User data:", parsedUser);
+      // console.log("User data:", parsedUser);
       setLocalUser({
         username: parsedUser.username,
         role: parsedUser.role || null,
@@ -77,7 +77,7 @@ const Header: React.FC = () => {
   };
 
   const handleProfileClick = () => {
-    console.log("User role from localStorage:", localStorage.getItem("user"));
+    // console.log("User role from localStorage:", localStorage.getItem("user"));
     navigate(getDashboardLink());
   };
 
