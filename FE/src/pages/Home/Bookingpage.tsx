@@ -82,8 +82,11 @@ const EnhancedBookingPage: React.FC = () => {
   const addToCart = async (bookingData: any) => {
     try {
       if (!token) {
-        throw new Error("You need to log in to add to cart.");
+        toast.warning("Bạn cần đăng nhập để đặt lịch.");
+        return;
       }
+
+      // console.log("📌 Dữ liệu gửi lên API:", bookingData);
 
       const response = await fetch(`${API_BASE_URL}/cart`, {
         method: "POST",
@@ -94,20 +97,30 @@ const EnhancedBookingPage: React.FC = () => {
         body: JSON.stringify(bookingData),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          `Failed to add to cart: ${response.status} - ${
-            errorData.message || "Bad Request"
-          }`
-        );
+        if (responseData.message?.includes("Nhân viên")) {
+          toast.warning(responseData.message); 
+        } else {
+          toast.error(responseData.message || "Không thể thêm vào giỏ hàng.");
+        }
+        return;
       }
 
+      // console.log("📌 API Response:", responseData);
       await fetchCart();
-      toast.success("Service added to cart successfully.");
-    } catch (error: any) {
-      console.error("Error adding to cart:", error.message);
-      toast.error(error.message || "Failed to add to cart.");
+      toast.success("Đã thêm dịch vụ vào giỏ hàng.");
+    } catch {
+      // console.error("Lỗi khi thêm vào giỏ hàng:", error);
+
+      const staffName = bookingData.Skincare_staff || "Không xác định";
+      const startTime = bookingData.startTime || "chưa rõ";
+      const endTime = bookingData.endTime || "chưa rõ";
+
+      toast.error(
+        `Nhân viên ${staffName} đã có lịch từ ${startTime} đến ${endTime}. Vui lòng chọn giờ khác.`
+      );
     }
   };
 

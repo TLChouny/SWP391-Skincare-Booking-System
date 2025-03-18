@@ -91,9 +91,9 @@ exports.createCart = async (req, res) => {
 
       if (existingBooking) {
         console.log("📌 Nhân viên đã có lịch trùng giờ!");
-        return res.status(400).json({
-          message: `Nhân viên ${Skincare_staff} đã có lịch từ ${existingBooking.startTime} đến ${existingBooking.endTime}. Vui lòng chọn giờ khác.`,
-        });
+        return res.send(
+          `Nhân viên ${Skincare_staff} đã có lịch từ ${existingBooking.startTime} đến ${existingBooking.endTime}. Vui lòng chọn giờ khác.`
+        );
       }
     }
 
