@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { Booking } from "../../types/booking";
@@ -31,52 +31,65 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   setQrCode,
   API_BASE_URL,
 }) => {
-  const formatPriceDisplay = (originalPrice: number, discountedPrice?: number | null): JSX.Element => {
+  // Format price display with optional discount
+  const formatPriceDisplay = (
+    originalPrice: number,
+    discountedPrice?: number | null
+  ): JSX.Element => {
     return (
-      <>
-        <span style={{ textDecoration: discountedPrice != null ? "line-through" : "none" }}>
-          {originalPrice.toLocaleString("vi-VN")} VNĐ
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span
+          style={{
+            textDecoration: discountedPrice != null ? "line-through" : "none",
+            color: discountedPrice != null ? "#6b7280" : "#1f2937",
+            fontWeight: 500,
+          }}
+        >
+          {originalPrice.toLocaleString("en-US")} VND
         </span>
         {discountedPrice != null && (
-          <span style={{ color: "green", marginLeft: "8px" }}>
-            {discountedPrice.toLocaleString("vi-VN")} VNĐ
+          <span style={{ color: "#16a34a", fontWeight: 600 }}>
+            {discountedPrice.toLocaleString("en-US")} VND
           </span>
         )}
-      </>
+      </div>
     );
   };
 
+  // Calculate total price for completed items
   const calculateTotal = (): number => {
     return cart
       .filter((item) => item.status === "completed")
       .reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   };
 
+  // Format total price
   const formatTotal = (): string => {
     const totalValue = calculateTotal();
-    return `${totalValue.toLocaleString("vi-VN")} VNĐ`;
+    return `${totalValue.toLocaleString("en-US")} VND`;
   };
 
+  // Handle checkout process
   const handleCheckout = async () => {
-    const checkedInItems = cart.filter((item) => item.status === "completed");
-    if (checkedInItems.length === 0) {
-      toast.error("Không có mục nào được chọn để thanh toán.");
+    const completedItems = cart.filter((item) => item.status === "completed");
+    if (completedItems.length === 0) {
+      toast.error("No items are selected for payment.");
       setShowModal(false);
       return;
     }
 
     const totalAmount = calculateTotal();
-    const orderName = checkedInItems[0]?.serviceName || "Nhiều dịch vụ";
-    let description = `Dịch vụ ${orderName.substring(0, 25)}`;
+    const orderName = completedItems[0]?.serviceName || "Multiple Services";
+    let description = `Service ${orderName.substring(0, 25)}`;
     if (description.length > 25) description = description.substring(0, 25);
 
-    const BASE_DOMAIN = window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://luluspa-production.up.railway.app";
-  
-  const returnUrl = `${BASE_DOMAIN}/success.html`;
-  const cancelUrl = `${BASE_DOMAIN}/cancel.html`;
-  
+    const BASE_DOMAIN =
+      window.location.hostname === "localhost"
+        ? "http://localhost:5000"
+        : "https://luluspa-production.up.railway.app";
+
+    const returnUrl = `${BASE_DOMAIN}/success.html`;
+    const cancelUrl = `${BASE_DOMAIN}/cancel.html`;
 
     try {
       const response = await fetch(`${API_BASE_URL}/payments/create`, {
@@ -93,54 +106,100 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
       const data = await response.json();
       if (!response.ok || data.error !== 0 || !data.data) {
-        throw new Error(`Lỗi API: ${data.message || "Lỗi không xác định"}`);
+        throw new Error(`API Error: ${data.message || "Unknown error"}`);
       }
 
       setPaymentUrl(data.data.checkoutUrl);
       setQrCode(data.data.qrCode);
     } catch (error: any) {
-      console.error("❌ Lỗi trong quá trình thanh toán:", error);
-      toast.error("Khởi tạo thanh toán thất bại. Vui lòng thử lại.");
+      console.error("❌ Error during payment process:", error);
+      toast.error("Failed to initiate payment. Please try again.");
       setShowModal(false);
     }
   };
 
-  const handlePayment = async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) throw new Error("Vui lòng đăng nhập để xác nhận thanh toán.");
-
-      await Promise.all(
-        cart
-          .filter((item) => item.status === "completed")
-          .map((item) =>
-            fetch(`${API_BASE_URL}/cart/${item.CartID}`, {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-                "x-auth-token": token,
-              },
-              body: JSON.stringify({ status: "checked-out", action: null }),
-            }).then((res) => {
-              if (!res.ok) throw new Error(`Không thể cập nhật mục giỏ hàng ${item.CartID}`);
-            })
-          )
-      );
-
-      await fetchCart();
-      setShowModal(false);
-      toast.success("Thanh toán thành công!");
-    } catch (error) {
-      console.error("Lỗi khi cập nhật trạng thái giỏ hàng:", error);
-      toast.error("Lỗi khi cập nhật trạng thái thanh toán.");
-    }
-  };
-
-  React.useEffect(() => {
+  // Trigger checkout when modal is shown
+  useEffect(() => {
     if (showModal) {
       handleCheckout();
     }
   }, [showModal]);
+
+  // Define reusable styles
+  const modalOverlayStyle: React.CSSProperties = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 50,
+    padding: "1rem",
+  };
+
+  const modalContentStyle: React.CSSProperties = {
+    backgroundColor: "white",
+    borderRadius: "0.75rem",
+    boxShadow: "0 10px 15px rgba(0, 0, 0, 0.1)",
+    width: "100%",
+    maxWidth: "32rem",
+    maxHeight: "90vh",
+    overflowY: "auto",
+  };
+
+  const modalBodyStyle: React.CSSProperties = {
+    padding: "1.5rem",
+  };
+
+  const listItemStyle: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "0.5rem 0",
+    borderBottom: "1px solid #e5e7eb",
+  };
+
+  const listItemLastStyle: React.CSSProperties = {
+    borderBottom: "none",
+  };
+
+  const totalSectionStyle: React.CSSProperties = {
+    marginTop: "1.5rem",
+    paddingTop: "1rem",
+    borderTop: "1px solid #e5e7eb",
+  };
+
+  const qrCodeSectionStyle: React.CSSProperties = {
+    marginTop: "1.5rem",
+    textAlign: "center",
+  };
+
+  const buttonFooterStyle: React.CSSProperties = {
+    position: "sticky",
+    bottom: 0,
+    backgroundColor: "white",
+    padding: "1rem 1.5rem",
+    borderTop: "1px solid #e5e7eb",
+    display: "flex",
+    justifyContent: "right",
+    gap: "1rem",
+  };
+
+  const buttonSecondaryStyle: React.CSSProperties = {
+    padding: "0.5rem 1rem",
+    backgroundColor: "#e5e7eb",
+    color: "#1f2937",
+    borderRadius: "0.375rem",
+    border: "none",
+    cursor: "pointer",
+    transition: "background 0.3s ease",
+  };
+
+  const buttonSecondaryHoverStyle: React.CSSProperties = {
+    backgroundColor: "#d1d5db",
+  };
 
   return (
     <AnimatePresence>
@@ -149,79 +208,140 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          style={modalOverlayStyle}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            style={modalContentStyle}
           >
-            <div className="p-6">
-              <h3 className="text-2xl font-semibold mb-6 text-gray-800">Xác Nhận Thanh Toán</h3>
+            <div style={modalBodyStyle}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: 600, color: "#1f2937", marginBottom: "1.5rem" }}>
+                Confirm Payment
+              </h3>
 
               {loadingCart ? (
-                <p className="text-center text-gray-600">Đang tải giỏ hàng...</p>
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "1.5rem 0" }}>
+                  <svg
+                    style={{
+                      animation: "spin 1s linear infinite",
+                      height: "1.5rem",
+                      width: "1.5rem",
+                      color: "#2563eb",
+                    }}
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      style={{ opacity: 0.25 }}
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      style={{ opacity: 0.75 }}
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8v-8H4z"
+                    ></path>
+                  </svg>
+                  <span style={{ marginLeft: "0.5rem", color: "#6b7280" }}>
+                    Loading cart...
+                  </span>
+                </div>
               ) : cartError ? (
-                <p className="text-center text-red-600">{cartError}</p>
+                <p style={{ textAlign: "center", color: "#dc2626" }}>{cartError}</p>
               ) : cart.filter((item) => item.status === "completed").length === 0 ? (
-                <p className="text-center text-gray-600">Không có mục nào để thanh toán.</p>
+                <p style={{ textAlign: "center", color: "#6b7280" }}>
+                  No items to pay for.
+                </p>
               ) : (
                 <>
-                  <ul className="space-y-4 max-h-[40vh] overflow-y-auto">
+                  <ul style={{ maxHeight: "40vh", overflowY: "auto" }}>
                     {cart
                       .filter((item) => item.status === "completed")
-                      .map((item, index) => (
+                      .map((item, index, array) => (
                         <li
                           key={item.CartID || index}
-                          className="flex justify-between py-2 border-b last:border-b-0"
+                          style={{
+                            ...listItemStyle,
+                            ...(index === array.length - 1 ? listItemLastStyle : {}),
+                          }}
                         >
-                          <div className="text-sm">
-                            <p className="font-semibold text-gray-800">{item.serviceName}</p>
-                            <p className="text-gray-600">
+                          <div style={{ fontSize: "0.875rem" }}>
+                            <p style={{ fontWeight: 600, color: "#1f2937" }}>
+                              {item.serviceName}
+                            </p>
+                            <p style={{ color: "#6b7280" }}>
                               {item.bookingDate} - {item.startTime}
                             </p>
                             {item.Skincare_staff && (
-                              <p className="text-gray-600">ID Nhân viên: {item.Skincare_staff}</p>
+                              <p style={{ color: "#6b7280" }}>
+                                Therapist: {item.Skincare_staff}
+                              </p>
                             )}
                           </div>
-                          <span className="font-bold text-gray-800 whitespace-nowrap">
-                            {formatPriceDisplay(item.originalPrice || item.totalPrice || 0, item.discountedPrice)}
+                          <span style={{ fontWeight: 700, color: "#1f2937", whiteSpace: "nowrap" }}>
+                            {formatPriceDisplay(
+                              item.originalPrice || item.totalPrice || 0,
+                              item.discountedPrice
+                            )}
                           </span>
                         </li>
                       ))}
                   </ul>
 
-                  <div className="mt-6 border-t pt-4">
-                    <p className="text-right text-xl font-bold text-gray-800">
-                      Tổng cộng: {formatTotal()}
+                  <div style={totalSectionStyle}>
+                    <p style={{ textAlign: "right", fontSize: "1.25rem", fontWeight: 700, color: "#1f2937" }}>
+                      Total: {formatTotal()}
                     </p>
                   </div>
 
                   {qrCode && (
-                    <div className="mt-6 text-center">
-                      <p className="text-lg font-semibold mb-2">Quét QR để thanh toán:</p>
-                      <img src={qrCode} alt="QR Code" className="mx-auto max-w-[180px]" />
-                      <p className="mt-4 text-blue-600">
-                        <a href={paymentUrl} target="_blank" rel="noopener noreferrer">
-                          Nhấn vào đây nếu QR không hoạt động
+                    <div style={qrCodeSectionStyle}>
+                      <p style={{ fontSize: "1.125rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+                        Scan QR to Pay
+                      </p>
+                      <img
+                        src={qrCode}
+                        alt="QR Code"
+                        style={{ maxWidth: "180px", margin: "0 auto", display: "block" }}
+                      />
+                      <p style={{ marginTop: "1rem", color: "#2563eb" }}>
+                        <a
+                          href={paymentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ textDecoration: "underline", color: "#2563eb" }}
+                        >
+                          Click here if QR doesn't work
                         </a>
                       </p>
                     </div>
                   )}
-
-                  <div className="flex justify-end gap-4 mt-8">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setShowModal(false)}
-                      className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-300 text-gray-800"
-                    >
-                      Cancel
-                    </motion.button>
-                  </div>
                 </>
               )}
+            </div>
+
+            {/* Sticky Footer with Cancel Button */}
+            <div style={buttonFooterStyle}>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowModal(false)}
+                style={buttonSecondaryStyle}
+                onMouseEnter={(e) =>
+                  Object.assign(e.currentTarget.style, buttonSecondaryHoverStyle)
+                }
+                onMouseLeave={(e) =>
+                  Object.assign(e.currentTarget.style, buttonSecondaryStyle)
+                }
+              >
+                Cancel
+              </motion.button>
             </div>
           </motion.div>
         </motion.div>
