@@ -152,18 +152,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       let endpoint: string;
       if (user.role === "staff") {
         endpoint = `${API_BASE_URL}/cart`;
-        console.log(
-          `Staff role detected - Fetching all carts from: ${endpoint}`
-        );
+        // console.log(
+        //   `Staff role detected - Fetching all carts from: ${endpoint}`
+        // );
       } else if (
         user.role === "skincare_staff" ||
         user.username.startsWith("therapist")
       ) {
         // Thêm kiểm tra username bắt đầu bằng "therapist" để ưu tiên
         endpoint = `${API_BASE_URL}/cart/therapist/${user.username}`;
-        console.log(
-          `Therapist role detected - Fetching assigned carts from: ${endpoint}`
-        );
+        // console.log(
+        //   `Therapist role detected - Fetching assigned carts from: ${endpoint}`
+        // );
       } else {
         endpoint = `${API_BASE_URL}/cart/user/${user.username}`;
         // console.log(
@@ -230,3 +230,4 @@ export const useAuth = (): AuthContextType => {
   if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
+
