@@ -142,37 +142,38 @@ const CartComponent: React.FC<CartComponentProps> = ({
         throw new Error("Bạn cần đăng nhập để hủy giỏ hàng.");
       }
 
-      // console.log(`Attempting to cancel cart item with ID: ${cartID}`);
       const response = await fetch(`${API_BASE_URL}/cart/${cartID}`, {
-        method: "PUT",
+        method: "DELETE", 
         headers: {
           "Content-Type": "application/json",
           "x-auth-token": token,
         },
-        body: JSON.stringify({ status: "cancel" }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.message || "Không thể hủy giỏ hàng: Lỗi server"
+          errorData.message || "Không thể xóa giỏ hàng: Lỗi server"
         );
       }
 
-      // const data = await response.json();
-      // console.log(`Successfully canceled cart item with ID: ${cartID}`, data);
       setCart((prevCart: Booking[]) =>
         prevCart.filter((item) => item.CartID !== cartID)
       );
 
-      toast.success("Giỏ hàng đã được hủy thành công!");
+      toast.success("Giỏ hàng đã được xóa thành công!");
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 500); 
     } catch (error) {
-      console.error("Lỗi khi hủy giỏ hàng:", error);
+      console.error("Lỗi khi xóa giỏ hàng:", error);
       toast.error(
-        error instanceof Error ? error.message : "Không thể hủy giỏ hàng."
+        error instanceof Error ? error.message : "Không thể xóa giỏ hàng."
       );
     }
   };
+
 
   return (
     <>
