@@ -65,7 +65,7 @@ const AdminDashboard: React.FC = () => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <AdminHeader />
-      <Layout style={{ marginTop: "80px" }}>
+      <Layout style={{ marginTop: "10px" }}>
         <Sider
           className='mt-5'
           theme='light'
