@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import {
-  HistoryOutlined,
+  // HistoryOutlined,
   ScheduleOutlined,
-  CustomerServiceOutlined,
+  // CustomerServiceOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
@@ -34,16 +34,16 @@ const items: MenuItem[] = [
     <ScheduleOutlined />
   ),
 
-  getItem(
-    "Perform Service",
-    "/therapist/perfom-service",
-    <CustomerServiceOutlined />
-  ),
-  getItem(
-    "Service History",
-    "/therapist/service-history ",
-    <HistoryOutlined />
-  ),
+  // getItem(
+  //   "Perform Service",
+  //   "/therapist/perfom-service",
+  //   <CustomerServiceOutlined />
+  // ),
+  // getItem(
+  //   "Service History",
+  //   "/therapist/service-history ",
+  //   <HistoryOutlined />
+  // ),
 ];
 
 const TherapistManagement: React.FC = () => {

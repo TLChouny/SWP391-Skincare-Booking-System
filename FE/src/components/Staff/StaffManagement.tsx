@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
-  HistoryOutlined,
-  ScheduleOutlined,
+  // HistoryOutlined,
+  // ScheduleOutlined,
   CheckOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
@@ -31,17 +31,17 @@ function getItem(
 const items: MenuItem[] = [
   getItem("Check In", "/staff/check-in", <CheckOutlined />),
 
-  getItem(
-    "Assign Specialists",
-    "/staff/assign-specialists",
-    <ScheduleOutlined />
-  ),
+  // getItem(
+  //   "Assign Specialists",
+  //   "/staff/assign-specialists",
+  //   <ScheduleOutlined />
+  // ),
   getItem("Check Out", "/staff/check-out", <LogoutOutlined />),
-  getItem(
-    "Appointment Schedules",
-    "/staff/appointment-schedules",
-    <HistoryOutlined />
-  ),
+  // getItem(
+  //   "Appointment Schedules",
+  //   "/staff/appointment-schedules",
+  //   <HistoryOutlined />
+  // ),
 ];
 
 const StaffManagement: React.FC = () => {
