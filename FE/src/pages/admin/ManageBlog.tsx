@@ -2,7 +2,7 @@ import { Form, Input, Select } from "antd";
 import { useEffect, useState } from "react";
 import api from "../../api/apiService";
 import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
-import { render } from "react-dom";
+// import { render } from "react-dom";
 
 function ManageBlog() {
   const title = "Blog";
