@@ -3,6 +3,10 @@ import { Form, Input, Select, message } from "antd";
 import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
+const API_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://luluspa-production.up.railway.app/api";
 
 interface User {
   _id: string;
@@ -31,11 +35,7 @@ function ManageUser() {
     { title: "Address", dataIndex: "address", key: "address" },
     { title: "Role", dataIndex: "role", key: "role" },
   ];
-  const API_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000/api"
-    : "https://luluspa-production.up.railway.app/api";
-
+  
   const fetchUsers = async () => {
     if (!token) {
       message.error("Authentication required");
@@ -43,7 +43,7 @@ function ManageUser() {
     }
     try {
       console.log("Fetching users with token:", token);
-      const response = await axios.get('${API_URL}/users/', {
+      const response = await axios.get(`${API_URL}/users/`, {
         headers: { "x-auth-token": token },
       });
       console.log("Fetched users:", response.data);
@@ -71,7 +71,7 @@ function ManageUser() {
         JSON.stringify(values, null, 2)
       );
       const response = await axios.post(
-        '${API_URL}/users/',
+        `${API_URL}/users/`,
         values,
         {
           headers: {

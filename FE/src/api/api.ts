@@ -1,8 +1,12 @@
 import axios from "axios";
 
+const API_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://luluspa-production.up.railway.app/api";
 // Tạo axios instance
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api", // <-- bạn có thể chuyển thành process.env.BASE_URL nếu muốn
+  baseURL: API_URL, // <-- bạn có thể chuyển thành process.env.BASE_URL nếu muốn
   withCredentials: true,
   
 });
