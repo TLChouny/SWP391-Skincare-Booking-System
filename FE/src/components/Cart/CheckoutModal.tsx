@@ -2,6 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { Booking } from "../../types/booking";
+import { JSX } from "react/jsx-runtime";
 
 interface CheckoutModalProps {
   showModal: boolean;
