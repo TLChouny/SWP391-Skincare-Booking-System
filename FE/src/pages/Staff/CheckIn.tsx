@@ -80,12 +80,9 @@ const StaffCheckIn: React.FC = () => {
       toast.error(`Failed to load staff list: ${errorMessage}`);
       setAvailableStaff([]);
     } finally {
-      // ✅ Luôn tắt `staffLoading` sau khi tải xong (dù có lỗi hay không)
       setStaffLoading(false);
     }
   };
-
-
 
   const updateStaffAssignment = async (
     cartId: string,
@@ -171,7 +168,7 @@ const StaffCheckIn: React.FC = () => {
         body: JSON.stringify({
           status: "checked-in",
           Skincare_staff: assignedStaff,
-        }), // ✅ Cập nhật chuyên viên khi Check-in
+        }),
       });
 
       if (!response.ok) {
@@ -195,14 +192,13 @@ const StaffCheckIn: React.FC = () => {
         )
       );
 
-      // ✅ Sau khi Check-in, cập nhật selectedStaff vào cart để không cần chọn lại
       setSelectedStaff((prev) => ({
         ...prev,
         [cartId]: assignedStaff,
       }));
 
       toast.success("Check-in successful!");
-      await fetchCart(); // Sync with server
+      await fetchCart();
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
@@ -258,7 +254,7 @@ const StaffCheckIn: React.FC = () => {
         )
       );
       toast.success("Check-out successful!");
-      await fetchCart(); // Sync with server
+      await fetchCart();
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
@@ -414,7 +410,7 @@ const StaffCheckIn: React.FC = () => {
                         ) : booking.status === "cancel" ? (
                           <span className="text-red-500 font-semibold">
                             Cancelled
-                          </span> // ✅ Không hiển thị nút
+                          </span>
                         ) : booking.status === "checked-in" ? (
                           <span className="text-gray-500">
                             Waiting for Therapist to Complete
@@ -430,15 +426,11 @@ const StaffCheckIn: React.FC = () => {
                           <span className="text-gray-500">N/A</span>
                         )}
                       </td>
-
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.status === "cancel" ? (
-                          <span className="text-red-500 font-semibold">
-                            Cancelled
-                          </span>
-                        ) : (
+                        {booking.status === "pending" ? (
+                          // Chỉ hiển thị <select> khi trạng thái là "pending"
                           <>
-                            {staffLoading ? ( // ✅ Hiển thị thông báo đang tải nếu danh sách nhân viên chưa sẵn sàng
+                            {staffLoading ? (
                               <span className="text-gray-500">
                                 Loading staff...
                               </span>
@@ -453,7 +445,6 @@ const StaffCheckIn: React.FC = () => {
                                     ...prev,
                                     [booking.CartID || ""]: staffName,
                                   }));
-
                                   updateStaffAssignment(
                                     booking.CartID || "",
                                     staffName
@@ -462,7 +453,6 @@ const StaffCheckIn: React.FC = () => {
                                 className="p-1 border rounded"
                                 disabled={availableStaff.length === 0}
                               >
-                                {/* ✅ Không có lỗi "Cannot find name 'option'" */}
                                 <option value="">Select a therapist</option>
                                 {availableStaff.map((staff) => (
                                   <option key={staff.id} value={staff.name}>
@@ -472,9 +462,15 @@ const StaffCheckIn: React.FC = () => {
                               </select>
                             )}
                           </>
+                        ) : (
+                          // Với các trạng thái khác, chỉ hiển thị tên therapist (nếu có) dưới dạng văn bản
+                          <span className="text-gray-700">
+                            {selectedStaff[booking.CartID || ""] ||
+                              booking.Skincare_staff ||
+                              "N/A"}
+                          </span>
                         )}
                       </td>
-
                       <td className="py-2 px-4 border-b whitespace-nowrap">
                         {booking.notes || "N/A"}
                       </td>

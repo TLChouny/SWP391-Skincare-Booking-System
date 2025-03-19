@@ -280,7 +280,7 @@ const ListOfAssign: React.FC = () => {
                             </button>
                           ) : (
                             <span className="text-red-500 text-sm">
-                              Please send report before complete
+                              Please send report
                             </span>
                           )
                         ) : (
