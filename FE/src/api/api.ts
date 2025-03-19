@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Tạo axios instance
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5002/api", // <-- bạn có thể chuyển thành process.env.BASE_URL nếu muốn
+  baseURL: "http://localhost:5000/api", // <-- bạn có thể chuyển thành process.env.BASE_URL nếu muốn
   withCredentials: true,
   
 });
