@@ -16,21 +16,30 @@ interface UserData {
 }
 
 const SettingPage: React.FC = () => {
-  const { token } = useAuth();
+  const { token, updateAvatar } = useAuth();
   const [user, setUser] = useState<UserData>({
     username: "",
     email: "",
     avatar: "",
   });
   const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState(user?.username || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [newPassword, setNewPassword] = useState("");
   const [oldPassword, setOldPassword] = useState("");
-
   useEffect(() => {
     if (token) {
       fetchUserData();
     }
   }, [token]);
+
+  useEffect(() => {
+    if (user) {
+      setUsername(user.username);
+      setEmail(user.email || "");
+      setLoading(false);
+    }
+  }, [user]);
 
   const fetchUserData = async () => {
     if (!token) {
@@ -57,39 +66,42 @@ const SettingPage: React.FC = () => {
     }
   };
 
-  const handleFileChange = async (file: File) => {
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("File size exceeds 10MB! Please select an image under 10MB.");
+    const handleFileChange = async (file: File) => {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(
+          "File size exceeds 10MB! Please select an image under 10MB."
+        );
+        return false;
+      }
+
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      try {
+        const response = await axios.put(
+          `${API_BASE_URL}/auth/update-avatar`,
+          formData,
+          {
+            headers: {
+              "x-auth-token": token,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        const updatedAvatar = `${API_BASE_URL}${
+          response.data.avatar
+        }?t=${new Date().getTime()}`;
+        setUser((prevUser) => ({ ...prevUser, avatar: updatedAvatar }));
+        updateAvatar(updatedAvatar); // ✅ Cập nhật avatar trong AuthContext
+
+        toast.success("Avatar updated successfully!");
+      } catch {
+        toast.error("Failed to update avatar!");
+      }
+
       return false;
-    }
-
-    const formData = new FormData();
-    formData.append("avatar", file);
-
-    try {
-      const response = await axios.put(
-        `${API_BASE_URL}/api/auth/update-profile`,
-        formData,
-        {
-          headers: {
-            "x-auth-token": token,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      toast.success("Avatar updated successfully!");
-      setUser((prevUser) => ({
-        ...prevUser,
-        avatar: `${API_BASE_URL}${response.data.user.avatar}?t=${new Date().getTime()}`,
-      }));
-    } catch (error) {
-      toast.error("Failed to update avatar!");
-    }
-
-    return false;
-  };
-
+    };
   const handleUpdateUser = async (file?: File) => {
     if (!token) {
       toast.error("Authentication required");
@@ -184,7 +196,7 @@ const SettingPage: React.FC = () => {
         <div className="flex flex-col items-center mb-6">
           <Avatar
             size={150}
-            src={user.avatar || `${API_BASE_URL}/default-avatar.png`}
+            src={user?.avatar || `${API_BASE_URL}/default-avatar.png`}
             className="mb-4 transition-transform duration-300 hover:scale-105 border-2 border-gray-200"
           />
           <Upload
@@ -192,7 +204,10 @@ const SettingPage: React.FC = () => {
             beforeUpload={handleFileChange}
             className="mb-4"
           >
-            <Button icon={<UploadOutlined />} className="bg-blue-500 text-white hover:bg-blue-600">
+            <Button
+              icon={<UploadOutlined />}
+              className="bg-blue-500 text-white hover:bg-blue-600"
+            >
               Upload Avatar
             </Button>
           </Upload>
