@@ -6,7 +6,7 @@ export const calculateTotalUsers = (users: any[]) => {
   
   // Tính tổng số đơn hàng đã hoàn thành
   export const calculateTotalBookings = (carts: any[]) => {
-    return carts.filter((cart) => cart.status === "completed").length;
+    return carts.filter((cart) => cart.status === "reviewed" || "checked-out").length;
   };
   
 
