@@ -101,7 +101,7 @@ router.post(
           { expiresIn: "24h" }
         );
 
-        const verifyLink = `http://localhost:5000/api/auth/auto-verify?token=${verifyToken}`;
+        const verifyLink = `https://luluspa-production.up.railway.app/api/auth/auto-verify?token=${verifyToken}`;
         await sendAdminVerificationEmail(email, verifyLink);
       } else {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
