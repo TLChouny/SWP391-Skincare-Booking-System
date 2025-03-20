@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { check, validationResult } = require("express-validator");
 const { sendAdminVerificationEmail, sendOTP } = require("../utils/email");
+const baseUrl = process.env.BASE_URL || "http://localhost:5000/";
 
 // ✅ Lấy tất cả người dùng (Chỉ Admin)
 const getAllUsers = async (req, res) => {
@@ -94,7 +95,7 @@ const createUser = [
           { expiresIn: "24h" }
         );
 
-        const verifyLink = `http://localhost:5000/api/auth/auto-verify?token=${verifyToken}`;
+        const verifyLink = `${baseUrl}/api/auth/auto-verify?token=${verifyToken}`;
         await sendAdminVerificationEmail(email, verifyLink);
       } else {
         // ✅ Tạo OTP cho User bình thường
