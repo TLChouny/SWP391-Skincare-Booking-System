@@ -3,7 +3,7 @@ import { Button, Input, Avatar, Spin, Upload } from "antd";
 import { UploadOutlined, LogoutOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Layout from "../../layout/Layout";
 
@@ -51,7 +51,7 @@ const SettingPage = () => {
     }
   };
 
-  const handleFileChange = async (file) => {
+  const handleFileChange = async (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
       toast.error("File size exceeds 10MB! Please select an image under 10MB.", );
       return false;
@@ -171,39 +171,78 @@ const SettingPage = () => {
           beforeUpload={handleFileChange}
           className="mb-4"
         >
-          <Button icon={<UploadOutlined />} className="bg-blue-500 text-white hover:bg-blue-600">
+          <Button
+            icon={<UploadOutlined />}
+            className="bg-blue-500 text-white hover:bg-blue-600"
+          >
             Upload Avatar
           </Button>
         </Upload>
 
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-          <Input value={user.username} onChange={(e) => setUser({ ...user, username: e.target.value })} />
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Username
+          </label>
+          <Input
+            value={user.username}
+            onChange={(e) => setUser({ ...user, username: e.target.value })}
+          />
 
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <Input value={user.email} onChange={(e) => setUser({ ...user, email: e.target.value })} />
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
+          <Input
+            value={user.email}
+            onChange={(e) => setUser({ ...user, email: e.target.value })}
+          />
 
-          <Button type="primary" onClick={handleUpdateUser} className="w-full bg-blue-500 text-white hover:bg-blue-600 mt-4">
+          <Button
+            type="primary"
+            onClick={handleUpdateUser}
+            className="w-full bg-blue-500 text-white hover:bg-blue-600 mt-4"
+          >
             Update Information
           </Button>
         </div>
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">Old Password</label>
-        <Input.Password value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} />
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Old Password
+        </label>
+        <Input.Password
+          value={oldPassword}
+          onChange={(e) => setOldPassword(e.target.value)}
+        />
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-        <Input.Password value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          New Password
+        </label>
+        <Input.Password
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+        />
 
-        <Button type="default" onClick={handleChangePassword} className="w-full bg-gray-200 text-gray-800 hover:bg-gray-300 mt-4">
+        <Button
+          type="default"
+          onClick={handleChangePassword}
+          className="w-full bg-gray-200 text-gray-800 hover:bg-gray-300 mt-4"
+        >
           Change Password
         </Button>
 
         <div className="text-center mt-8">
-          <Button type="primary" danger onClick={handleLogout} icon={<LogoutOutlined />} className="bg-red-500 text-white hover:bg-red-600">
+          <Button
+            type="primary"
+            danger
+            onClick={handleLogout}
+            icon={<LogoutOutlined />}
+            className="bg-red-500 text-white hover:bg-red-600"
+          >
             Logout
           </Button>
         </div>
       </div>
+      {" "}
+      
     </Layout>
   );
 };
