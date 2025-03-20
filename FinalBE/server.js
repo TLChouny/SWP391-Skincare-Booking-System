@@ -60,25 +60,25 @@ app.use("/api/payments/webhook", webhookRoutes);
 app.use("/api/payments", paymentRoutes);
 
 // ✅ Payment API (Sửa `YOUR_DOMAIN`)
-app.post("/create-payment-link", async (req, res) => {
-  const YOUR_DOMAIN = process.env.CLIENT_URL || "http://localhost:3000"; // 🔥 Sửa lỗi hardcode
+// app.post("/create-payment-link", async (req, res) => {
+//   const YOUR_DOMAIN = process.env.CLIENT_URL || "http://localhost:3000"; // 🔥 Sửa lỗi hardcode
 
-  const body = {
-    orderCode: Number(String(Date.now()).slice(-6)),
-    amount: 1000,
-    description: "Thanh toan don hang",
-    returnUrl: `${YOUR_DOMAIN}/success.html`,
-    cancelUrl: `${YOUR_DOMAIN}/cancel.html`,
-  };
+//   const body = {
+//     orderCode: Number(String(Date.now()).slice(-6)),
+//     amount: 1000,
+//     description: "Thanh toan don hang",
+//     returnUrl: `${YOUR_DOMAIN}/success.html`,
+//     cancelUrl: `${YOUR_DOMAIN}/cancel.html`,
+//   };
 
-  try {
-    const paymentLinkResponse = await payOS.createPaymentLink(body);
-    res.redirect(paymentLinkResponse.checkoutUrl);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Something went wrong");
-  }
-});
+//   try {
+//     const paymentLinkResponse = await payOS.createPaymentLink(body);
+//     res.redirect(paymentLinkResponse.checkoutUrl);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send("Something went wrong");
+//   }
+// });
 
 // ✅ Connect DB
 mongoose

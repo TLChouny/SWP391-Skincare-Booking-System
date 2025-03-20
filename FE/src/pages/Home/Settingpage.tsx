@@ -1,30 +1,77 @@
 import React, { useState, useEffect } from "react";
-import { Button, Input, Avatar, Spin, Upload } from "antd";
-import { UploadOutlined, LogoutOutlined } from "@ant-design/icons";
+import { Button, Input, Avatar, Spin, Upload, Divider, Form, Card, Row, Col, Space, Select } from "antd";
+import {
+  UploadOutlined,
+  LogoutOutlined,
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  ManOutlined,
+  HomeOutlined,
+  FileTextOutlined,
+  LockOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Layout from "../../layout/Layout";
 
+// Define the shape of the user state
+interface User {
+  username: string;
+  email: string;
+  avatar: string;
+  phone: string;
+  gender: string;
+  address: string;
+  description: string;
+}
+
+// Define the shape of the form values
+interface FormValues {
+  username: string;
+  email: string;
+  phone: string;
+  gender: string;
+  address: string;
+  description: string;
+}
+
 const API_BASE_URL = "http://localhost:5000";
 
-const SettingPage = () => {
+const SettingPage: React.FC = () => {
   const { token } = useAuth();
-  const [user, setUser] = useState({
+  const [form] = Form.useForm();
+  const [user, setUser] = useState<User>({
     username: "",
     email: "",
     avatar: "",
+    phone: "",
+    gender: "",
+    address: "",
+    description: "",
   });
-  const [loading, setLoading] = useState(true);
-  const [newPassword, setNewPassword] = useState("");
-  const [oldPassword, setOldPassword] = useState("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [oldPassword, setOldPassword] = useState<string>("");
 
   useEffect(() => {
     if (token) {
       fetchUserData();
     }
   }, [token]);
+
+  useEffect(() => {
+    form.setFieldsValue({
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+      gender: user.gender,
+      address: user.address,
+      description: user.description,
+    });
+  }, [user, form]);
 
   const fetchUserData = async () => {
     if (!token) {
@@ -37,13 +84,19 @@ const SettingPage = () => {
         headers: { "x-auth-token": token },
       });
 
-      setUser({
-        username: response.data.username,
-        email: response.data.email,
+      const userData: User = {
+        username: response.data.username || "",
+        email: response.data.email || "",
         avatar: response.data.avatar
           ? `${API_BASE_URL}${response.data.avatar}?t=${new Date().getTime()}`
           : `${API_BASE_URL}/default-avatar.png`,
-      });
+        phone: response.data.phone_number || "",
+        gender: response.data.gender || "",
+        address: response.data.address || "",
+        description: response.data.description || "",
+      };
+
+      setUser(userData);
     } catch {
       toast.error("Failed to fetch user information!", { autoClose: 3000 });
     } finally {
@@ -53,7 +106,7 @@ const SettingPage = () => {
 
   const handleFileChange = async (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("File size exceeds 10MB! Please select an image under 10MB.", );
+      toast.error("File size exceeds 10MB! Please select an image under 10MB.");
       return false;
     }
 
@@ -73,8 +126,6 @@ const SettingPage = () => {
       );
 
       toast.success("Account information updated successfully!");
-
-     
       setUser((prevUser) => ({
         ...prevUser,
         avatar: `${API_BASE_URL}${response.data.user.avatar}?t=${new Date().getTime()}`,
@@ -87,15 +138,19 @@ const SettingPage = () => {
     return false;
   };
 
-  const handleUpdateUser = async () => {
+  const handleUpdateUser = async (values: FormValues) => {
     if (!token) {
       toast.error("Authentication required");
       return;
     }
 
     const formData = new FormData();
-    formData.append("username", user.username);
-    formData.append("email", user.email);
+    formData.append("username", values.username);
+    formData.append("email", values.email);
+    formData.append("phone_number", values.phone);
+    formData.append("gender", values.gender);
+    formData.append("address", values.address);
+    formData.append("description", values.description);
 
     try {
       await axios.put(`${API_BASE_URL}/api/auth/update-profile`, formData, {
@@ -149,100 +204,164 @@ const SettingPage = () => {
     window.location.href = "/login";
   };
 
-  if (loading) return <Spin size="large" />;
+  if (loading) return <Spin size="large" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }} />;
 
   return (
     <Layout>
-      <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-lg mt-10">
-        <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
-          Account Settings
-        </h2>
-
-        <div className="flex flex-col items-center mb-6">
-          <Avatar
-            size={100}
-            src={user.avatar || `${API_BASE_URL}/default-avatar.png`}
-            className="mb-4 transition-transform duration-300 hover:scale-105 border-2 border-gray-200"
-          />
-        </div>
-
-        <Upload
-          showUploadList={false}
-          beforeUpload={handleFileChange}
-          className="mb-4"
+      <div style={{ padding: "40px 20px", background: "#f0f2f5", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <Card
+          title={<h2 style={{ fontSize: "24px", fontWeight: "bold", textAlign: "center", color: "#1a3c34" }}>Account Settings</h2>}
+          style={{ width: "100%", maxWidth: 600, borderRadius: 12, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)" }}
         >
-          <Button
-            icon={<UploadOutlined />}
-            className="bg-blue-500 text-white hover:bg-blue-600"
-          >
-            Upload Avatar
-          </Button>
-        </Upload>
+          {/* Avatar Section */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 24 }}>
+            <Avatar
+              size={100}
+              src={user.avatar || `${API_BASE_URL}/default-avatar.png`}
+              style={{ border: "2px solid #e8e8e8", marginBottom: 16 }}
+            />
+            <Upload showUploadList={false} beforeUpload={handleFileChange}>
+              <Button type="primary" icon={<UploadOutlined />} style={{ backgroundColor: "#1890ff", borderColor: "#1890ff", borderRadius: 8 }}>
+                Upload Avatar
+              </Button>
+            </Upload>
+          </div>
 
-        <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Username
-          </label>
-          <Input
-            value={user.username}
-            onChange={(e) => setUser({ ...user, username: e.target.value })}
-          />
+          {/* Profile Information Section */}
+          <Form form={form} onFinish={handleUpdateUser} layout="vertical">
+            <Row gutter={[16, 16]}>
+              <Col span={24}>
+                <Form.Item
+                  label={<span><UserOutlined style={{ marginRight: 8, color: "#1890ff" }} />Username</span>}
+                  name="username"
+                  rules={[{ required: true, message: "Please enter your username" }]}
+                >
+                  <Input placeholder="Enter your username" style={{ borderRadius: 8 }} />
+                </Form.Item>
+              </Col>
 
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
-          <Input
-            value={user.email}
-            onChange={(e) => setUser({ ...user, email: e.target.value })}
-          />
+              <Col span={24}>
+                <Form.Item
+                  label={<span><MailOutlined style={{ marginRight: 8, color: "#1890ff" }} />Email</span>}
+                  name="email"
+                  rules={[{ required: true, type: "email", message: "Please enter a valid email" }]}
+                >
+                  <Input placeholder="Enter your email" style={{ borderRadius: 8 }} />
+                </Form.Item>
+              </Col>
 
-          <Button
-            type="primary"
-            onClick={handleUpdateUser}
-            className="w-full bg-blue-500 text-white hover:bg-blue-600 mt-4"
-          >
-            Update Information
-          </Button>
-        </div>
+              <Col span={24}>
+                <Form.Item
+                  label={<span><PhoneOutlined style={{ marginRight: 8, color: "#1890ff" }} />Phone</span>}
+                  name="phone"
+                >
+                  <Input placeholder="Enter your phone number" style={{ borderRadius: 8 }} />
+                </Form.Item>
+              </Col>
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Old Password
-        </label>
-        <Input.Password
-          value={oldPassword}
-          onChange={(e) => setOldPassword(e.target.value)}
-        />
+              <Col span={24}>
+                <Form.Item
+                  label={<span><ManOutlined style={{ marginRight: 8, color: "#1890ff" }} />Gender</span>}
+                  name="gender"
+                >
+                  <Select placeholder="Select your gender" style={{ borderRadius: 8 }}>
+                    <Select.Option value="male">Male</Select.Option>
+                    <Select.Option value="female">Female</Select.Option>
+                    <Select.Option value="other">Other</Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          New Password
-        </label>
-        <Input.Password
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
+              <Col span={24}>
+                <Form.Item
+                  label={<span><HomeOutlined style={{ marginRight: 8, color: "#1890ff" }} />Address</span>}
+                  name="address"
+                >
+                  <Input placeholder="Enter your address" style={{ borderRadius: 8 }} />
+                </Form.Item>
+              </Col>
 
-        <Button
-          type="default"
-          onClick={handleChangePassword}
-          className="w-full bg-gray-200 text-gray-800 hover:bg-gray-300 mt-4"
-        >
-          Change Password
-        </Button>
+              <Col span={24}>
+                <Form.Item
+                  label={<span><FileTextOutlined style={{ marginRight: 8, color: "#1890ff" }} />Description</span>}
+                  name="description"
+                >
+                  <Input.TextArea placeholder="Tell us about yourself" rows={4} style={{ borderRadius: 8 }} />
+                </Form.Item>
+              </Col>
 
-        <div className="text-center mt-8">
-          <Button
-            type="primary"
-            danger
-            onClick={handleLogout}
-            icon={<LogoutOutlined />}
-            className="bg-red-500 text-white hover:bg-red-600"
-          >
-            Logout
-          </Button>
-        </div>
+              <Col span={24}>
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    block
+                    style={{ backgroundColor: "#1890ff", borderColor: "#1890ff", borderRadius: 8, height: 40 }}
+                  >
+                    Update Information
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+
+          {/* Divider */}
+          <Divider />
+
+          {/* Change Password Section */}
+          <Space direction="vertical" style={{ width: "100%" }}>
+            <div>
+              <label style={{ display: "flex", alignItems: "center", fontSize: 14, fontWeight: 500, marginBottom: 8 }}>
+                <LockOutlined style={{ marginRight: 8, color: "#1890ff" }} />
+                Old Password
+              </label>
+              <Input.Password
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                placeholder="Enter your old password"
+                style={{ borderRadius: 8 }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: "flex", alignItems: "center", fontSize: 14, fontWeight: 500, marginBottom: 8 }}>
+                <LockOutlined style={{ marginRight: 8, color: "#1890ff" }} />
+                New Password
+              </label>
+              <Input.Password
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter your new password"
+                style={{ borderRadius: 8 }}
+              />
+            </div>
+
+            <Button
+              onClick={handleChangePassword}
+              block
+              style={{ backgroundColor: "#595959", borderColor: "#595959", color: "#fff", borderRadius: 8, height: 40 }}
+            >
+              Change Password
+            </Button>
+          </Space>
+
+          {/* Divider */}
+          <Divider />
+
+          {/* Logout Section */}
+          <div style={{ textAlign: "center" }}>
+            <Button
+              type="primary"
+              danger
+              onClick={handleLogout}
+              icon={<LogoutOutlined />}
+              style={{ borderRadius: 8, height: 40 }}
+            >
+              Logout
+            </Button>
+          </div>
+        </Card>
       </div>
-      {" "}
-      
     </Layout>
   );
 };
