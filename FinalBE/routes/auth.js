@@ -10,7 +10,7 @@ const { sendAdminVerificationEmail } = require("../utils/email");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const baseUrl = process.env.BASE_URL || "http://localhost:5000/";
+const baseUrl = process.env.BASE_URL || "http://localhost:5002/";
 
 // Cấu hình Multer để lưu vào thư mục động
 const storage = multer.diskStorage({
@@ -250,9 +250,9 @@ router.post(
       user.token = token;
       await user.save();
       const baseUrl =
-      process.env.NODE_ENV === "production"
-        ? "https://luluspa-production.up.railway.app"
-        : "http://localhost:5000";
+        process.env.NODE_ENV === "production"
+          ? "https://luluspa-production.up.railway.app"
+          : "http://localhost:5002";
       // Tạo URL đầy đủ cho avatar
       // const baseUrl = "https://luluspa-production.up.railway.app";
       const avatarUrl = user.avatar
@@ -316,6 +316,10 @@ router.get("/me", authMiddleware, async (req, res) => {
       email: user.email,
       role: user.role,
       avatar: user.avatar,
+      phone_number: user.phone_number,
+      gender: user.gender,
+      address: user.address,
+      Description: user.Description,
     });
   } catch (err) {
     console.error(err.message);
@@ -375,7 +379,8 @@ router.put(
         return res.status(404).json({ msg: "Người dùng không tồn tại" });
       }
 
-      const { username, email } = req.body;
+      const { username, email, phone_number, gender, Description, address } =
+        req.body;
       let avatarPath = user.avatar;
 
       // Nếu có file mới tải lên thì cập nhật đường dẫn
@@ -385,13 +390,17 @@ router.put(
 
       if (username) user.username = username;
       if (email) user.email = email;
+      if (phone_number) user.phone_number = phone_number;
+      if (gender) user.gender = gender;
+      if (address) user.address = address;
+      if (Description) user.Description = Description;
       user.avatar = avatarPath; // Cập nhật avatar vào database
 
       await user.save();
       const baseUrl =
-      process.env.NODE_ENV === "production"
-        ? "https://luluspa-production.up.railway.app"
-        : "http://localhost:5000";
+        process.env.NODE_ENV === "production"
+          ? "https://luluspa-production.up.railway.app"
+          : "http://localhost:5002";
       // Tạo URL đầy đủ cho avatar
       // const baseUrl = "https://luluspa-production.up.railway.app";
       const avatarUrl = avatarPath
@@ -403,6 +412,11 @@ router.put(
         user: {
           username: user.username,
           email: user.email,
+          phone_number: user.phone_number,
+          address: user.address,
+          gender: user.gender,
+          Description: user.Description,
+
           avatar: avatarUrl, // Trả về URL đầy đủ
         },
       });
@@ -557,7 +571,6 @@ router.get("/auto-verify", async (req, res) => {
 
     // res.redirect("http://localhost:3000/login");
     res.redirect("https://swp-391-skincare-booking-system.vercel.app/login");
-
   } catch (err) {
     console.error(err);
     return res.status(400).json({ msg: "Token không hợp lệ hoặc đã hết hạn" });
