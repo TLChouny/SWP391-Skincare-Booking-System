@@ -49,8 +49,13 @@ const AdminOverview: React.FC = () => {
           ? ratingsResponse.data
           : [];
 
+          console.log("CARTS DATA:", carts);
+
+
         console.log("Dữ liệu payments:", paymentsResponse.data);
         console.log("Dữ liệu ratings:", ratingsResponse.data);
+        console.log("Dữ liệu cart:", cartsResponse.data);
+
 
         const totalUsers = calculateTotalUsers(users);
         const totalBookings = calculateTotalBookings(carts);
