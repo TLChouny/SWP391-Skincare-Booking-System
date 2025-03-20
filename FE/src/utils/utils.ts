@@ -7,9 +7,7 @@ export const calculateTotalUsers = (users: any[]) => {
   
   // Tính tổng số đơn hàng đã hoàn thành
   export const calculateTotalBookings = (carts: any[]) => { 
-      const filteredCarts = carts.filter((carts)=> carts.status ==="checked-out")
-    // return carts.filter((cart) => cart.status === "reviewed" || cart.status === "checked-out").length;
-    return filteredCarts.length;
+    return carts.filter((cart) => cart.status === "reviewed" || cart.status === "checked-out").length;
   };
   
 
