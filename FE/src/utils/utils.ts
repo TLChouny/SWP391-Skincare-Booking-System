@@ -31,7 +31,7 @@ export const calculateTotalUsers = (users: any[]) => {
   // Tính tổng tiền của các payment thành công
 export const calculateTotalSuccessfulPayments = (payments: any[]) => {
     return payments
-      .filter((payment) => payment.status === "pending")
+      .filter((payment) => payment.status === "success")
       .reduce((sum, payment) => sum + (payment.amount || 0), 0);
   };
   
