@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { Booking } from "../../types/booking";
@@ -31,7 +31,9 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   setQrCode,
   API_BASE_URL,
 }) => {
-  // Format price display with optional discount
+  const [isPaymentCreated, setIsPaymentCreated] = useState(false);
+  const [isCreatingPayment, setIsCreatingPayment] = useState(false);
+
   const formatPriceDisplay = (
     originalPrice: number,
     discountedPrice?: number | null
@@ -56,21 +58,22 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
     );
   };
 
-  // Calculate total price for completed items
   const calculateTotal = (): number => {
     return cart
       .filter((item) => item.status === "completed")
       .reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   };
 
-  // Format total price
   const formatTotal = (): string => {
     const totalValue = calculateTotal();
     return `${totalValue.toLocaleString("en-US")} VND`;
   };
 
-  // Handle checkout process
   const handleCheckout = async () => {
+    if (isCreatingPayment) {
+      return;
+    }
+
     const completedItems = cart.filter((item) => item.status === "completed");
     if (completedItems.length === 0) {
       toast.error("No items are selected for payment.");
@@ -78,20 +81,25 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
       return;
     }
 
-    const totalAmount = calculateTotal();
-    const orderName = completedItems[0]?.serviceName || "Multiple Services";
-    let description = `Service ${orderName.substring(0, 25)}`;
-    if (description.length > 25) description = description.substring(0, 25);
+    if (isPaymentCreated || paymentUrl) {
+      return;
+    }
 
-    const BASE_DOMAIN =
-      window.location.hostname === "localhost"
-        ? "http://localhost:5000"
-        : "https://luluspa-production.up.railway.app";
-
-    const returnUrl = `${BASE_DOMAIN}/success.html`;
-    const cancelUrl = `${BASE_DOMAIN}/cancel.html`;
-
+    setIsCreatingPayment(true);
     try {
+      const totalAmount = calculateTotal();
+      const orderName = completedItems[0]?.serviceName || "Multiple Services";
+      let description = `Service ${orderName.substring(0, 25)}`;
+      if (description.length > 25) description = description.substring(0, 25);
+
+      const BASE_DOMAIN =
+        window.location.hostname === "localhost"
+          ? "http://localhost:5000"
+          : "https://luluspa-production.up.railway.app";
+
+      const returnUrl = `${BASE_DOMAIN}/success.html`;
+      const cancelUrl = `${BASE_DOMAIN}/cancel.html`;
+
       const response = await fetch(`${API_BASE_URL}/payments/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -111,21 +119,29 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
       setPaymentUrl(data.data.checkoutUrl);
       setQrCode(data.data.qrCode);
+      setIsPaymentCreated(true);
     } catch (error: any) {
       console.error("❌ Error during payment process:", error);
       toast.error("Failed to initiate payment. Please try again.");
       setShowModal(false);
+    } finally {
+      setIsCreatingPayment(false);
     }
   };
 
-  // Trigger checkout when modal is shown
   useEffect(() => {
-    if (showModal) {
+    if (showModal && !isPaymentCreated && !paymentUrl && !isCreatingPayment) {
       handleCheckout();
+    }
+  }, [showModal, cart]);
+
+  useEffect(() => {
+    if (!showModal) {
+      setIsPaymentCreated(false);
+      setIsCreatingPayment(false);
     }
   }, [showModal]);
 
-  // Define reusable styles
   const modalOverlayStyle: React.CSSProperties = {
     position: "fixed",
     top: 0,
@@ -326,7 +342,6 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
               )}
             </div>
 
-            {/* Sticky Footer with Cancel Button */}
             <div style={buttonFooterStyle}>
               <motion.button
                 whileHover={{ scale: 1.05 }}

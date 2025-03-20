@@ -395,7 +395,7 @@ const CartComponent: React.FC<CartComponentProps> = ({
                 marginBottom: "1rem",
               }}
             >
-              <h3 style={{ fontSize: "1.5rem", fontWeight: 600, color: "#1f2937" }}>
+              <h3 style={{ fontSize: "1.5rem", fontWeight: 600, color: "#1f2937", marginLeft: "0.5rem" }}>
                 Your Cart
               </h3>
               <button
