@@ -553,7 +553,9 @@ router.get("/auto-verify", async (req, res) => {
     user.isVerified = true;
     await user.save();
 
-    res.redirect("http://localhost:3000/login");
+    // res.redirect("http://localhost:3000/login");
+    res.redirect("https://swp-391-skincare-booking-system.vercel.app/login");
+
   } catch (err) {
     console.error(err);
     return res.status(400).json({ msg: "Token không hợp lệ hoặc đã hết hạn" });
