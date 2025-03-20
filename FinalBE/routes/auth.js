@@ -10,7 +10,7 @@ const { sendAdminVerificationEmail } = require("../utils/email");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const baseUrl = process.env.BASE_URL || "http://localhost:5002/";
+const baseUrl = process.env.BASE_URL || "http://localhost:5000/";
 
 // Cấu hình Multer để lưu vào thư mục động
 const storage = multer.diskStorage({
@@ -252,7 +252,7 @@ router.post(
       const baseUrl =
         process.env.NODE_ENV === "production"
           ? "https://luluspa-production.up.railway.app"
-          : "http://localhost:5002";
+          : "http://localhost:5000";
       // Tạo URL đầy đủ cho avatar
       // const baseUrl = "https://luluspa-production.up.railway.app";
       const avatarUrl = user.avatar
@@ -400,7 +400,7 @@ router.put(
       const baseUrl =
         process.env.NODE_ENV === "production"
           ? "https://luluspa-production.up.railway.app"
-          : "http://localhost:5002";
+          : "http://localhost:5000";
       // Tạo URL đầy đủ cho avatar
       // const baseUrl = "https://luluspa-production.up.railway.app";
       const avatarUrl = avatarPath
