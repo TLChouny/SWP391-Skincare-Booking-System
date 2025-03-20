@@ -247,12 +247,12 @@ router.post(
 
       user.token = token;
       await user.save();
-
+      // const baseUrl =
+      // process.env.NODE_ENV === "production"
+      //   ? "https://luluspa-production.up.railway.app"
+      //   : "http://localhost:5000";
       // Tạo URL đầy đủ cho avatar
-      const baseUrl =
-        process.env.NODE_ENV === "production"
-          ? "https://luluspa-production.up.railway.app"
-          : "http://localhost:5000";
+      const baseUrl = "https://luluspa-production.up.railway.app";
       const avatarUrl = user.avatar
         ? `${baseUrl}${user.avatar}` // URL tuyệt đối nếu có avatar
         : `${baseUrl}/default-avatar.png`; // Fallback nếu không có avatar
@@ -386,12 +386,12 @@ router.put(
       user.avatar = avatarPath; // Cập nhật avatar vào database
 
       await user.save();
-
+      // const baseUrl =
+      // process.env.NODE_ENV === "production"
+      //   ? "https://luluspa-production.up.railway.app"
+      //   : "http://localhost:5000";
       // Tạo URL đầy đủ cho avatar
-      const baseUrl =
-        process.env.NODE_ENV === "production"
-          ? "https://luluspa-production.up.railway.app"
-          : "http://localhost:5000";
+      const baseUrl = "https://luluspa-production.up.railway.app";
       const avatarUrl = avatarPath
         ? `${baseUrl}${avatarPath}`
         : `${baseUrl}/default-avatar.png`;
