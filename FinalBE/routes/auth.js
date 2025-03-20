@@ -10,6 +10,8 @@ const { sendAdminVerificationEmail } = require("../utils/email");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const baseUrl = process.env.BASE_URL || "http://localhost:5000/";
+
 // Cấu hình Multer để lưu vào thư mục động
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -101,7 +103,7 @@ router.post(
           { expiresIn: "24h" }
         );
 
-        const verifyLink = `https://luluspa-production.up.railway.app/api/auth/auto-verify?token=${verifyToken}`;
+        const verifyLink = `${baseUrl}/api/auth/auto-verify?token=${verifyToken}`;
         await sendAdminVerificationEmail(email, verifyLink);
       } else {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();

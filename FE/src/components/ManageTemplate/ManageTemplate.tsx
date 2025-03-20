@@ -93,7 +93,7 @@ function ManageTemplate({
       form.resetFields();
       setShowModal(false);
       fetchData();
-      toast.success('Create account successfully')
+      // toast.success('Create account successfully')
     } catch (error: any) {
       console.error("Create Error:", error.response?.data || error); // Debug lỗi
       message.error(error.response?.data?.message || `Error creating ${title}`);
