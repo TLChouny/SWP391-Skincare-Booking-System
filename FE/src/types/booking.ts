@@ -75,3 +75,18 @@ export type Rating = {
 };
 
 
+export interface User {
+  _id: string;
+  username: string;
+  email: string;
+  role: string;
+  // Add other fields as needed
+}
+
+// Define the shape of a Payment
+export interface Payment {
+  _id: string;
+  status: string; // e.g., "pending", "completed", "failed"
+  amount: number;
+  // Add other fields as needed
+}

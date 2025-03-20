@@ -42,6 +42,13 @@ const StaffCheckIn: React.FC = () => {
 
   useEffect(() => {
     setBookings(cart);
+    const updatedSelectedStaff: { [cartId: string]: string | null } = {};
+    cart.forEach((booking) => {
+      if (booking.CartID && booking.Skincare_staff) {
+        updatedSelectedStaff[booking.CartID] = booking.Skincare_staff;
+      }
+    });
+    setSelectedStaff(updatedSelectedStaff);
   }, [cart]);
 
   const fetchStaff = async () => {
@@ -96,6 +103,25 @@ const StaffCheckIn: React.FC = () => {
     try {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("Please log in to assign staff.");
+
+      const booking = bookings.find((b) => b.CartID === cartId);
+      if (!booking) throw new Error("Booking not found.");
+
+      // Kiểm tra xem therapist đã có lịch trùng chưa
+      const isStaffBooked = cart.some(
+        (b) =>
+          b.CartID !== cartId && // Không kiểm tra chính booking hiện tại
+          b.Skincare_staff === staffName &&
+          b.bookingDate === booking.bookingDate &&
+          b.startTime === booking.startTime &&
+          ["pending", "checked-in", "completed"].includes(b.status) // Bao gồm cả completed
+      );
+
+      if (isStaffBooked) {
+        throw new Error(
+          `Therapist ${staffName} is already booked for this time slot.`
+        );
+      }
 
       const response = await fetch(`${API_BASE_URL}/cart/${cartId}`, {
         method: "PUT",
@@ -262,6 +288,24 @@ const StaffCheckIn: React.FC = () => {
     }
   };
 
+  // Hàm lọc danh sách therapist khả dụng dựa trên timeslot
+  const getAvailableStaffForBooking = (booking: Booking): Staff[] => {
+    if (!booking.bookingDate || !booking.startTime) return availableStaff;
+
+    const bookedStaff = cart
+      .filter(
+        (b) =>
+          b.CartID !== booking.CartID && // Không kiểm tra chính booking hiện tại
+          b.bookingDate === booking.bookingDate &&
+          b.startTime === booking.startTime &&
+          b.Skincare_staff &&
+          ["pending", "checked-in", "completed"].includes(b.status) // Bao gồm cả completed
+      )
+      .map((b) => b.Skincare_staff!);
+
+    return availableStaff.filter((staff) => !bookedStaff.includes(staff.name));
+  };
+
   const indexOfLastBooking = currentPage * bookingsPerPage;
   const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage;
   const currentBookings = bookings.slice(
@@ -363,6 +407,12 @@ const StaffCheckIn: React.FC = () => {
                     !!selectedStaff[booking.CartID || ""];
                   const statusStyle =
                     statusStyles[booking.status] || statusStyles.pending;
+                  const filteredAvailableStaff = ["pending", "checked-in"].includes(
+                    booking.status
+                  )
+                    ? getAvailableStaffForBooking(booking)
+                    : availableStaff;
+
                   return (
                     <tr
                       key={booking.CartID || Math.random().toString()}
@@ -427,47 +477,43 @@ const StaffCheckIn: React.FC = () => {
                         )}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.status === "pending" ? (
-                          // Chỉ hiển thị <select> khi trạng thái là "pending"
-                          <>
-                            {staffLoading ? (
-                              <span className="text-gray-500">
-                                Loading staff...
-                              </span>
-                            ) : (
-                              <select
-                                value={
-                                  selectedStaff[booking.CartID || ""] || ""
-                                }
-                                onChange={(e) => {
-                                  const staffName = e.target.value || null;
-                                  setSelectedStaff((prev) => ({
-                                    ...prev,
-                                    [booking.CartID || ""]: staffName,
-                                  }));
-                                  updateStaffAssignment(
-                                    booking.CartID || "",
-                                    staffName
-                                  );
-                                }}
-                                className="p-1 border rounded"
-                                disabled={availableStaff.length === 0}
-                              >
-                                <option value="">Select a therapist</option>
-                                {availableStaff.map((staff) => (
-                                  <option key={staff.id} value={staff.name}>
-                                    {staff.name}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </>
+                        {["pending", "checked-in"].includes(booking.status) ? (
+                          staffLoading ? (
+                            <span className="text-gray-500">
+                              Loading staff...
+                            </span>
+                          ) : (
+                            <select
+                              value={
+                                selectedStaff[booking.CartID || ""] ||
+                                booking.Skincare_staff ||
+                                ""
+                              }
+                              onChange={(e) => {
+                                const staffName = e.target.value || null;
+                                setSelectedStaff((prev) => ({
+                                  ...prev,
+                                  [booking.CartID || ""]: staffName,
+                                }));
+                                updateStaffAssignment(
+                                  booking.CartID || "",
+                                  staffName
+                                );
+                              }}
+                              className="p-1 border rounded"
+                              disabled={filteredAvailableStaff.length === 0}
+                            >
+                              <option value="">Select a therapist</option>
+                              {filteredAvailableStaff.map((staff) => (
+                                <option key={staff.id} value={staff.name}>
+                                  {staff.name}
+                                </option>
+                              ))}
+                            </select>
+                          )
                         ) : (
-                          // Với các trạng thái khác, chỉ hiển thị tên therapist (nếu có) dưới dạng văn bản
                           <span className="text-gray-700">
-                            {selectedStaff[booking.CartID || ""] ||
-                              booking.Skincare_staff ||
-                              "N/A"}
+                            {booking.Skincare_staff || "N/A"}
                           </span>
                         )}
                       </td>
