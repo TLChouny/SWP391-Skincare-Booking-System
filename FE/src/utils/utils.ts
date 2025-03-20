@@ -4,9 +4,12 @@ export const calculateTotalUsers = (users: any[]) => {
     return filteredUsers.length;
   };
   
+  
   // Tính tổng số đơn hàng đã hoàn thành
-  export const calculateTotalBookings = (carts: any[]) => {
-    return carts.filter((cart) => cart.status === "reviewed" || cart.status === "checked-out").length;
+  export const calculateTotalBookings = (carts: any[]) => { 
+      const filteredCarts = carts.filter((carts)=> carts.status ==="checked-out")
+    // return carts.filter((cart) => cart.status === "reviewed" || cart.status === "checked-out").length;
+    return filteredCarts.length;
   };
   
 

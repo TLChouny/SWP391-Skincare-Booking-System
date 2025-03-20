@@ -36,7 +36,7 @@ const EnhancedBookingPage: React.FC = () => {
   const [loadingRatings, setLoadingRatings] = useState<boolean>(true);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
-  const [filterRating, setFilterRating] = useState<string>("All"); // State cho bộ lọc sao
+  const [filterRating, setFilterRating] = useState<string>("All"); // State for star filter
   const reviewsPerPage = 3;
 
   const API_BASE_URL =
@@ -82,11 +82,9 @@ const EnhancedBookingPage: React.FC = () => {
   const addToCart = async (bookingData: any) => {
     try {
       if (!token) {
-        toast.warning("Bạn cần đăng nhập để đặt lịch.");
+        toast.warning("You need to log in to book.");
         return;
       }
-
-      // console.log("📌 Dữ liệu gửi lên API:", bookingData);
 
       const response = await fetch(`${API_BASE_URL}/cart`, {
         method: "POST",
@@ -100,26 +98,23 @@ const EnhancedBookingPage: React.FC = () => {
       const responseData = await response.json();
 
       if (!response.ok) {
-        if (responseData.message?.includes("Nhân viên")) {
-          toast.warning(responseData.message); 
+        if (responseData.message?.includes("Staff")) {
+          toast.warning(responseData.message);
         } else {
-          toast.error(responseData.message || "Không thể thêm vào giỏ hàng.");
+          toast.error(responseData.message || "Unable to add to cart.");
         }
         return;
       }
 
-      // console.log("📌 API Response:", responseData);
       await fetchCart();
-      toast.success("Đã thêm dịch vụ vào giỏ hàng.");
+      toast.success("Service added to cart successfully.");
     } catch {
-      // console.error("Lỗi khi thêm vào giỏ hàng:", error);
-
-      const staffName = bookingData.Skincare_staff || "Không xác định";
-      const startTime = bookingData.startTime || "chưa rõ";
-      const endTime = bookingData.endTime || "chưa rõ";
+      const staffName = bookingData.Skincare_staff || "Unknown";
+      const startTime = bookingData.startTime || "not specified";
+      const endTime = bookingData.endTime || "not specified";
 
       toast.error(
-        `Nhân viên ${staffName} đã có lịch từ ${startTime} đến ${endTime}. Vui lòng chọn giờ khác.`
+        `${staffName} is already booked from ${startTime} to ${endTime}. Please choose another time.`
       );
     }
   };
@@ -454,7 +449,7 @@ const EnhancedBookingPage: React.FC = () => {
     setSelectedSlot(null);
   };
 
-  // Logic lọc và phân trang cho đánh giá
+  // Logic for filtering and paginating reviews
   const filteredRatings =
     filterRating === "All"
       ? ratings
@@ -573,13 +568,13 @@ const EnhancedBookingPage: React.FC = () => {
         </AnimatePresence>
 
         <div className="flex flex-wrap -mx-4">
-          {/* Cột trái: Thông tin dịch vụ + Đánh giá */}
+          {/* Left Column: Service Info + Reviews */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="w-full lg:w-1/3 px-4 mb-8 lg:mb-0"
           >
-            {/* Thông tin dịch vụ */}
+            {/* Service Information */}
             {loading ? (
               <div className="flex items-center justify-center h-64 bg-gray-100 rounded-xl shadow-lg">
                 <p className="text-lg text-gray-600">Loading service details...</p>
@@ -626,7 +621,7 @@ const EnhancedBookingPage: React.FC = () => {
               </div>
             )}
 
-            {/* Đánh giá */}
+            {/* Reviews */}
             <motion.div
               className="mt-8 bg-white p-6 rounded-xl shadow-lg"
               initial={{ opacity: 0, y: 20 }}
@@ -636,22 +631,19 @@ const EnhancedBookingPage: React.FC = () => {
               <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">
                 Customer Reviews
               </h3>
-              {/* Bộ lọc sao */}
+              {/* Star Filter */}
               <div className="mb-4">
-                {/* <label className="block text-lg font-medium text-gray-700 mb-2">
-                  Filter by Rating:
-                </label> */}
                 <select
                   value={filterRating}
                   onChange={(e) => {
                     setFilterRating(e.target.value);
-                    setCurrentReviewPage(1); // Reset về trang 1 khi thay đổi bộ lọc
+                    setCurrentReviewPage(1); // Reset to page 1 when filter changes
                   }}
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 >
                   <option value="All">All Ratings</option>
                   <option value="5">5 Stars ⭐</option>
-                  <option value="4">4 Stars  ⭐</option>
+                  <option value="4">4 Stars ⭐</option>
                   <option value="3">3 Stars ⭐</option>
                   <option value="2">2 Stars ⭐</option>
                   <option value="1">1 Star ⭐</option>
@@ -686,7 +678,7 @@ const EnhancedBookingPage: React.FC = () => {
                     ))}
                   </div>
 
-                  {/* Phân trang */}
+                  {/* Pagination */}
                   {filteredRatings.length > reviewsPerPage && (
                     <div className="flex justify-center mt-6">
                       <motion.button
@@ -729,7 +721,7 @@ const EnhancedBookingPage: React.FC = () => {
             </motion.div>
           </motion.div>
 
-          {/* Cột phải: Form đặt lịch */}
+          {/* Right Column: Booking Form */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -875,4 +867,4 @@ const EnhancedBookingPage: React.FC = () => {
   );
 };
 
-export default EnhancedBookingPage; 
+export default EnhancedBookingPage;
