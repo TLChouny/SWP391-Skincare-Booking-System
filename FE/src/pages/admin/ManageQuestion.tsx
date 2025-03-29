@@ -40,7 +40,7 @@ function ManageQuestion() {
                   style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(5, 1fr)",
-                    gap: "8px",
+                    gap: "3px",
                   }}>
                   {["dry", "oily", "sensitive", "aging", "acne"].map(
                     (skinType) => (
