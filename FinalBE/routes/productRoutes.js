@@ -7,13 +7,12 @@ const Voucher = require("../models/Voucher"); // Import model Voucher
 const router = express.Router();
 
 // POST: Tạo product mới
+// POST: Tạo product mới
 router.post(
   "/",
   [
     check("name", "Tên sản phẩm không được để trống").not().isEmpty(),
-    check("price", "Giá sản phẩm phải là số hợp lệ").matches(
-      /^\d{1,3}(\.\d{3})*$/
-    ),
+    check("price", "Giá sản phẩm phải là số hợp lệ").isNumeric(),
     check("duration", "Thời gian phải là số nguyên").isInt(),
     check("category", "ID danh mục không hợp lệ").isMongoId(),
   ],
@@ -23,14 +22,16 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    let { name, description, price, duration, category, image, vouchers } = req.body;
+    let { name, description, price, duration, category, image, vouchers } =
+      req.body;
 
-    // Xử lý giá tiền
+    // Chuyển đổi price thành số nếu là string
     if (typeof price === "string") {
-      price = price.replace(/\./g, "");
-    } else if (typeof price === "number") {
-      price = price.toString();
-    } else {
+      price = price.replace(/\./g, ""); // Loại bỏ dấu chấm (nếu có)
+      price = parseFloat(price);
+    }
+
+    if (isNaN(price)) {
       return res.status(400).json({ msg: "Giá sản phẩm không hợp lệ" });
     }
 
@@ -44,7 +45,9 @@ router.post(
       if (vouchers && Array.isArray(vouchers)) {
         const validVouchers = await Voucher.find({ _id: { $in: vouchers } });
         if (validVouchers.length !== vouchers.length) {
-          return res.status(400).json({ msg: "Một hoặc nhiều voucher không tồn tại" });
+          return res
+            .status(400)
+            .json({ msg: "Một hoặc nhiều voucher không tồn tại" });
         }
       }
 
@@ -78,12 +81,13 @@ router.get("/", async (req, res) => {
       .populate("category", "name description")
       .populate("vouchers", "code discountPercentage expiryDate isActive");
 
-    const productsWithDiscount = products.map(product => {
+    const productsWithDiscount = products.map((product) => {
       const price = product.price;
       const vouchers = product.vouchers || [];
-      const highestDiscount = vouchers.length > 0 
-        ? Math.max(...vouchers.map(v => v.discountPercentage || 0)) 
-        : 0;
+      const highestDiscount =
+        vouchers.length > 0
+          ? Math.max(...vouchers.map((v) => v.discountPercentage || 0))
+          : 0;
       const discountedPrice = price - (price * highestDiscount) / 100;
 
       return {
@@ -110,9 +114,10 @@ router.get("/:id", async (req, res) => {
 
     const price = product.price;
     const vouchers = product.vouchers || [];
-    const highestDiscount = vouchers.length > 0 
-      ? Math.max(...vouchers.map(v => v.discountPercentage || 0)) 
-      : 0;
+    const highestDiscount =
+      vouchers.length > 0
+        ? Math.max(...vouchers.map((v) => v.discountPercentage || 0))
+        : 0;
     const discountedPrice = price - (price * highestDiscount) / 100;
 
     res.json({
@@ -127,7 +132,8 @@ router.get("/:id", async (req, res) => {
 
 // PUT: Cập nhật product (bao gồm thêm/xóa vouchers)
 router.put("/:id", async (req, res) => {
-  const { name, description, price, duration, category, image, vouchers } = req.body;
+  const { name, description, price, duration, category, image, vouchers } =
+    req.body;
 
   try {
     let product = await Product.findById(req.params.id);
@@ -149,7 +155,9 @@ router.put("/:id", async (req, res) => {
       }
       const validVouchers = await Voucher.find({ _id: { $in: vouchers } });
       if (validVouchers.length !== vouchers.length) {
-        return res.status(400).json({ msg: "Một hoặc nhiều voucher không tồn tại" });
+        return res
+          .status(400)
+          .json({ msg: "Một hoặc nhiều voucher không tồn tại" });
       }
       product.vouchers = vouchers;
     }
@@ -196,7 +204,9 @@ router.post("/:id/vouchers", async (req, res) => {
     }
 
     if (product.vouchers.includes(voucherId)) {
-      return res.status(400).json({ msg: "Voucher đã được áp dụng cho sản phẩm này" });
+      return res
+        .status(400)
+        .json({ msg: "Voucher đã được áp dụng cho sản phẩm này" });
     }
 
     product.vouchers.push(voucherId);
@@ -218,7 +228,9 @@ router.delete("/:id/vouchers/:voucherId", async (req, res) => {
 
     const voucherIndex = product.vouchers.indexOf(req.params.voucherId);
     if (voucherIndex === -1) {
-      return res.status(400).json({ msg: "Voucher không được áp dụng cho sản phẩm này" });
+      return res
+        .status(400)
+        .json({ msg: "Voucher không được áp dụng cho sản phẩm này" });
     }
 
     product.vouchers.splice(voucherIndex, 1);
