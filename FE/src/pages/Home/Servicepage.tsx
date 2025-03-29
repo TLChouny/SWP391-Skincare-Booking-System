@@ -40,9 +40,12 @@ const ServicePage: React.FC = () => {
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const recommended = queryParams.get("recommended");
+    const category = queryParams.get("category"); // Đọc query parameter category
 
-    if (recommended) {
-      setRecommendedType(recommended);
+    if (category) {
+      setRecommendedType(category.toLowerCase()); // Sử dụng category từ URL
+    } else if (recommended) {
+      setRecommendedType(recommended.toLowerCase());
     } else {
       const savedAssessment = localStorage.getItem("skinAssessmentResult");
       if (savedAssessment) {
@@ -58,7 +61,20 @@ const ServicePage: React.FC = () => {
 
   useEffect(() => {
     fetchServices();
-  }, [recommendedType]);
+  }, []);
+
+  // Lọc dịch vụ theo recommendedType khi services hoặc recommendedType thay đổi
+  useEffect(() => {
+    if (services.length > 0) {
+      let filtered = [...services];
+      if (recommendedType) {
+        filtered = filtered.filter((service) =>
+          service.category?.name.toLowerCase().includes(recommendedType.toLowerCase())
+        );
+      }
+      setFilteredServices(filtered);
+    }
+  }, [services, recommendedType]);
 
   const fetchServices = async () => {
     setLoading(true);
@@ -71,7 +87,6 @@ const ServicePage: React.FC = () => {
       const response = await axios.get(`${API_BASE_URL}/products/`);
       const formattedServices = formatServices(response.data);
       setServices(formattedServices);
-      setFilteredServices(formattedServices); // Khởi tạo filteredServices với danh sách gốc
     } catch (error) {
       console.error("Error fetching services:", error);
     } finally {
@@ -90,7 +105,7 @@ const ServicePage: React.FC = () => {
           : service.price || 0,
       discountedPrice: service.discountedPrice ?? null,
       isRecommended: recommendedType
-        ? service.category?.name.toUpperCase().includes(recommendedType)
+        ? service.category?.name.toUpperCase().includes(recommendedType.toUpperCase())
         : false,
     }));
   };
@@ -163,18 +178,18 @@ const ServicePage: React.FC = () => {
                 Personalized Recommendation
               </h3>
               <p className="text-gray-700">
-                Based on your skin assessment, we've highlighted services for your skin type.
+                Based on your skin assessment, we've highlighted services for your skin type: <strong>{recommendedType}</strong>.
               </p>
             </motion.div>
           )}
 
           <div className="text-center mb-16">
             <motion.h2
-               className="text-4xl md:text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
-               initial={{ opacity: 0, y: -50 }}
-               animate={{ opacity: 1, y: 0 }}
-               transition={{ duration: 0.8 }}
-               variants={cardVariants}
+              className="text-4xl md:text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              variants={cardVariants}
             >
               Skincare Combo Packages
             </motion.h2>
@@ -186,12 +201,16 @@ const ServicePage: React.FC = () => {
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
             </div>
+          ) : filteredServices.length === 0 ? (
+            <div className="text-center text-gray-600">
+              No services found for this category.
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
               {filteredServices.map((service) => (
                 <motion.div
                   key={service._id}
-                  className="bg-white rounded-xl shadow-lg overflow-hidden relative" // Thêm relative để chứa hover
+                  className="bg-white rounded-xl shadow-lg overflow-hidden relative"
                   variants={cardVariants}
                   initial="hidden"
                   animate="visible"
@@ -283,7 +302,7 @@ const ServicePage: React.FC = () => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="absolute inset-0 bg-white bg-opacity-95 flex flex-col justify-center p-6 rounded-xl shadow-md z-30 pointer-events-none" // pointer-events-none để không chặn click
+                        className="absolute inset-0 bg-white bg-opacity-95 flex flex-col justify-center p-6 rounded-xl shadow-md z-30 pointer-events-none"
                       >
                         <h3 className="text-2xl font-semibold text-gray-900 mb-2">{service.name}</h3>
                         <p className="text-md text-gray-700 mb-4">{service.description}</p>
