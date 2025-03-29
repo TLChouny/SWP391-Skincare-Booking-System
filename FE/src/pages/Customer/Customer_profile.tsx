@@ -19,6 +19,7 @@ const statusStyles = {
 const CustomerProfile: React.FC = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Booking[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,19 +35,21 @@ const CustomerProfile: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Booking | null>(null);
   const [rating, setRating] = useState<number>(5);
   const [reviewText, setReviewText] = useState<string>("");
-  // const [reviewedOrders, setReviewedOrders] = useState<string[]>([]);
-  // const [reviewedServices, setReviewedServices] = useState<{
-  //   [key: string]: boolean;
-  // }>({});
+
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedDetailOrder, setSelectedDetailOrder] = useState<Booking | null>(null);
+  const [serviceImage, setServiceImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.username) {
       fetchOrders();
+      fetchProducts();
     } else {
       setOrders([]);
       setLoading(false);
     }
   }, [user]);
+
   const fetchOrders = async () => {
     if (!user?.username) {
       setError("You need to log in to view your order history.");
@@ -74,12 +77,10 @@ const CustomerProfile: React.FC = () => {
       );
 
       if (!response.ok) {
-        return;
+        throw new Error("Failed to fetch orders");
       }
 
       const data: Booking[] = await response.json();
-      // console.log("📌 Orders Data from API:", data); 
-
       setOrders(data);
     } catch (err) {
       setError(
@@ -90,20 +91,29 @@ const CustomerProfile: React.FC = () => {
     }
   };
 
-  // const loadReviewedOrders = () => {
-  //   const storedReviews = localStorage.getItem("reviewedOrders");
-  //   if (storedReviews) {
-  //     setReviewedOrders(JSON.parse(storedReviews));
-  //   }
-  // };
+  const fetchProducts = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) return;
 
-  // const saveReviewedOrders = (updatedReviewedOrders: string[]) => {
-  //   localStorage.setItem(
-  //     "reviewedOrders",
-  //     JSON.stringify(updatedReviewedOrders)
-  //   );
-  //   setReviewedOrders(updatedReviewedOrders);
-  // };
+      const response = await fetch(`${API_BASE_URL}/products`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": token,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch products");
+      }
+
+      const data = await response.json();
+      setProducts(data);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    }
+  };
 
   const openReviewModal = (order: Booking) => {
     if (!order.BookingID) {
@@ -120,30 +130,21 @@ const CustomerProfile: React.FC = () => {
     setRating(5);
     setReviewText("");
   };
+
   const handleSubmitReview = async () => {
     if (!selectedOrder || !user?.username) {
       message.error("Error: No order selected or not logged in.");
       return;
     }
 
-    // console.log("📌 Selected Order Data:", selectedOrder); 
-
     const reviewData = {
       bookingID: selectedOrder.BookingID,
-      service_id: selectedOrder.service_id, 
+      service_id: selectedOrder.service_id,
       serviceName: selectedOrder.serviceName,
       serviceRating: rating,
       serviceContent: reviewText,
       createName: user.username,
     };
-
-    // console.log("📌 Sending Review Data:", reviewData);
-
-    if (!reviewData.service_id) {
-      // console.error("❌ Error: Service ID is missing!");
-      message.error("Error: Service ID is missing.");
-      return;
-    }
 
     try {
       const token = localStorage.getItem("authToken");
@@ -183,6 +184,22 @@ const CustomerProfile: React.FC = () => {
     }
   };
 
+  const openDetailModal = (order: Booking) => {
+    setSelectedDetailOrder(order);
+    setServiceImage(null);
+    const product = products.find((p) => p.service_id === order.service_id);
+    if (product && product.image) {
+      setServiceImage(product.image);
+    }
+    setIsDetailModalOpen(true);
+  };
+
+  const closeDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedDetailOrder(null);
+    setServiceImage(null);
+  };
+
   const filteredAndSortedOrders = orders
     .filter((order) =>
       searchOrderId
@@ -205,6 +222,12 @@ const CustomerProfile: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  // Hàm định dạng giá tiền với dấu chấm ngăn cách hàng nghìn
+  const formatPrice = (price: number | undefined | null) => {
+    if (price === undefined || price === null) return "N/A";
+    return `${Math.round(price).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} VNĐ`;
   };
 
   return (
@@ -270,23 +293,26 @@ const CustomerProfile: React.FC = () => {
               <table className="min-w-full">
                 <thead className="bg-gradient-to-r from-blue-50 to-green-50">
                   <tr>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[15%]">
                       Order ID
                     </th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[20%]">
                       Service Name
                     </th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[15%]">
                       Customer
                     </th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[15%]">
                       Status
                     </th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[10%]">
                       Review
                     </th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[20%]">
                       Received result
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[5%]">
+                      {/* Details */}
                     </th>
                   </tr>
                 </thead>
@@ -299,16 +325,16 @@ const CustomerProfile: React.FC = () => {
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <td className="py-4 px-6 text-gray-800">
+                      <td className="py-4 px-6 text-gray-800 w-[15%]">
                         {order.BookingID || "N/A"}
                       </td>
-                      <td className="py-4 px-6 text-gray-800">
+                      <td className="py-4 px-6 text-gray-800 w-[20%] whitespace-nowrap">
                         {order.serviceName}
                       </td>
-                      <td className="py-4 px-6 text-gray-800">
+                      <td className="py-4 px-6 text-gray-800 w-[15%] whitespace-nowrap">
                         {order.customerName}
                       </td>
-                      <td className="py-4 px-6">
+                      <td className="py-4 px-6 w-[15%]">
                         <span
                           className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                             statusStyles[order.status]?.bg || "bg-gray-100"
@@ -320,7 +346,7 @@ const CustomerProfile: React.FC = () => {
                           <span className="ml-1">{order.status}</span>
                         </span>
                       </td>
-                      <td className="py-4 px-6">
+                      <td className="py-4 px-6 w-[10%]">
                         {order.status === "checked-out" && !order.reviewed ? (
                           <Button
                             type="primary"
@@ -336,10 +362,18 @@ const CustomerProfile: React.FC = () => {
                           <span className="text-gray-400">{order.status}</span>
                         )}
                       </td>
-                      <td className="py-4 px-6 text-gray-800">
+                      <td className="py-4 px-6 text-gray-800 w-[20%]">
                         {order.description
-                          ? order?.description
+                          ? order.description
                           : "No result yet"}
+                      </td>
+                      <td className="py-4 px-6 w-[5%] text-center">
+                        <span
+                          onClick={() => openDetailModal(order)}
+                          className="text-gray-500 hover:text-blue-500 cursor-pointer text-lg"
+                        >
+                          👁️
+                        </span>
                       </td>
                     </motion.tr>
                   ))}
@@ -388,7 +422,7 @@ const CustomerProfile: React.FC = () => {
         onOk={handleSubmitReview}
         okText="Submit"
         cancelText="Cancel"
-        styles={{ body: { padding: "24px" } }} 
+        styles={{ body: { padding: "24px" } }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -411,6 +445,162 @@ const CustomerProfile: React.FC = () => {
             rows={4}
           />
         </motion.div>
+      </Modal>
+
+      {/* Modal chi tiết */}
+      <Modal
+        title={
+          <div className="text-2xl font-bold text-black">
+            Order Details
+            <div className="mt-1 h-1 w-16 bg-gray-300 rounded" />
+          </div>
+        }
+        open={isDetailModalOpen}
+        onCancel={closeDetailModal}
+        footer={[
+          <Button
+            key="close"
+            onClick={closeDetailModal}
+            className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-6"
+          >
+            Close
+          </Button>,
+        ]}
+        width={600}
+        styles={{
+          body: { padding: "0" },
+        }}
+      >
+        {selectedDetailOrder && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="p-6 bg-white"
+          >
+            <div className="space-y-6">
+              {/* Thông tin đơn hàng */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-black mb-2">Order Information</h3>
+                <div className="space-y-2">
+                  <p className="flex justify-between border-b border-gray-200 pb-2">
+                    <strong className="font-semibold">Order ID:</strong>
+                    <span>{selectedDetailOrder.BookingID || "N/A"}</span>
+                  </p>
+                  <p className="flex justify-between border-b border-gray-200 pb-2">
+                    <strong className="font-semibold">Status:</strong>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-sm font-medium ${
+                        statusStyles[selectedDetailOrder.status]?.bg || "bg-gray-100"
+                      } ${
+                        statusStyles[selectedDetailOrder.status]?.text || "text-gray-800"
+                      }`}
+                    >
+                      {statusStyles[selectedDetailOrder.status]?.icon || "⏳"}{" "}
+                      {selectedDetailOrder.status}
+                    </span>
+                  </p>
+                  <div className="flex justify-between border-b border-gray-200 pb-2">
+                    <div className="flex-1">
+                      <strong className="font-semibold">Start Time:</strong>
+                      <span className="ml-2">{selectedDetailOrder.startTime}</span>
+                    </div>
+                    <div className="flex-1 text-right">
+                      <strong className="font-semibold">End Time:</strong>
+                      <span className="ml-2">{selectedDetailOrder.endTime || "N/A"}</span>
+                    </div>
+                  </div>
+                  <p className="flex justify-between pt-2">
+                    <strong className="font-semibold">Booking Date:</strong>
+                    <span>{selectedDetailOrder.bookingDate}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Thông tin khách hàng */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-black mb-2">Customer Information</h3>
+                <div className="space-y-1">
+                  <p className="flex justify-between">
+                    <strong className="font-semibold">Name:</strong>
+                    <span>{selectedDetailOrder.customerName}</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <strong className="font-semibold">Phone:</strong>
+                    <span>{selectedDetailOrder.customerPhone}</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <strong className="font-semibold">Email:</strong>
+                    <span>{selectedDetailOrder.customerEmail}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Thông tin dịch vụ */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-black mb-2">Service Information</h3>
+                <div className="flex gap-4">
+                  <div className="w-48">
+                    {serviceImage ? (
+                      <img
+                        src={serviceImage}
+                        alt={selectedDetailOrder.serviceName}
+                        className="w-48 h-48 object-cover rounded-lg shadow-md"
+                      />
+                    ) : (
+                      <div className="w-48 h-48 flex items-center justify-center bg-gray-100 rounded-lg shadow-md text-gray-500 font-medium">
+                        No Image Available
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <p className="flex justify-between">
+                      <strong className="font-semibold">Service Name:</strong>
+                      <span>{selectedDetailOrder.serviceName}</span>
+                    </p>
+                    <p className="flex justify-between">
+                      <strong className="font-semibold">Therapist:</strong>
+                      <span>
+                        {selectedDetailOrder.selectedTherapist?.name ||
+                          selectedDetailOrder.Skincare_staff ||
+                          "Not assigned"}
+                      </span>
+                    </p>
+                    <p className="flex justify-between">
+                      <strong className="font-semibold">Original Price:</strong>
+                      <span>{formatPrice(selectedDetailOrder.originalPrice)}</span>
+                    </p>
+                    <p className="flex justify-between">
+                      <strong className="font-semibold">Discounted Price:</strong>
+                      <span>{formatPrice(selectedDetailOrder.discountedPrice)}</span>
+                    </p>
+                    <p className="flex justify-between">
+                      <strong className="font-semibold">Total Price:</strong>
+                      <span className="text-green-600 font-semibold">
+                        {formatPrice(selectedDetailOrder.totalPrice)}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ghi chú và kết quả */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-black mb-2">Additional Information</h3>
+                <div className="space-y-1">
+                  <p className="flex justify-between">
+                    <strong className="font-semibold">Notes:</strong>
+                    <span>{selectedDetailOrder.notes || "No notes"}</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <strong className="font-semibold">Result:</strong>
+                    <span>{selectedDetailOrder.description || "No result yet"}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </Modal>
     </Layout>
   );

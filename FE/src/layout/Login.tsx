@@ -75,7 +75,7 @@ const Login: React.FC = () => {
       } else if (data.role === "staff") {
         navigate("/staff/check-in");
       } else if (data.role === "skincare_staff") {
-        navigate("/therapist");
+        navigate("/therapist/list-of-assigned");
       }
     } catch (error) {
       console.error("Login error:", error);

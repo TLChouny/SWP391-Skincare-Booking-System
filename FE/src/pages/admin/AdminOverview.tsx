@@ -14,7 +14,10 @@ import {
 } from "../../utils/utils";
 import { getCarts, getPayments, getUsers, getRatings } from "../../api/api";
 import { useAuth } from "../../context/AuthContext";
-
+export interface Cart {
+  _id: string;
+  status: string;
+}
 const AdminOverview: React.FC = () => {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -24,6 +27,7 @@ const AdminOverview: React.FC = () => {
     totalPayments: 0,
     avgRating: 0,
   });
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,7 +68,8 @@ const AdminOverview: React.FC = () => {
 
         setStats({
           totalUsers: totalUsers,
-          totalBookings: totalBookings,
+          totalBookings: cartsResponse.status,
+          // totalBookings: totalBookings,
           totalPayments: totalPayments,
           avgRating: avgRating,
         });
