@@ -35,28 +35,16 @@ function getItem(
 
 const items: MenuItem[] = [
   getItem("AdminOverview", "/admin", <DashboardOutlined />),
-  getItem("UserManagement", "/admin/user-management", <UserOutlined />),
-  getItem(
-    "SevicesManagement",
-    "/admin/service-management",
-    <ProductOutlined />
-  ),
-  getItem(
-    "VoucherManagement",
-    "/admin/voucher-management",
-    <MoneyCollectOutlined />
-  ),
+  getItem("User", "/admin/user-management", <UserOutlined />),
+  getItem("Sevices", "/admin/service-management", <ProductOutlined />),
+  getItem("Voucher", "/admin/voucher-management", <MoneyCollectOutlined />),
 
-  getItem("CategoryManagement", "/admin/category-management", <ReadOutlined />),
+  getItem("Category", "/admin/category-management", <ReadOutlined />),
 
-  getItem("BlogManagement", "/admin/blog-management", <InboxOutlined />),
-  getItem("PaymentManagement", "/admin/payment-management", <QrcodeOutlined />),
-  getItem("RatingManagement", "/admin/rating-management", <StarOutlined />),
-  getItem(
-    "QuestionManagement",
-    "/admin/question-management",
-    <QuestionOutlined />
-  ),
+  getItem("Blog", "/admin/blog-management", <InboxOutlined />),
+  getItem("Payment", "/admin/payment-management", <QrcodeOutlined />),
+  getItem("Rating", "/admin/rating-management", <StarOutlined />),
+  getItem("Question", "/admin/question-management", <QuestionOutlined />),
 ];
 
 const AdminDashboard: React.FC = () => {
