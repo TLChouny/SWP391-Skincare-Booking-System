@@ -247,10 +247,10 @@ const CustomerProfile: React.FC = () => {
           <div className="p-6 flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Search by Order ID
+                Search by Booking ID
               </label>
               <Input
-                placeholder="Enter Order ID"
+                placeholder="Enter Booking ID"
                 value={searchOrderId}
                 onChange={(e) => {
                   setSearchOrderId(e.target.value);
@@ -294,7 +294,7 @@ const CustomerProfile: React.FC = () => {
                 <thead className="bg-gradient-to-r from-blue-50 to-green-50">
                   <tr>
                     <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[15%]">
-                      Order ID
+                      Booking ID
                     </th>
                     <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[20%]">
                       Service Name
@@ -484,7 +484,7 @@ const CustomerProfile: React.FC = () => {
                 <h3 className="text-lg font-semibold text-black mb-2">Order Information</h3>
                 <div className="space-y-2">
                   <p className="flex justify-between border-b border-gray-200 pb-2">
-                    <strong className="font-semibold">Order ID:</strong>
+                    <strong className="font-semibold">Booking ID:</strong>
                     <span>{selectedDetailOrder.BookingID || "N/A"}</span>
                   </p>
                   <p className="flex justify-between border-b border-gray-200 pb-2">
