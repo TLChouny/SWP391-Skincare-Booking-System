@@ -2,7 +2,6 @@ import { Form, Input, Select } from "antd";
 import { useEffect, useState } from "react";
 import api from "../../api/apiService";
 import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
-// import { render } from "react-dom";
 
 function ManageBlog() {
   const title = "Blog";
@@ -10,7 +9,6 @@ function ManageBlog() {
     []
   );
 
-  // Fetch danh sách categories từ API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -23,7 +21,6 @@ function ManageBlog() {
     fetchCategories();
   }, []);
 
-  // Cấu hình cột hiển thị trong bảng
   const columns = [
     { title: "Title", dataIndex: "title", key: "title" },
     { title: "Author", dataIndex: "createName", key: "createName" },
