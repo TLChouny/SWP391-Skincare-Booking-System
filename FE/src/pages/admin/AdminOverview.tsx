@@ -32,7 +32,7 @@ import {
   getProducts,
 } from "../../api/api";
 import { useAuth } from "../../context/AuthContext";
-import { Booking } from "../../types/booking";
+import { Booking, Service } from "../../types/booking";
 
 interface TopService {
   serviceName: string;
@@ -54,7 +54,7 @@ const AdminOverview: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!token) {
-        console.error("Không có token, không thể gọi API");
+        console.error("No token available, cannot call API");
         return;
       }
 
@@ -89,7 +89,6 @@ const AdminOverview: React.FC = () => {
           ? servicesResponse.data
           : [];
 
-        // Tính toán thống kê cơ bản
         const totalUsers = calculateTotalUsers(users);
         const totalBookings = calculateTotalBookings(carts);
         const totalPayments = calculateTotalSuccessfulPayments(payments);
@@ -128,7 +127,7 @@ const AdminOverview: React.FC = () => {
         });
         setTopServices(topServicesData);
       } catch (error) {
-        console.error("Lỗi khi tải dữ liệu:", error);
+        console.error("Error loading data:", error);
       } finally {
         setLoading(false);
       }
@@ -137,27 +136,25 @@ const AdminOverview: React.FC = () => {
     fetchData();
   }, [token]);
 
-  // Dữ liệu cho biểu đồ
   const chartData = [
-    { name: "Người dùng", value: stats.totalUsers },
-    { name: "Đánh giá", value: stats.avgRating },
+    { name: "Users", value: stats.totalUsers },
+    { name: "Average Rating", value: stats.avgRating },
   ];
 
-  // Cột cho bảng top dịch vụ
   const serviceColumns = [
     {
-      title: "STT",
+      title: "No.",
       key: "index",
       render: (_: any, __: any, index: number) => index + 1,
       width: 60,
     },
     {
-      title: "Tên dịch vụ",
+      title: "Service Name",
       dataIndex: "serviceName",
       key: "serviceName",
     },
     {
-      title: "Số lượt đặt",
+      title: "Booking Count",
       dataIndex: "bookingCount",
       key: "bookingCount",
       sorter: (a: TopService, b: TopService) => b.bookingCount - a.bookingCount,
@@ -167,47 +164,58 @@ const AdminOverview: React.FC = () => {
     },
   ];
 
+  const cardStyle = {
+    height: "100%",
+    width: "31.5vh",
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column" as const,
+    justifyContent: "center",
+    textAlign: "center" as const,
+  };
+
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       {loading ? (
         <Spin size='large' className='flex justify-center mt-8' />
       ) : (
         <>
-          <Row gutter={16} align='stretch'>
-            <Col span={4}>
-              <Card style={{ height: "100%" }}>
+          {/* Thống kê trên một hàng ngang với kích thước bằng nhau */}
+          <Row gutter={[16, 16]} style={{ flexWrap: "nowrap" }}>
+            <Col span={4.8}>
+              <Card style={cardStyle}>
                 <Statistic
-                  title='Tổng số người dùng'
+                  title='Total Users'
                   value={stats.totalUsers}
                   prefix={<UserOutlined />}
                   valueStyle={{ color: "#3f8600" }}
                 />
               </Card>
             </Col>
-            <Col span={4}>
-              <Card style={{ height: "100%" }}>
+            <Col span={4.8}>
+              <Card style={cardStyle}>
                 <Statistic
-                  title='Tổng đơn hàng'
+                  title='Total Bookings'
                   value={stats.totalBookings}
                   prefix={<ShoppingOutlined />}
                   valueStyle={{ color: "#1890ff" }}
                 />
               </Card>
             </Col>
-            <Col span={4}>
-              <Card style={{ height: "100%" }}>
+            <Col span={4.8}>
+              <Card style={cardStyle}>
                 <Statistic
-                  title='Tổng thanh toán thành công'
+                  title='Successful Payments'
                   value={stats.totalPayments}
                   prefix={<DollarOutlined />}
                   valueStyle={{ color: "#cf1322" }}
                 />
               </Card>
             </Col>
-            <Col span={4}>
-              <Card style={{ height: "100%" }}>
+            <Col span={4.8}>
+              <Card style={cardStyle}>
                 <Statistic
-                  title='Số sao trung bình'
+                  title='Average Rating'
                   value={stats.avgRating}
                   prefix={<StarOutlined />}
                   suffix='/5'
@@ -216,10 +224,10 @@ const AdminOverview: React.FC = () => {
                 />
               </Card>
             </Col>
-            <Col span={4}>
-              <Card style={{ height: "100%" }}>
+            <Col span={4.8}>
+              <Card style={cardStyle}>
                 <Statistic
-                  title='Đơn hàng hoàn thành & đánh giá'
+                  title='Completed & Reviewed'
                   value={stats.totalBookingsCheckedOutAndReviewed}
                   prefix={<ShoppingOutlined />}
                   valueStyle={{ color: "#722ed1" }}
@@ -228,9 +236,10 @@ const AdminOverview: React.FC = () => {
             </Col>
           </Row>
 
-          <Row gutter={16} style={{ marginTop: 20 }} align='stretch'>
-            <Col span={12}>
-              <Card title='Thống kê tổng quan' style={{ height: "100%" }}>
+          {/* Biểu đồ và bảng như bố cục ban đầu */}
+          <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
+            <Col xs={24} lg={12}>
+              <Card title='Overview Statistics' style={{ height: "100%" }}>
                 <ResponsiveContainer width='100%' height={300}>
                   <BarChart
                     data={chartData}
@@ -245,14 +254,14 @@ const AdminOverview: React.FC = () => {
                 </ResponsiveContainer>
               </Card>
             </Col>
-            <Col span={12}>
+            <Col xs={24} lg={12}>
               <Card
                 title={
                   <>
                     <FireOutlined
                       style={{ color: "#ff4d4f", marginRight: 8 }}
                     />
-                    Top dịch vụ được đặt nhiều nhất
+                    Top Booked Services
                   </>
                 }
                 style={{ height: "100%" }}>
