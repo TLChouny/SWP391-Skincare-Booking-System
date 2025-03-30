@@ -27,20 +27,14 @@ import ManageQuestion from "../pages/admin/ManageQuestion";
 import ManageService from "../pages/admin/ManageService";
 import ManageVoucher from "../pages/admin/ManageVoucher";
 
-
-
 //staff
 import CheckIn from "../pages/Staff/CheckIn";
-import AssignSpecialists from "../pages/Staff/AssignSpecialists";
-import AppointmentSchedules from "../pages/Staff/AppointmentSchedules";
 import StaffManagement from "../components/Staff/StaffManagement";
 import CheckOut from "../pages/Staff/CheckOut"; // Sử dụng component CheckOut
 
 //therapist
-import ServiceHistory from "../pages/Therapist/ServiceHistory";
 import TherapistManagement from "../components/Therapist/TherapistManagement";
 import ListOfAssigned from "../pages/Therapist/ListOfAssigned";
-import PerformService from "../pages/Therapist/PerformService";
 
 //customer
 import ProfileUser from "../pages/Customer/Customer_profile";
@@ -65,9 +59,9 @@ const AppRoutes: React.FC = () => {
           <Route path='/contact' element={<ContactPage />} />{" "}
           <Route path='/services' element={<ServicePage />} />
           <Route path='/blog' element={<BlogPage />} />
-          <Route path="/blog/:_id" element={<BlogDetailPage />} />
+          <Route path='/blog/:_id' element={<BlogDetailPage />} />
           <Route path='/test' element={<TestPage />} />
-          {/* <Route path="/blog-details/:id" element={<BlogPage />} /> */}
+          {/* Admin */}
           <Route path='/admin' element={<AdminDashboard />}>
             <Route index element={<AdminOverview />} />
             <Route path='user-management' element={<ManageUser />} />
@@ -82,15 +76,12 @@ const AppRoutes: React.FC = () => {
           {/* The therapist router */}
           <Route path='/therapist' element={<TherapistManagement />}>
             <Route path='list-of-assigned' element={<ListOfAssigned />} />
-            <Route path='perfom-service' element={<PerformService />} />
-            <Route path='service-history' element={<ServiceHistory />} />
           </Route>
           {/* Staff router */}
           <Route path='/staff' element={<StaffManagement />}>
             <Route path='check-in' element={<CheckIn />} />
-            <Route path='assign-specialists' element={<AssignSpecialists />} />
-            <Route path='check-out' element={<CheckOut />} /> {/* Sử dụng CheckOut component */}
-            <Route path='appointment-schedules' element={<AppointmentSchedules />} />
+            <Route path='check-out' element={<CheckOut />} />{" "}
+            {/* Sử dụng CheckOut component */}
           </Route>
           {/* Customer router */}
           <Route path='/dashboard' element={<ProfileUser />} />
