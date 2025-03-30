@@ -32,7 +32,7 @@ import {
   getProducts,
 } from "../../api/api";
 import { useAuth } from "../../context/AuthContext";
-import { Booking, Service } from "../../types/booking";
+import { Booking } from "../../types/booking";
 
 interface TopService {
   serviceName: string;
@@ -94,9 +94,9 @@ const AdminOverview: React.FC = () => {
         const totalBookings = calculateTotalBookings(carts);
         const totalPayments = calculateTotalSuccessfulPayments(payments);
         const avgRating = calculateOverallAverageRating(ratings);
-        const totalBookingsCheckedOutAndReviewed = calculateTotalBookingsByStatus(carts, ["checked-out", "reviewed"]);
+        const totalBookingsCheckedOutAndReviewed =
+          calculateTotalBookingsByStatus(carts, ["checked-out", "reviewed"]);
 
-        // Tính top 5 dịch vụ dựa trên status "checked-out" và "reviewed"
         const filteredCarts = carts.filter((cart: Booking) =>
           ["checked-out", "reviewed"].includes(cart.status)
         );
@@ -109,7 +109,9 @@ const AdminOverview: React.FC = () => {
           }
         });
 
-        const topServicesData: TopService[] = Array.from(serviceCountMap.entries())
+        const topServicesData: TopService[] = Array.from(
+          serviceCountMap.entries()
+        )
           .map(([serviceName, bookingCount]) => ({
             serviceName,
             bookingCount,
@@ -168,58 +170,56 @@ const AdminOverview: React.FC = () => {
   return (
     <div>
       {loading ? (
-        <Spin size="large" className="flex justify-center mt-8" />
+        <Spin size='large' className='flex justify-center mt-8' />
       ) : (
         <>
-          <Row gutter={16}>
-            <Col span={6}>
-              <Card>
+          <Row gutter={16} align='stretch'>
+            <Col span={4}>
+              <Card style={{ height: "100%" }}>
                 <Statistic
-                  title="Tổng số người dùng"
+                  title='Tổng số người dùng'
                   value={stats.totalUsers}
                   prefix={<UserOutlined />}
                   valueStyle={{ color: "#3f8600" }}
                 />
               </Card>
             </Col>
-            <Col span={6}>
-              <Card>
+            <Col span={4}>
+              <Card style={{ height: "100%" }}>
                 <Statistic
-                  title="Tổng đơn hàng"
+                  title='Tổng đơn hàng'
                   value={stats.totalBookings}
                   prefix={<ShoppingOutlined />}
                   valueStyle={{ color: "#1890ff" }}
                 />
               </Card>
             </Col>
-            <Col span={6}>
-              <Card>
+            <Col span={4}>
+              <Card style={{ height: "100%" }}>
                 <Statistic
-                  title="Tổng thanh toán thành công"
+                  title='Tổng thanh toán thành công'
                   value={stats.totalPayments}
                   prefix={<DollarOutlined />}
                   valueStyle={{ color: "#cf1322" }}
                 />
               </Card>
             </Col>
-            <Col span={6}>
-              <Card>
+            <Col span={4}>
+              <Card style={{ height: "100%" }}>
                 <Statistic
-                  title="Số sao trung bình"
+                  title='Số sao trung bình'
                   value={stats.avgRating}
                   prefix={<StarOutlined />}
-                  suffix="/5"
+                  suffix='/5'
                   precision={1}
                   valueStyle={{ color: "#faad14" }}
                 />
               </Card>
             </Col>
-          </Row>
-          <Row gutter={16} style={{ marginTop: 20 }}>
-            <Col span={6}>
-              <Card>
+            <Col span={4}>
+              <Card style={{ height: "100%" }}>
                 <Statistic
-                  title="Đơn hàng hoàn thành & đánh giá"
+                  title='Đơn hàng hoàn thành & đánh giá'
                   value={stats.totalBookingsCheckedOutAndReviewed}
                   prefix={<ShoppingOutlined />}
                   valueStyle={{ color: "#722ed1" }}
@@ -228,20 +228,19 @@ const AdminOverview: React.FC = () => {
             </Col>
           </Row>
 
-          <Row gutter={16} style={{ marginTop: 20 }}>
+          <Row gutter={16} style={{ marginTop: 20 }} align='stretch'>
             <Col span={12}>
-              <Card title="Thống kê tổng quan">
-                <ResponsiveContainer width="100%" height={300}>
+              <Card title='Thống kê tổng quan' style={{ height: "100%" }}>
+                <ResponsiveContainer width='100%' height={300}>
                   <BarChart
                     data={chartData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray='3 3' />
+                    <XAxis dataKey='name' />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="value" fill="#8884d8" barSize={50} />
+                    <Bar dataKey='value' fill='#8884d8' barSize={50} />
                   </BarChart>
                 </ResponsiveContainer>
               </Card>
@@ -250,17 +249,19 @@ const AdminOverview: React.FC = () => {
               <Card
                 title={
                   <>
-                    <FireOutlined style={{ color: "#ff4d4f", marginRight: 8 }} />
+                    <FireOutlined
+                      style={{ color: "#ff4d4f", marginRight: 8 }}
+                    />
                     Top dịch vụ được đặt nhiều nhất
                   </>
                 }
-              >
+                style={{ height: "100%" }}>
                 <Table
                   columns={serviceColumns}
                   dataSource={topServices}
-                  rowKey="serviceName"
+                  rowKey='serviceName'
                   pagination={false}
-                  size="middle"
+                  size='middle'
                   bordered
                 />
               </Card>
