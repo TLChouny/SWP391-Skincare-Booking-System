@@ -1,214 +1,204 @@
-
-import React, { useEffect, useState } from "react";
-import api from "../../api/apiService";
-import { Button, Form, Modal, Table, Space, Popconfirm, message } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import type React from "react";
+import { useState } from "react";
+import { Table, Button, Modal, Form, Space, Popconfirm } from "antd";
+import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useAuth } from "../../context/AuthContext";
-import { ToastContainer, toast } from "react-toastify";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify"; // Import react-toastify
+import "react-toastify/dist/ReactToastify.css"; // Import CSS của react-toastify
 
-interface Columns {
-  title: string;
-  dataIndex: string;
-  key: string;
-  render?: (value: any, record: any) => React.ReactNode;
-}
+const API_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://luluspa-production.up.railway.app/api";
 
 interface ManageTemplateProps {
   title: string;
-  columns: Columns[];
-  formItems?: React.ReactElement | ((editingId: string | null) => React.ReactElement);
+  columns: any[];
+  dataSource: any[];
+  formItems: (editingId: string | null) => React.ReactNode;
   apiEndpoint: string;
-  mode?: "full" | "view-only" | "create-only" | "delete-only";
-  dataSource?: any[];
+  mode?: "full" | "readonly";
+  filterControls?: React.ReactNode;
+  onUpdateSuccess?: () => void;
   setDataSource?: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 function ManageTemplate({
-  columns,
   title,
+  columns,
+  dataSource,
   formItems,
   apiEndpoint,
   mode = "full",
-  dataSource: externalDataSource,
-  setDataSource: setExternalDataSource,
+  filterControls,
+  onUpdateSuccess,
+  setDataSource,
 }: ManageTemplateProps) {
   const { token } = useAuth();
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [form] = Form.useForm();
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
-  const fetchData = async () => {
-    if (!token) {
-      message.error("Authentication required. Please log in.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await api.get(apiEndpoint, {
-        headers: { "x-auth-token": token },
-      });
-      const responseData = Array.isArray(res.data) ? res.data : res.data?.data || [];
-      setData(responseData);
-      if (setExternalDataSource) setExternalDataSource(responseData);
-    } catch (error: any) {
-      message.error(error.response?.data?.message || `Error fetching ${title}`);
-      setData([]);
-      if (setExternalDataSource) setExternalDataSource([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    let isMounted = true;
-    if (externalDataSource !== undefined) {
-      setData(externalDataSource);
-      setLoading(false);
+  const showModal = (record?: any) => {
+    setIsModalVisible(true);
+    if (record) {
+      setEditingId(record._id);
+      form.setFieldsValue(record);
     } else {
-      fetchData().then(() => {
-        if (!isMounted) return;
-      });
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, [apiEndpoint, token, externalDataSource]);
-
-  const handleCreate = async (values: any) => {
-    if (!token || mode === "view-only") {
-      message.error("Authentication required. Please log in.");
-      return;
-    }
-    setLoading(true); // Bật loading để thông báo đang xử lý
-    try {
-      const response = await api.post(apiEndpoint, values, {
-        headers: { "x-auth-token": token, "Content-Type": "application/json" },
-      });
-      console.log("Create Response:", response.data); // Debug dữ liệu trả về
-      if (typeof window !== "undefined") { // Hiển thị toast trong trình duyệt
-        toast.success(`${title} created successfully`);
-      }
+      setEditingId(null);
       form.resetFields();
-      setShowModal(false);
-      fetchData();
-      // toast.success('Create account successfully')
-    } catch (error: any) {
-      console.error("Create Error:", error.response?.data || error); // Debug lỗi
-      message.error(error.response?.data?.message || `Error creating ${title}`);
-    } finally {
-      setLoading(false); // Tắt loading dù thành công hay thất bại
     }
   };
 
-  const handleEdit = async (values: any) => {
-    if (!token || mode !== "full") {
-      message.error("Authentication required. Please log in.");
-      return;
-    }
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    form.resetFields();
+    setEditingId(null);
+  };
+
+  const handleOk = async () => {
     try {
-      await api.put(`${apiEndpoint}/${editingId}`, values, {
-        headers: { "x-auth-token": token },
-      });
-      if (typeof window !== "undefined") {
-        toast.success(`${title} updated successfully`);
+      const values = await form.validateFields();
+      setConfirmLoading(true);
+
+      if (editingId) {
+        await axios.put(`${API_URL}${apiEndpoint}/${editingId}`, values, {
+          headers: { "x-auth-token": token },
+        });
+        toast.success(`${title} updated successfully!`, {
+          position: "top-right",
+          autoClose: 3000, // Tự động đóng sau 3 giây
+        });
+      } else {
+        await axios.post(`${API_URL}${apiEndpoint}`, values, {
+          headers: { "x-auth-token": token },
+        });
+        toast.success(`${title} created successfully!`, {
+          position: "top-right",
+          autoClose: 3000,
+        });
       }
+
+      setIsModalVisible(false);
       form.resetFields();
-      setShowModal(false);
       setEditingId(null);
-      fetchData();
+      if (onUpdateSuccess) onUpdateSuccess();
     } catch (error: any) {
-      message.error(error.response?.data?.message || `Error updating ${title}`);
+      console.error("Form submission error:", error.response?.data || error);
+      toast.error(error.response?.data?.message || `Failed to save ${title}`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } finally {
+      setConfirmLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!token || (mode !== "full" && mode !== "delete-only")) {
-      message.error("Authentication required. Please log in.");
-      return;
-    }
     try {
-      await api.delete(`${apiEndpoint}/${id}`, {
+      const toastId = toast.loading("Deleting..."); // Hiển thị toast loading
+      await axios.delete(`${API_URL}${apiEndpoint}/${id}`, {
         headers: { "x-auth-token": token },
       });
-      if (typeof window !== "undefined") {
-        toast.success(`${title} deleted successfully`);
-      }
-      fetchData();
+      toast.update(toastId, {
+        render: `${title} deleted successfully!`,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
+      if (onUpdateSuccess) onUpdateSuccess();
     } catch (error: any) {
-      message.error(error.response?.data?.message || `Error deleting ${title}`);
+      console.error("Delete error:", error.response?.data || error);
+      toast.error(error.response?.data?.message || `Failed to delete ${title}`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
   };
 
-  const startEdit = (record: any) => {
-    if (mode !== "full" || !record._id) return;
-    setEditingId(record._id);
-    form.setFieldsValue(record);
-    setShowModal(true);
+  const actionColumn = {
+    title: "Actions",
+    key: "actions",
+    render: (text: string, record: any) => (
+      <Space>
+        <Popconfirm
+          title={`Are you sure you want to edit this ${title}?`}
+          onConfirm={() => showModal(record)}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button icon={<EditOutlined />} type="link" ghost />
+        </Popconfirm>
+        <Popconfirm
+          title={`Are you sure you want to delete this ${title}?`}
+          onConfirm={() => handleDelete(record._id)}
+          okText="Yes"
+          cancelText="No"
+          okType="danger"
+        >
+          <Button icon={<DeleteOutlined />} type="link" danger />
+        </Popconfirm>
+      </Space>
+    ),
   };
 
-  const columnsWithActions =
-    mode === "full" || mode === "delete-only"
-      ? [
-          ...columns,
-          {
-            title: "Actions",
-            key: "actions",
-            render: (_: any, record: any) => (
-              <Space>
-                {mode === "full" && record._id && (
-                  <Button type="link" icon={<EditOutlined />} onClick={() => startEdit(record)} />
-                )}
-                {record._id && (
-                  <Popconfirm
-                    title={`Are you sure you want to delete this ${title}?`}
-                    onConfirm={() => handleDelete(record._id)}
-                    okText="Yes"
-                    cancelText="No"
-                  >
-                    <Button type="link" danger icon={<DeleteOutlined />} />
-                  </Popconfirm>
-                )}
-              </Space>
-            ),
-          },
-        ]
-      : [...columns];
+  const tableColumns = mode === "full" ? [...columns, actionColumn] : columns;
 
   return (
-    <div style={{ padding: "24px" }}>
-      {typeof window !== "undefined" && <ToastContainer />}
-      {(mode === "full" || mode === "create-only") && (
-        <Button
-          type="primary"
-          onClick={() => {
-            setEditingId(null);
-            form.resetFields();
-            setShowModal(true);
+    <div style={{ padding: "20px" }}>
+      <ToastContainer /> {/* Thêm ToastContainer để hiển thị toast */}
+      <div
+        style={{
+          marginBottom: "16px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "16px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+            flexWrap: "wrap",
           }}
-          style={{ marginBottom: "16px" }}
         >
-          Create new {title}
-        </Button>
-      )}
-      <Table columns={columnsWithActions} dataSource={data} loading={loading} rowKey="_id" />
-      {mode !== "view-only" && formItems && (
-        <Modal
-          title={editingId ? `Edit ${title}` : `Create new ${title}`}
-          open={showModal}
-          onCancel={() => {
-            setShowModal(false);
-            setEditingId(null);
-            form.resetFields();
-          }}
-          onOk={() => form.submit()}
-        >
-          <Form form={form} labelCol={{ span: 24 }} onFinish={editingId ? handleEdit : handleCreate}>
-            {typeof formItems === "function" ? formItems(editingId) : formItems}
-          </Form>
-        </Modal>
-      )}
+          {mode === "full" && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => showModal()}
+            >
+              Add {title}
+            </Button>
+          )}
+          {filterControls}
+        </div>
+      </div>
+
+      <Table
+        columns={tableColumns}
+        dataSource={dataSource.map((item) => ({ ...item, key: item._id }))}
+        rowKey="_id"
+        bordered
+      />
+
+      <Modal
+        title={editingId ? `Edit ${title}` : `Add ${title}`}
+        open={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        confirmLoading={confirmLoading}
+        width={600}
+      >
+        <Form form={form} layout="vertical">
+          {formItems(editingId)}
+        </Form>
+      </Modal>
     </div>
   );
 }
