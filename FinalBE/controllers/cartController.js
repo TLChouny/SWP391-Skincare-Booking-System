@@ -89,9 +89,11 @@ exports.createCart = async (req, res) => {
 
       if (existingBooking) {
         console.log("📌 Nhân viên đã có lịch trùng giờ!");
-        return res.send(
-          `Nhân viên ${Skincare_staff} đã có lịch từ ${existingBooking.startTime} đến ${existingBooking.endTime}. Vui lòng chọn giờ khác.`
-        );
+        return res.status(400).json({
+          message: `Nhân viên ${Skincare_staff} đã có lịch từ ${existingBooking.startTime} đến ${existingBooking.endTime}. Vui lòng chọn giờ khác.`,
+          startTime: existingBooking.startTime,
+          endTime: existingBooking.endTime,
+        });
       }
     }
 
@@ -291,32 +293,27 @@ exports.getBookedSlots = async (req, res) => {
   try {
     const { date, staff } = req.query;
 
-    if (!date || !staff) {
-      return res
-        .status(400)
-        .json({ message: "Vui lòng cung cấp ngày và nhân viên." });
+    if (!staff) {
+      return res.status(400).json({ message: "Thiếu tên nhân viên." });
     }
 
-    console.log(`📌 Lấy giờ đã đặt cho ngày ${date}, nhân viên: ${staff}`);
-
-    const bookedSlots = await Cart.find({
-      bookingDate: date,
+    const query = {
       Skincare_staff: staff,
-      status: { $in: ["pending", "checked-in"] }, // Chỉ lấy lịch chưa hoàn thành
-    })
-      .select("startTime")
+      status: { $in: ["pending", "checked-in"] },
+    };
+
+    if (date) {
+      query.bookingDate = date;
+    }
+
+    const bookedSlots = await Cart.find(query)
+      .select("startTime endTime bookingDate") // ❗ Thêm endTime vào select
+      .sort({ bookingDate: 1, startTime: 1 })
       .lean();
 
-    console.log(
-      "📌 Giờ đã đặt (từ DB):",
-      bookedSlots.map((b) => b.startTime)
-    );
-
-    res.status(200).json(bookedSlots.map((b) => b.startTime)); // Chỉ trả về danh sách giờ
+    res.status(200).json(bookedSlots);
   } catch (error) {
-    console.error("📌 Lỗi lấy danh sách giờ đã đặt:", error);
-    res
-      .status(500)
-      .json({ message: "Lỗi khi lấy danh sách giờ đã đặt!", error });
+    console.error("Lỗi khi lấy slot:", error);
+    res.status(500).json({ message: "Lỗi khi lấy slot!", error });
   }
 };

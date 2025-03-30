@@ -21,13 +21,13 @@ const EnhancedBookingPage: React.FC = () => {
   const [therapistError, setTherapistError] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
-  const [customerEmail, setCustomerEmail] = useState<string>(
-    user?.username || user?.email || ""
-  );
+  const [customerEmail, setCustomerEmail] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
+  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(
+    null
+  );
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [paymentUrl, setPaymentUrl] = useState<string>("");
   const [qrCode, setQrCode] = useState<string>("");
@@ -36,7 +36,7 @@ const EnhancedBookingPage: React.FC = () => {
   const [loadingRatings, setLoadingRatings] = useState<boolean>(true);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
-  const [filterRating, setFilterRating] = useState<string>("All"); // State for star filter
+  const [filterRating, setFilterRating] = useState<string>("All");
   const reviewsPerPage = 3;
 
   const API_BASE_URL =
@@ -50,7 +50,7 @@ const EnhancedBookingPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    setCustomerEmail(user?.email || user?.username || "");
+    setCustomerEmail("");
   }, [user]);
 
   useEffect(() => {
@@ -98,7 +98,9 @@ const EnhancedBookingPage: React.FC = () => {
       const responseData = await response.json();
 
       if (!response.ok) {
-        if (responseData.message?.includes("Staff")) {
+        if (typeof responseData === "string") {
+          toast.error(responseData);
+        } else if (responseData.message?.includes("Staff")) {
           toast.warning(responseData.message);
         } else {
           toast.error(responseData.message || "Unable to add to cart.");
@@ -111,10 +113,9 @@ const EnhancedBookingPage: React.FC = () => {
     } catch {
       const staffName = bookingData.Skincare_staff || "Unknown";
       const startTime = bookingData.startTime || "not specified";
-      const endTime = bookingData.endTime || "not specified";
 
       toast.error(
-        `${staffName} is already booked from ${startTime} to ${endTime}. Please choose another time.`
+        `${staffName} is already booked from ${startTime} to unknown. Please choose another time.`
       );
     }
   };
@@ -189,8 +190,22 @@ const EnhancedBookingPage: React.FC = () => {
       .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
   };
 
+  const isTimeOverlap = (slot: string, start: string, end: string): boolean => {
+    const toMinutes = (time: string) => {
+      const [h, m] = time.split(":").map(Number);
+      return h * 60 + m;
+    };
+
+    const slotTime = toMinutes(slot);
+    const startTime = toMinutes(start);
+    const endTime = toMinutes(end);
+
+    // Nếu slot nằm trong khoảng [start, end)
+    return slotTime >= startTime && slotTime < endTime;
+  };
+
   const generateTimeSlots = () => {
-    const slots = [];
+    const slots: string[] = [];
     const now = new Date();
     const today = getTodayDate();
     const isToday = selectedDate === today;
@@ -204,18 +219,19 @@ const EnhancedBookingPage: React.FC = () => {
           .padStart(2, "0")}`;
 
         if (isToday) {
-          const slotHour = parseInt(slot.split(":")[0]);
-          const slotMinute = parseInt(slot.split(":")[1]);
-
           if (
-            slotHour < currentHour ||
-            (slotHour === currentHour && slotMinute < currentMinute)
+            hour < currentHour ||
+            (hour === currentHour && minute < currentMinute)
           ) {
             continue;
           }
         }
 
-        if (!bookedSlots.includes(slot)) {
+        const isOverlapping = bookedSlots.some((b) => {
+          return isTimeOverlap(slot, b.startTime, b.endTime);
+        });
+
+        if (!isOverlapping) {
           slots.push(slot);
         }
       }
@@ -275,7 +291,7 @@ const EnhancedBookingPage: React.FC = () => {
       setPaymentUrl(data.data.checkoutUrl);
       setQrCode(data.data.qrCode);
     } catch (error: any) {
-      console.error("❌ Error during checkout:", error);
+      console.error("Error during checkout:", error);
       toast.error("Failed to initiate payment. Please try again.");
       setShowCheckoutModal(false);
     }
@@ -445,19 +461,28 @@ const EnhancedBookingPage: React.FC = () => {
 
     await addToCart(bookingData);
 
+    setCustomerName("");
+    setCustomerPhone("");
+    setCustomerEmail(user?.email || user?.username || "");
+    setNotes("");
     setSelectedDate("");
     setSelectedSlot(null);
+    setSelectedTherapist(null);
   };
 
-  // Logic for filtering and paginating reviews
   const filteredRatings =
     filterRating === "All"
       ? ratings
-      : ratings.filter((rating) => rating.serviceRating === Number(filterRating));
+      : ratings.filter(
+          (rating) => rating.serviceRating === Number(filterRating)
+        );
 
   const indexOfLastReview = currentReviewPage * reviewsPerPage;
   const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
-  const currentReviews = filteredRatings.slice(indexOfFirstReview, indexOfLastReview);
+  const currentReviews = filteredRatings.slice(
+    indexOfFirstReview,
+    indexOfLastReview
+  );
   const totalReviewPages = Math.ceil(filteredRatings.length / reviewsPerPage);
 
   const handleReviewPageChange = (page: number) => {
@@ -577,7 +602,9 @@ const EnhancedBookingPage: React.FC = () => {
             {/* Service Information */}
             {loading ? (
               <div className="flex items-center justify-center h-64 bg-gray-100 rounded-xl shadow-lg">
-                <p className="text-lg text-gray-600">Loading service details...</p>
+                <p className="text-lg text-gray-600">
+                  Loading service details...
+                </p>
               </div>
             ) : service ? (
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -673,7 +700,9 @@ const EnhancedBookingPage: React.FC = () => {
                         <p className="text-yellow-500 text-lg">
                           Rating: {rating.serviceRating} ⭐
                         </p>
-                        <p className="text-gray-600 mt-2">{rating.serviceContent}</p>
+                        <p className="text-gray-600 mt-2">
+                          {rating.serviceContent}
+                        </p>
                       </motion.div>
                     ))}
                   </div>
@@ -682,7 +711,9 @@ const EnhancedBookingPage: React.FC = () => {
                   {filteredRatings.length > reviewsPerPage && (
                     <div className="flex justify-center mt-6">
                       <motion.button
-                        onClick={() => handleReviewPageChange(currentReviewPage - 1)}
+                        onClick={() =>
+                          handleReviewPageChange(currentReviewPage - 1)
+                        }
                         disabled={currentReviewPage === 1}
                         className="mx-2 w-10 h-10 rounded-full border-none bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
                         whileHover={{ scale: 1.05 }}
@@ -706,7 +737,9 @@ const EnhancedBookingPage: React.FC = () => {
                         </motion.button>
                       ))}
                       <motion.button
-                        onClick={() => handleReviewPageChange(currentReviewPage + 1)}
+                        onClick={() =>
+                          handleReviewPageChange(currentReviewPage + 1)
+                        }
                         disabled={currentReviewPage === totalReviewPages}
                         className="mx-2 w-10 h-10 rounded-full border-none bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
                         whileHover={{ scale: 1.05 }}
