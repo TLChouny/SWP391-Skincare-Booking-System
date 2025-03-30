@@ -67,7 +67,7 @@ const HomePage: React.FC = () => {
   const [qrCode, setQrCode] = useState<string>("");
   const [API_BASE_URL] = useState<string>(
     window.location.hostname === "localhost"
-      ? "http://localhost:5002/api"
+      ? "http://localhost:5000/api"
       : "https://luluspa-production.up.railway.app/api"
   );
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -163,7 +163,7 @@ const HomePage: React.FC = () => {
         const data = await response.json();
         const baseUrl =
           window.location.hostname === "localhost"
-            ? "http://localhost:5002"
+            ? "http://localhost:5000"
             : "https://luluspa-production.up.railway.app";
         setTherapists(
           data.map((staff: any) => ({
