@@ -2,15 +2,21 @@ import { Form, Input, InputNumber, Select, Button, Modal, Tag } from "antd";
 import { useEffect, useState } from "react";
 import api from "../../api/apiService";
 import ManageTemplate from "../../components/ManageTemplate/ManageTemplate";
-import { useAuth } from "../../context/AuthContext"; // Thêm useAuth để lấy token
+import { useAuth } from "../../context/AuthContext";
 
 function ManageService() {
-  const { token } = useAuth(); // Lấy token từ context
+  const { token } = useAuth();
   const title = "Service";
-  const [categories, setCategories] = useState<{ _id: string; name: string }[]>([]);
-  const [vouchers, setVouchers] = useState<{ _id: string; code: string; discountPercentage: number }[]>([]);
+  const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
+    []
+  );
+  const [vouchers, setVouchers] = useState<
+    { _id: string; code: string; discountPercentage: number }[]
+  >([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
   const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -26,7 +32,10 @@ function ManageService() {
         console.log("Fetched Products:", res.data);
         setProducts(res.data || []);
       } catch (error: any) {
-        console.error("Error fetching products:", error.response?.data || error.message);
+        console.error(
+          "Error fetching products:",
+          error.response?.data || error.message
+        );
       } finally {
         setLoading(false);
       }
@@ -44,7 +53,10 @@ function ManageService() {
         console.log("Fetched Categories:", res.data);
         setCategories(res.data || []);
       } catch (error: any) {
-        console.error("Error fetching categories:", error.response?.data || error.message);
+        console.error(
+          "Error fetching categories:",
+          error.response?.data || error.message
+        );
       }
     };
     fetchCategories();
@@ -60,7 +72,10 @@ function ManageService() {
         console.log("Fetched Vouchers:", res.data);
         setVouchers(res.data || []);
       } catch (error: any) {
-        console.error("Error fetching vouchers:", error.response?.data || error.message);
+        console.error(
+          "Error fetching vouchers:",
+          error.response?.data || error.message
+        );
       }
     };
     fetchVouchers();
@@ -75,7 +90,10 @@ function ManageService() {
       key: "price",
       render: (price: number, record: any) => (
         <div>
-          <span style={{ textDecoration: record.discountedPrice ? "line-through" : "none" }}>
+          <span
+            style={{
+              textDecoration: record.discountedPrice ? "line-through" : "none",
+            }}>
             {price.toLocaleString()} VND
           </span>
           {record.discountedPrice && (
@@ -98,7 +116,11 @@ function ManageService() {
       dataIndex: "image",
       key: "image",
       render: (image: string) =>
-        image ? <img src={image} alt="Service" width={50} height={50} /> : "No Image",
+        image ? (
+          <img src={image} alt='Service' width={50} height={50} />
+        ) : (
+          "No Image"
+        ),
     },
     {
       title: "Vouchers",
@@ -109,20 +131,18 @@ function ManageService() {
           {vouchers?.map((voucher: any) => (
             <Tag
               key={voucher._id}
-              color="blue"
+              color='blue'
               closable
-              onClose={() => handleRemoveVoucher(record._id, voucher._id)}
-            >
+              onClose={() => handleRemoveVoucher(record._id, voucher._id)}>
               {voucher.code} ({voucher.discountPercentage}%)
             </Tag>
           ))}
           <Button
-            type="link"
+            type='link'
             onClick={() => {
               setSelectedProductId(record._id);
               setIsModalVisible(true);
-            }}
-          >
+            }}>
             Add Voucher
           </Button>
         </div>
@@ -132,24 +152,32 @@ function ManageService() {
 
   const formItems = (
     <>
-      <Form.Item name="name" label="Name" rules={[{ required: true, message: "Please input service name" }]}>
+      <Form.Item
+        name='name'
+        label='Name'
+        rules={[{ required: true, message: "Please input service name" }]}>
         <Input />
       </Form.Item>
-      <Form.Item name="description" label="Description">
+      <Form.Item name='description' label='Description'>
         <Input.TextArea />
       </Form.Item>
-      <Form.Item name="price" label="Price" rules={[{ required: true, message: "Please input price" }]}>
+      <Form.Item
+        name='price'
+        label='Price'
+        rules={[{ required: true, message: "Please input price" }]}>
         <InputNumber min={0} style={{ width: "100%" }} />
       </Form.Item>
-      <Form.Item name="duration" label="Duration (minutes)" rules={[{ required: true, message: "Please input duration" }]}>
+      <Form.Item
+        name='duration'
+        label='Duration (minutes)'
+        rules={[{ required: true, message: "Please input duration" }]}>
         <InputNumber min={1} style={{ width: "100%" }} />
       </Form.Item>
       <Form.Item
-        name="category"
-        label="Category"
-        rules={[{ required: true, message: "Please select a category" }]}
-      >
-        <Select placeholder="Select category">
+        name='category'
+        label='Category'
+        rules={[{ required: true, message: "Please select a category" }]}>
+        <Select placeholder='Select category'>
           {categories.map((cat) => (
             <Select.Option key={cat._id} value={cat._id}>
               {cat.name}
@@ -157,8 +185,8 @@ function ManageService() {
           ))}
         </Select>
       </Form.Item>
-      <Form.Item name="image" label="Image URL">
-        <Input placeholder="Enter image URL" />
+      <Form.Item name='image' label='Image URL'>
+        <Input placeholder='Enter image URL' />
       </Form.Item>
     </>
   );
@@ -174,10 +202,15 @@ function ManageService() {
       );
       setIsModalVisible(false);
       setSelectedVoucher(null);
-      const res = await api.get("/products", { headers: { "x-auth-token": token } });
+      const res = await api.get("/products", {
+        headers: { "x-auth-token": token },
+      });
       setProducts(res.data);
     } catch (error: any) {
-      console.error("Error adding voucher:", error.response?.data || error.message);
+      console.error(
+        "Error adding voucher:",
+        error.response?.data || error.message
+      );
     } finally {
       setLoading(false);
     }
@@ -190,10 +223,15 @@ function ManageService() {
       await api.delete(`/products/${productId}/vouchers/${voucherId}`, {
         headers: { "x-auth-token": token },
       });
-      const res = await api.get("/products", { headers: { "x-auth-token": token } });
+      const res = await api.get("/products", {
+        headers: { "x-auth-token": token },
+      });
       setProducts(res.data);
     } catch (error: any) {
-      console.error("Error removing voucher:", error.response?.data || error.message);
+      console.error(
+        "Error removing voucher:",
+        error.response?.data || error.message
+      );
     } finally {
       setLoading(false);
     }
@@ -205,23 +243,21 @@ function ManageService() {
         title={title}
         columns={columns}
         formItems={formItems}
-        apiEndpoint="/products"
+        apiEndpoint='/products'
         dataSource={products}
         setDataSource={setProducts}
       />
       <Modal
-        title="Add Voucher to Service"
+        title='Add Voucher to Service'
         visible={isModalVisible}
         onOk={handleAddVoucher}
         onCancel={() => setIsModalVisible(false)}
-        confirmLoading={loading}
-      >
+        confirmLoading={loading}>
         <Select
           style={{ width: "100%" }}
-          placeholder="Select a voucher"
+          placeholder='Select a voucher'
           onChange={(value) => setSelectedVoucher(value)}
-          value={selectedVoucher}
-        >
+          value={selectedVoucher}>
           {vouchers.map((voucher) => (
             <Select.Option key={voucher._id} value={voucher._id}>
               {voucher.code} ({voucher.discountPercentage}%)
