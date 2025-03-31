@@ -46,8 +46,11 @@ interface ExtendedUser extends User {
   role?: string;
 }
 
-const API_BASE_URL = "http://localhost:5000";
-// const API_BASE_URL = "https://luluspa-production.up.railway.app";
+// const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000"
+      : "https://luluspa-production.up.railway.app";
 
 const SettingPage: React.FC = () => {
   const { token } = useAuth();
