@@ -1,55 +1,129 @@
-# SWP391 - Skincare Booking System
+# 🌟 SWP391 - Skincare Booking System
 
-The **Skincare Booking System** is a web application designed to manage skincare service bookings for a skincare center. It provides an intuitive platform for customers to explore services, take skin assessment quizzes, book appointments with specific skin therapists, and manage their profiles. Additionally, it offers staff and managers tools to handle bookings, check-ins/check-outs, therapist assignments, payment policies, and generate reports.
+The **Skincare Booking System** is a modern web application designed to manage skincare service bookings for a skincare center. It empowers customers to explore services, take skin quizzes, book appointments, and connect with skin therapists, while providing staff and managers with robust tools to streamline operations.
 
-## Table of Contents
+---
+
+## 📋 Table of Contents
 1. [Project Overview](#project-overview)
 2. [Features](#features)
-3. [Technology Stack](#technology-stack)
-4. [Installation](#installation)
-5. [Usage](#usage)
-6. [Deployment](#deployment)
-7. [References](#references)
-8. [Contributing](#contributing)
-9. [License](#license)
+3. [Tech Stack](#tech-stack)
+4. [Project Structure](#project-structure)
+5. [Installation](#installation)
+6. [Usage](#usage)
+7. [Testing](#testing)
+8. [Deployment](#deployment)
+9. [References](#references)
+10. [Contributing](#contributing)
+11. [License](#license)
 
-## Project Overview
-The Skincare Booking System aims to streamline the process of booking and managing skincare services for a single skincare center. It caters to multiple user roles including Guests, Customers, Skin Therapists, Staff, and Managers, each with tailored functionalities.
+---
 
-## Features
-- **Homepage**: Introduces the skincare center, available services, skin therapist profiles, blog posts, news, and updates.
-- **Skin Assessment Quiz**: Allows customers to take a quiz and receive personalized skincare service recommendations.
-- **Booking System**: Enables customers to book services and optionally select a preferred skin therapist.
-- **Booking Workflow**:
-  - Customers book a service (with or without specifying a therapist).
-  - Staff perform check-in for customers at the center.
-  - Staff assign a therapist if not pre-selected.
-  - Therapists perform the service and log results.
-  - Staff handle check-out.
-- **Payment & Cancellation Policy**: Manages payment processes and cancellation rules.
-- **Service Management**: Allows configuration of services, center working schedules, and pricing.
-- **Skin Therapist Management**: Manages therapist profiles (general info, expertise, experience, schedules).
-- **Rating & Feedback**: Collects and manages customer ratings and feedback.
-- **Customer Profiles**: Tracks customer details and booking history.
-- **Dashboard & Reports**: Provides insights and analytics for staff and managers.
+## 🌍 Project Overview
+This project aims to simplify skincare service management for a single center. It supports multiple user roles with tailored features:
+- **Guests**: Explore services and content.
+- **Customers**: Book services and manage profiles.
+- **Skin Therapists**: Handle appointments and results.
+- **Staff**: Manage bookings and operations.
+- **Managers**: Oversee analytics and configurations.
 
-## Technology Stack
-- **Frontend**: TypeScript, Tailwind CSS, deployed on Vercel
-- **Backend**: Node.js, deployed on Railway
-- **Database**: MongoDB, hosted on MongoDB Atlas
+---
 
-## Installation
-Follow these steps to set up the project locally:
+## ✨ Features
+- 🏠 **Homepage**: Showcases the center, services, therapist profiles, blog, and news.
+- 📝 **Skin Assessment Quiz**: Recommends services based on customer responses.
+- 📅 **Booking System**: 
+  - Book services with optional therapist selection.
+  - Workflow: 
+    1. Customer books → 
+    2. Staff check-in → 
+    3. Therapist assignment (if needed) → 
+    4. Service execution → 
+    5. Staff check-out.
+- 💳 **Payment & Cancellation**: Manages payment policies and cancellations.
+- ⚙️ **Service Management**: Configures services, schedules, and pricing.
+- 👩‍⚕️ **Therapist Management**: Profiles include expertise, experience, and schedules.
+- ⭐ **Rating & Feedback**: Collects customer reviews.
+- 📚 **Customer Profiles**: Tracks history and details.
+- 📊 **Dashboard & Reports**: Analytics for staff and managers.
 
+---
+
+## 🛠️ Tech Stack
+- **Frontend**: 
+  - ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white) 
+  - ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
+  - Deployed on ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)
+- **Backend**: 
+  - ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
+  - Deployed on ![Railway](https://img.shields.io/badge/Railway-0B0D0E?style=flat&logo=railway&logoColor=white)
+- **Database**: 
+  - ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white) (MongoDB Atlas)
+
+---
+
+## 📂 Project Structure
+SWP391-Skincare-Booking-System/
+├── frontend/              # Frontend source code
+│   ├── src/              # TypeScript source files
+│   ├── public/           # Static assets
+│   ├── tailwind.config.js # Tailwind CSS configuration
+│   └── package.json      # Frontend dependencies
+├── backend/              # Backend source code
+│   ├── src/              # Node.js source files
+│   ├── .env              # Environment variables
+│   └── package.json      # Backend dependencies
+├── README.md             # Project documentation
+└── .gitignore            # Git ignore file
+
+---
+
+## 🚀 Installation
 ### Prerequisites
-- Node.js (v16 or higher)
+- ![Node.js](https://img.shields.io/badge/Node.js-16+-339933?style=flat&logo=node.js) installed
+- MongoDB Atlas account or local MongoDB
 - npm or yarn
-- MongoDB Atlas account (or local MongoDB instance)
-- Vercel CLI (optional, for deployment)
-- Railway CLI (optional, for deployment)
+- Vercel CLI (`npm i -g vercel`) & Railway CLI (`npm i -g railway`)
 
 ### Steps
 1. **Clone the Repository**:
    ```bash
    git clone https://github.com/your-username/SWP391-Skincare-Booking-System.git
    cd SWP391-Skincare-Booking-System
+🎯 Usage
+🌐 Guests: Browse services and take quizzes.
+👤 Customers: Register, book, and review.
+👩‍⚕️ Therapists: Manage bookings and log results.
+🧑‍💼 Staff: Check-in/out, assign therapists.
+📈 Managers: Configure and analyze via dashboard.
+🧪 Testing
+Frontend: Run npm run test (if tests are implemented).
+Backend: Use tools like Postman to test API endpoints.
+Ensure MongoDB connection is active before testing.
+📚 References
+Dermalogica
+Revival Labs Virtual Skincare Consultation
+🤝 Contributing
+Fork the repo.
+Create a branch: git checkout -b feature/your-feature.
+Commit changes: git commit -m "Add feature".
+Push: git push origin feature/your-feature.
+Submit a Pull Request.
+📜 License
+This project is licensed under the MIT License - see  for details.
+
+Happy coding! 🚀
+
+### Điểm nổi bật:
+1. **Icon Emoji**: Sử dụng các biểu tượng như 🌟, 🚀, 📋 để làm nội dung sinh động hơn.
+2. **Badge Tech**: Thêm badge từ Shields.io để hiển thị công nghệ một cách chuyên nghiệp.
+3. **Chi tiết hơn**: Bổ sung phần cấu trúc thư mục, hướng dẫn test, và cách đóng góp rõ ràng.
+4. **Dễ đọc**: Sử dụng tiêu đề, danh sách, và code block để phân chia nội dung.
+
+### Cách sử dụng:
+- Sao chép toàn bộ nội dung trên.
+- Dán vào file `README.md` trong dự án của bạn.
+- Thay đổi `https://github.com/your-username/SWP391-Skincare-Booking-System.git` thành URL repository thực tế của bạn.
+- Nếu bạn có thêm file cấu hình hoặc tính năng cụ thể (như test script), hãy cập nhật thêm vào README.
+
+Nếu bạn muốn thêm nội dung cụ thể hơn (ví dụ: API endpoints, screenshots), hãy cho tôi biết để tôi chỉnh sửa thêm nhé! Chúc dự án của bạn thành công! 🌟
