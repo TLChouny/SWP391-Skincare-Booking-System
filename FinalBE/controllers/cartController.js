@@ -58,12 +58,12 @@ exports.createCart = async (req, res) => {
       !bookingDate
     ) {
       return res.status(400).json({
-        message: "Vui lòng nhập đầy đủ thông tin, bao gồm ngày đặt lịch!",
+        message: "Please provide all required information, including booking date!",
       });
     }
 
     console.log(
-      "📌 Kiểm tra giờ đã đặt:",
+      "📌 Checking booked time:",
       bookingDate,
       startTime,
       Skincare_staff
@@ -74,7 +74,7 @@ exports.createCart = async (req, res) => {
       "name"
     );
     if (!product) {
-      return res.status(404).json({ message: "Sản phẩm không tồn tại" });
+      return res.status(404).json({ message: "Service not found!" });
     }
 
     const endTime = calculateEndTime(startTime, product.duration);
@@ -88,16 +88,16 @@ exports.createCart = async (req, res) => {
       });
 
       if (existingBooking) {
-        console.log("📌 Nhân viên đã có lịch trùng giờ!");
+        console.log("📌 Staff has a conflicting schedule!");
         return res.status(400).json({
-          message: `Nhân viên ${Skincare_staff} đã có lịch từ ${existingBooking.startTime} đến ${existingBooking.endTime}. Vui lòng chọn giờ khác.`,
+          message: `Staff ${Skincare_staff} is already booked from ${existingBooking.startTime} to ${existingBooking.endTime}. Please choose another time.`,
           startTime: existingBooking.startTime,
           endTime: existingBooking.endTime,
         });
       }
     }
 
-    console.log("📌 Không có trùng giờ, tiếp tục đặt lịch.");
+    console.log("📌 No time conflict, proceeding with booking.");
 
     const originalPrice =
       typeof product.price === "object" && product.price.$numberDecimal
@@ -131,17 +131,17 @@ exports.createCart = async (req, res) => {
     });
 
     await newCart.save();
-    console.log("📌 Đặt lịch thành công:", newCart);
+    console.log("📌 Booking successful:", newCart);
 
     await sendOrderConfirmationEmail(customerEmail, newCart);
 
     res.status(201).json({
-      message: "Đặt lịch thành công! Email xác nhận đã được gửi.",
+      message: "Booking successful! A confirmation email has been sent.",
       cart: newCart,
     });
   } catch (error) {
-    console.error("📌 Lỗi khi tạo giỏ hàng:", error);
-    res.status(500).json({ message: "Lỗi tạo đặt lịch!", error });
+    console.error("📌 Error creating cart:", error);
+    res.status(500).json({ message: "Error creating booking!", error });
   }
 };
 
@@ -151,7 +151,7 @@ exports.getAllCarts = async (req, res) => {
     const carts = await Cart.find();
     res.status(200).json(carts);
   } catch (error) {
-    res.status(500).json({ message: "Lỗi lấy danh sách Cart!", error });
+    res.status(500).json({ message: "Error retrieving cart list!", error });
   }
 };
 
@@ -163,17 +163,17 @@ exports.getCartsByUsername = async (req, res) => {
     const carts = await Cart.find({ username: decodedUsername });
 
     if (!carts.length) {
-      return res.status(404).json({ message: "Không tìm thấy giỏ hàng nào!" });
+      return res.status(404).json({ message: "No carts found!" });
     }
 
-    console.log("📌 Orders Data from DB:", carts); // 🛑 Kiểm tra dữ liệu từ MongoDB
+    console.log("📌 Orders Data from DB:", carts); // 🛑 Checking data from MongoDB
 
     res.status(200).json(carts);
   } catch (error) {
-    console.error("Lỗi khi lấy giỏ hàng theo username:", error);
+    console.error("Error retrieving carts by username:", error);
     res
       .status(500)
-      .json({ message: "Lỗi khi lấy giỏ hàng!", error: error.message });
+      .json({ message: "Error retrieving carts!", error: error.message });
   }
 };
 
@@ -185,15 +185,15 @@ exports.getCartsByTherapist = async (req, res) => {
     const carts = await Cart.find({ Skincare_staff: decodedUsername });
 
     if (!carts.length) {
-      return res.status(404).json({ message: "Không tìm thấy giỏ hàng nào!" });
+      return res.status(404).json({ message: "No carts found!" });
     }
 
     res.status(200).json(carts);
   } catch (error) {
-    console.error("Lỗi khi lấy giỏ hàng theo therapist:", error);
+    console.error("Error retrieving carts by therapist:", error);
     res
       .status(500)
-      .json({ message: "Lỗi khi lấy giỏ hàng!", error: error.message });
+      .json({ message: "Error retrieving carts!", error: error.message });
   }
 };
 
@@ -205,10 +205,10 @@ exports.getCartById = async (req, res) => {
       "userId",
       "username email"
     );
-    if (!cart) return res.status(404).json({ message: "Không tìm thấy Cart!" });
+    if (!cart) return res.status(404).json({ message: "Cart not found!" });
     res.status(200).json(cart);
   } catch (error) {
-    res.status(500).json({ message: "Lỗi lấy Cart!", error });
+    res.status(500).json({ message: "Error retrieving cart!", error });
   }
 };
 
@@ -218,11 +218,11 @@ exports.deleteCart = async (req, res) => {
     const { cartID } = req.params;
     const deletedCart = await Cart.findOneAndDelete({ CartID: cartID });
     if (!deletedCart) {
-      return res.status(404).json({ message: "Không tìm thấy Cart!" });
+      return res.status(404).json({ message: "Cart not found!" });
     }
-    res.status(200).json({ message: "Cart đã được xóa!" });
+    res.status(200).json({ message: "Cart deleted successfully!" });
   } catch (error) {
-    res.status(500).json({ message: "Lỗi xóa Cart!", error });
+    res.status(500).json({ message: "Error deleting cart!", error });
   }
 };
 
@@ -233,7 +233,7 @@ exports.updateCart = async (req, res) => {
     const { status, Skincare_staff, description } = req.body;
 
     const cart = await Cart.findOne({ CartID: cartID });
-    if (!cart) return res.status(404).json({ message: "Không tìm thấy Cart!" });
+    if (!cart) return res.status(404).json({ message: "Cart not found!" });
     if (description !== undefined) {
       cart.description = description;
     }
@@ -241,60 +241,43 @@ exports.updateCart = async (req, res) => {
     if (status === "checked-in" && cart.status !== "pending") {
       return res
         .status(400)
-        .json({ message: "Chỉ có thể check-in từ trạng thái 'pending'!" });
+        .json({ message: "Can only check-in from 'pending' status!" });
     }
     if (status === "completed" && cart.status !== "checked-in") {
       return res
         .status(400)
-        .json({ message: "Chỉ có thể complete từ trạng thái 'checked-in'!" });
+        .json({ message: "Can only complete from 'checked-in' status!" });
     }
     if (status === "checked-out" && cart.status !== "completed") {
       return res
         .status(400)
-        .json({ message: "Chỉ có thể check-out từ trạng thái 'completed'!" });
+        .json({ message: "Can only check-out from 'completed' status!" });
     }
     if (status === "cancel" && cart.status !== "pending") {
       return res
         .status(400)
-        .json({ message: "Chỉ có thể cancel từ trạng thái 'pending'!" });
+        .json({ message: "Can only cancel from 'pending' status!" });
     }
 
     if (Skincare_staff !== undefined) cart.Skincare_staff = Skincare_staff;
     if (status) cart.status = status;
 
     await cart.save();
-    res.status(200).json({ message: "Cart đã được cập nhật!", cart });
+    res.status(200).json({ message: "Cart updated successfully!", cart });
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Lỗi cập nhật Cart!", error: error.message });
+      .json({ message: "Error updating cart!", error: error.message });
   }
 };
-// Cancel cart
-// exports.cancelCart = async (req, res) => {
-//   try {
-//     const { cartID } = req.params;
-//     const cart = await Cart.findOne({ CartID: cartID });
-//     if (!cart) {
-//       return res.status(404).json({ message: "Không tìm thấy Cart!" });
-//     }
-//     if (cart.status !== "pending") {
-//       return res.status(400).json({ message: "Chỉ có thể hủy đơn hàng ở trạng thái 'pending'!" });
-//     }
 
-//     cart.status = "cancel";
-//     await cart.save();
-//     res.status(200).json({ message: "Cart đã bị hủy!", cart });
-//   } catch (error) {
-//     res.status(500).json({ message: "Lỗi khi hủy Cart!", error });
-//   }
-// };
+// Get booked slots
 exports.getBookedSlots = async (req, res) => {
   try {
     const { date, staff } = req.query;
 
     if (!staff) {
-      return res.status(400).json({ message: "Thiếu tên nhân viên." });
+      return res.status(400).json({ message: "Staff name is required." });
     }
 
     const query = {
@@ -307,13 +290,13 @@ exports.getBookedSlots = async (req, res) => {
     }
 
     const bookedSlots = await Cart.find(query)
-      .select("startTime endTime bookingDate") // ❗ Thêm endTime vào select
+      .select("startTime endTime bookingDate") // ❗ Include endTime in select
       .sort({ bookingDate: 1, startTime: 1 })
       .lean();
 
     res.status(200).json(bookedSlots);
   } catch (error) {
-    console.error("Lỗi khi lấy slot:", error);
-    res.status(500).json({ message: "Lỗi khi lấy slot!", error });
+    console.error("Error retrieving slots:", error);
+    res.status(500).json({ message: "Error retrieving slots!", error });
   }
 };

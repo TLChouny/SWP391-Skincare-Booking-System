@@ -76,11 +76,13 @@ export type Rating = {
 
 
 export interface User {
-  _id: string;
   username: string;
   email: string;
-  role: string;
-  // Add other fields as needed
+  avatar: string;
+  phone: string;
+  gender: string;
+  address: string;
+  description: string;
 }
 
 // Define the shape of a Payment

@@ -29,17 +29,7 @@ import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Layout from "../../layout/Layout";
-
-// Define the shape of the user state
-interface User {
-  username: string;
-  email: string;
-  avatar: string;
-  phone: string;
-  gender: string;
-  address: string;
-  description: string;
-}
+import { User } from "../../types/booking";
 
 // Define the shape of the form values
 interface FormValues {
@@ -51,15 +41,18 @@ interface FormValues {
   description: string;
 }
 
-// const API_BASE_URL = "http://localhost:5000";
-const API_BASE_URL = "https://luluspa-production.up.railway.app";
+// Extend User interface to include role
+interface ExtendedUser extends User {
+  role?: string;
+}
 
-
+const API_BASE_URL = "http://localhost:5000";
+// const API_BASE_URL = "https://luluspa-production.up.railway.app";
 
 const SettingPage: React.FC = () => {
   const { token } = useAuth();
   const [form] = Form.useForm();
-  const [user, setUser] = useState<User>({
+  const [user, setUser] = useState<ExtendedUser>({
     username: "",
     email: "",
     avatar: "",
@@ -67,6 +60,7 @@ const SettingPage: React.FC = () => {
     gender: "",
     address: "",
     description: "",
+    role: "",
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [newPassword, setNewPassword] = useState<string>("");
@@ -100,7 +94,7 @@ const SettingPage: React.FC = () => {
         headers: { "x-auth-token": token },
       });
 
-      const userData: User = {
+      const userData: ExtendedUser = {
         username: response.data.username || "",
         email: response.data.email || "",
         avatar: response.data.avatar
@@ -110,6 +104,7 @@ const SettingPage: React.FC = () => {
         gender: response.data.gender || "",
         address: response.data.address || "",
         description: response.data.Description || "",
+        role: response.data.role || "", // Assuming role is returned from API
       };
 
       setUser(userData);
@@ -162,13 +157,27 @@ const SettingPage: React.FC = () => {
       return;
     }
 
+    // Check if username exceeds 50 characters
+    if (values.username.length > 50) {
+      toast.error("Username must not exceed 50 characters!");
+      return;
+    }
+
+    // Check if phone is provided and has exactly 10 digits
+    if (values.phone && !/^\d{10}$/.test(values.phone)) {
+      toast.error("Phone number must be exactly 10 digits!");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("username", values.username);
-    formData.append("email", values.email);
+    formData.append("email", values.email); // Email included but disabled in UI
     formData.append("phone_number", values.phone);
     formData.append("gender", values.gender);
     formData.append("address", values.address);
-    formData.append("description", values.description);
+    if (user.role === "skincare_staff") {
+      formData.append("description", values.description); // Only append description for skincare_staff
+    }
 
     try {
       await axios.put(`${API_BASE_URL}/api/auth/update-profile`, formData, {
@@ -178,8 +187,14 @@ const SettingPage: React.FC = () => {
         },
       });
 
-      toast.success("Account information updated successfully!");
-      fetchUserData();
+      // Show success message and prompt to log in again
+      toast.success(
+        "Account information updated successfully! Please log in again to see the changes.",
+        {
+          autoClose: 3000,
+          onClose: () => handleLogout(), // Trigger logout after toast closes
+        }
+      );
     } catch {
       toast.error("Failed to update account information!");
     }
@@ -196,6 +211,12 @@ const SettingPage: React.FC = () => {
       return;
     }
 
+    // Check if new password is at least 8 characters long
+    if (newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters long!");
+      return;
+    }
+
     try {
       await axios.post(
         `${API_BASE_URL}/api/auth/forgot-password`,
@@ -207,7 +228,14 @@ const SettingPage: React.FC = () => {
         { headers: { "x-auth-token": token } }
       );
 
-      toast.success("Password changed successfully!");
+      // Show success message and prompt to log in again
+      toast.success(
+        "Password changed successfully! Please log in again with your new password.",
+        {
+          autoClose: 3000,
+          onClose: () => handleLogout(), // Trigger logout after toast closes
+        }
+      );
       setOldPassword("");
       setNewPassword("");
     } catch {
@@ -225,9 +253,9 @@ const SettingPage: React.FC = () => {
   if (loading)
     return (
       <Spin
-        size='large'
+        size="large"
         style={{
-          display: "flex",
+          display: "flex", // Fixed the typo here
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
@@ -245,7 +273,8 @@ const SettingPage: React.FC = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-        }}>
+        }}
+      >
         <Card
           title={
             <h2
@@ -254,7 +283,8 @@ const SettingPage: React.FC = () => {
                 fontWeight: "bold",
                 textAlign: "center",
                 color: "#1a3c34",
-              }}>
+              }}
+            >
               Account Settings
             </h2>
           }
@@ -263,7 +293,8 @@ const SettingPage: React.FC = () => {
             maxWidth: 600,
             borderRadius: 12,
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-          }}>
+          }}
+        >
           {/* Avatar Section */}
           <div
             style={{
@@ -271,7 +302,8 @@ const SettingPage: React.FC = () => {
               flexDirection: "column",
               alignItems: "center",
               marginBottom: 24,
-            }}>
+            }}
+          >
             <Avatar
               size={100}
               src={user.avatar || `${API_BASE_URL}/default-avatar.png`}
@@ -279,20 +311,21 @@ const SettingPage: React.FC = () => {
             />
             <Upload showUploadList={false} beforeUpload={handleFileChange}>
               <Button
-                type='primary'
+                type="primary"
                 icon={<UploadOutlined />}
                 style={{
                   backgroundColor: "#1890ff",
                   borderColor: "#1890ff",
                   borderRadius: 8,
-                }}>
+                }}
+              >
                 Upload Avatar
               </Button>
             </Upload>
           </div>
 
           {/* Profile Information Section */}
-          <Form form={form} onFinish={handleUpdateUser} layout='vertical'>
+          <Form form={form} onFinish={handleUpdateUser} layout="vertical">
             <Row gutter={[16, 16]}>
               <Col span={24}>
                 <Form.Item
@@ -304,13 +337,15 @@ const SettingPage: React.FC = () => {
                       Username
                     </span>
                   }
-                  name='username'
+                  name="username"
                   rules={[
                     { required: true, message: "Please enter your username" },
-                  ]}>
+                  ]}
+                >
                   <Input
-                    placeholder='Enter your username'
+                    placeholder="Enter your username"
                     style={{ borderRadius: 8 }}
+                    maxLength={50} // Optional: Limit input length in UI
                   />
                 </Form.Item>
               </Col>
@@ -325,17 +360,19 @@ const SettingPage: React.FC = () => {
                       Email
                     </span>
                   }
-                  name='email'
+                  name="email"
                   rules={[
                     {
                       required: true,
                       type: "email",
                       message: "Please enter a valid email",
                     },
-                  ]}>
+                  ]}
+                >
                   <Input
-                    placeholder='Enter your email'
+                    placeholder="Enter your email"
                     style={{ borderRadius: 8 }}
+                    disabled
                   />
                 </Form.Item>
               </Col>
@@ -350,9 +387,10 @@ const SettingPage: React.FC = () => {
                       Phone
                     </span>
                   }
-                  name='phone'>
+                  name="phone"
+                >
                   <Input
-                    placeholder='Enter your phone number'
+                    placeholder="Enter your phone number"
                     style={{ borderRadius: 8 }}
                   />
                 </Form.Item>
@@ -368,13 +406,14 @@ const SettingPage: React.FC = () => {
                       Gender
                     </span>
                   }
-                  name='gender'>
+                  name="gender"
+                >
                   <Select
-                    placeholder='Select your gender'
-                    style={{ borderRadius: 8 }}>
-                    <Select.Option value='male'>Male</Select.Option>
-                    <Select.Option value='female'>Female</Select.Option>
-                    <Select.Option value='other'>Other</Select.Option>
+                    placeholder="Select your gender"
+                    style={{ borderRadius: 8 }}
+                  >
+                    <Select.Option value="male">Male</Select.Option>
+                    <Select.Option value="female">Female</Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
@@ -389,45 +428,50 @@ const SettingPage: React.FC = () => {
                       Address
                     </span>
                   }
-                  name='address'>
+                  name="address"
+                >
                   <Input
-                    placeholder='Enter your address'
+                    placeholder="Enter your address"
                     style={{ borderRadius: 8 }}
                   />
                 </Form.Item>
               </Col>
 
-              <Col span={24}>
-                <Form.Item
-                  label={
-                    <span>
-                      <FileTextOutlined
-                        style={{ marginRight: 8, color: "#1890ff" }}
-                      />
-                      Description
-                    </span>
-                  }
-                  name='description'>
-                  <Input.TextArea
-                    placeholder='Tell us about yourself'
-                    rows={4}
-                    style={{ borderRadius: 8 }}
-                  />
-                </Form.Item>
-              </Col>
+              {user.role === "skincare_staff" && (
+                <Col span={24}>
+                  <Form.Item
+                    label={
+                      <span>
+                        <FileTextOutlined
+                          style={{ marginRight: 8, color: "#1890ff" }}
+                        />
+                        Description
+                      </span>
+                    }
+                    name="description"
+                  >
+                    <Input.TextArea
+                      placeholder="Tell us about yourself"
+                      rows={4}
+                      style={{ borderRadius: 8 }}
+                    />
+                  </Form.Item>
+                </Col>
+              )}
 
               <Col span={24}>
                 <Form.Item>
                   <Button
-                    type='primary'
-                    htmlType='submit'
+                    type="primary"
+                    htmlType="submit"
                     block
                     style={{
                       backgroundColor: "#1890ff",
                       borderColor: "#1890ff",
                       borderRadius: 8,
                       height: 40,
-                    }}>
+                    }}
+                  >
                     Update Information
                   </Button>
                 </Form.Item>
@@ -439,7 +483,7 @@ const SettingPage: React.FC = () => {
           <Divider />
 
           {/* Change Password Section */}
-          <Space direction='vertical' style={{ width: "100%" }}>
+          <Space direction="vertical" style={{ width: "100%" }}>
             <div>
               <label
                 style={{
@@ -448,14 +492,15 @@ const SettingPage: React.FC = () => {
                   fontSize: 14,
                   fontWeight: 500,
                   marginBottom: 8,
-                }}>
+                }}
+              >
                 <LockOutlined style={{ marginRight: 8, color: "#1890ff" }} />
                 Old Password
               </label>
               <Input.Password
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
-                placeholder='Enter your old password'
+                placeholder="Enter your old password"
                 style={{ borderRadius: 8 }}
               />
             </div>
@@ -468,28 +513,31 @@ const SettingPage: React.FC = () => {
                   fontSize: 14,
                   fontWeight: 500,
                   marginBottom: 8,
-                }}>
+                }}
+              >
                 <LockOutlined style={{ marginRight: 8, color: "#1890ff" }} />
                 New Password
               </label>
               <Input.Password
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder='Enter your new password'
+                placeholder="Enter your new password"
                 style={{ borderRadius: 8 }}
               />
             </div>
 
             <Button
               onClick={handleChangePassword}
+              type="primary"
+              htmlType="submit"
               block
               style={{
-                backgroundColor: "#595959",
-                borderColor: "#595959",
-                color: "#fff",
+                backgroundColor: "#1890ff",
+                borderColor: "#1890ff",
                 borderRadius: 8,
                 height: 40,
-              }}>
+              }}
+            >
               Change Password
             </Button>
           </Space>
@@ -500,11 +548,12 @@ const SettingPage: React.FC = () => {
           {/* Logout Section */}
           <div style={{ textAlign: "center" }}>
             <Button
-              type='primary'
+              type="primary"
               danger
               onClick={handleLogout}
               icon={<LogoutOutlined />}
-              style={{ borderRadius: 8, height: 40 }}>
+              style={{ borderRadius: 8, height: 40 }}
+            >
               Logout
             </Button>
           </div>

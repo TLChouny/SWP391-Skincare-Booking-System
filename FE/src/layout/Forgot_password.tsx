@@ -1,6 +1,6 @@
 import React, { useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Modal, Input, Button, message, Spin } from "antd";
+import { Modal, Input, Button, Spin } from "antd";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -36,12 +36,18 @@ const ForgotPassword: React.FC = () => {
           ? "http://localhost:5000/api"
           : "https://luluspa-production.up.railway.app/api";
 
-      await axios.post(`${API_URL}/auth/forgot-password/send-otp`, { email });
+      const response = await axios.post(`${API_URL}/auth/forgot-password/send-otp`, { email });
 
-      toast.success("OTP has been sent, please check your email!");
-      setIsOtpModalOpen(true);
-    } catch (error) {
-      console.error("API Error:", error);
+      console.log("Send OTP Response:", response.data);
+
+      if (response.status === 200) {
+        toast.success(response.data.message || "OTP has been sent, please check your email!");
+        setIsOtpModalOpen(true);
+      } else {
+        toast.error(response.data.message || "Failed to send OTP!");
+      }
+    } catch (error: any) {
+      console.error("API Error (Send OTP):", error.response?.data || error.message);
       toast.warn("Unable to send OTP, but you can still enter the code!");
       setIsOtpModalOpen(true);
     } finally {
@@ -49,26 +55,56 @@ const ForgotPassword: React.FC = () => {
     }
   };
 
-  const handleOtpSubmit = () => {
-    if (otp.length === 6) {
-      message.success("OTP verified successfully!");
-      setIsOtpModalOpen(false);
-      setIsPasswordModalOpen(true);
-    } else {
-      message.error("OTP must be 6 digits!");
+  const handleOtpSubmit = async () => {
+    if (otp.length !== 6) {
+      toast.error("OTP must be 6 digits!");
+      return;
+    }
+
+    console.log("Data sent to BE:", { email, otp });
+
+    setLoading(true);
+
+    try {
+      const API_URL =
+        window.location.hostname === "localhost"
+          ? "http://localhost:5000/api"
+          : "https://luluspa-production.up.railway.app/api";
+
+      const response = await axios.post(`${API_URL}/auth/verify-otp`, {
+        email,
+        otp,
+      });
+
+      console.log("Verify OTP Response:", response.data);
+
+      if (response.status === 200) {
+        toast.success(response.data.message || "OTP verified successfully!");
+        setIsOtpModalOpen(false);
+        setIsPasswordModalOpen(true);
+      } else {
+        toast.error(response.data.message || "Invalid OTP!");
+      }
+    } catch (error: any) {
+      console.error("API Error (Verify OTP):", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Error verifying OTP!");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handlePasswordSubmit = async () => {
     if (newPassword.length < 8) {
-      message.error("Password must be at least 8 characters long!");
+      toast.error("Password must be at least 8 characters long!");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      message.error("Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
+
+    setLoading(true); // Thêm loading để cải thiện UX
 
     try {
       const API_URL =
@@ -83,16 +119,25 @@ const ForgotPassword: React.FC = () => {
         confirm_password: confirmPassword,
       });
 
-      message.success(response.data.msg || "Password reset successfully!");
+      console.log("Reset Password Response:", response.data);
 
-      setIsPasswordModalOpen(false);
-      setNewPassword("");
-      setConfirmPassword("");
-      setOtp("");
-      navigate("/login");
+      if (response.status === 200) {
+        toast.success(response.data.message || "Password updated successfully!"); // Đảm bảo thông báo hiển thị
+        setIsPasswordModalOpen(false);
+        setNewPassword("");
+        setConfirmPassword("");
+        setOtp("");
+        setTimeout(() => {
+          navigate("/login"); // Chuyển hướng sau khi thông báo hiển thị
+        }, 1500); // Đợi 1.5 giây để người dùng thấy thông báo
+      } else {
+        toast.error(response.data.message || "Failed to reset password!");
+      }
     } catch (error: any) {
-      console.error("API Error:", error.response?.data || error.message);
-      message.error(error.response?.data?.msg || "Error resetting password!");
+      console.error("API Error (Reset Password):", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Error resetting password!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -166,7 +211,12 @@ const ForgotPassword: React.FC = () => {
           >
             Cancel
           </Button>,
-          <Button key="submit" type="primary" onClick={handleOtpSubmit}>
+          <Button
+            key="submit"
+            type="primary"
+            onClick={handleOtpSubmit}
+            loading={loading}
+          >
             Verify
           </Button>,
         ]}
@@ -202,7 +252,12 @@ const ForgotPassword: React.FC = () => {
           >
             Cancel
           </Button>,
-          <Button key="submit" type="primary" onClick={handlePasswordSubmit}>
+          <Button
+            key="submit"
+            type="primary"
+            onClick={handlePasswordSubmit}
+            loading={loading} // Thêm loading vào nút Submit
+          >
             Submit
           </Button>,
         ]}
