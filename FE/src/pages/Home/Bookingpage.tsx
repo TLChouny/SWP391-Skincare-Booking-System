@@ -34,7 +34,9 @@ const EnhancedBookingPage: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [loadingRatings, setLoadingRatings] = useState<boolean>(true);
-  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<
+    { startTime: string; endTime: string }[]
+  >([]);
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
   const [filterRating, setFilterRating] = useState<string>("All");
   const reviewsPerPage = 3;
@@ -55,7 +57,10 @@ const EnhancedBookingPage: React.FC = () => {
 
   useEffect(() => {
     const fetchBookedSlots = async () => {
-      if (!selectedDate || !selectedTherapist) return;
+      if (!selectedDate || !selectedTherapist) {
+        setBookedSlots([]);
+        return;
+      }
 
       try {
         const response = await fetch(
@@ -69,7 +74,32 @@ const EnhancedBookingPage: React.FC = () => {
         }
 
         const data = await response.json();
-        setBookedSlots(data || []);
+        console.log("Booked Slots Data:", data); // Log dữ liệu từ API
+
+        // Kiểm tra và lọc dữ liệu hợp lệ
+        const validSlots = (data || []).filter(
+          (slot: any) =>
+            slot.startTime &&
+            slot.endTime &&
+            slot.startTime.match(/^\d{2}:\d{2}$/) &&
+            slot.endTime.match(/^\d{2}:\d{2}$/)
+        );
+
+        if (validSlots.length !== data.length) {
+          console.warn(
+            "Some booked slots have invalid format:",
+            data.filter(
+              (slot: any) =>
+                !slot.startTime ||
+                !slot.endTime ||
+                !slot.startTime.match(/^\d{2}:\d{2}$/) ||
+                !slot.endTime.match(/^\d{2}:\d{2}$/)
+            )
+          );
+          toast.warn("Some booked slots could not be loaded due to invalid format.");
+        }
+
+        setBookedSlots(validSlots);
       } catch (error) {
         console.error("Error fetching booked slots:", error);
         setBookedSlots([]);
@@ -190,11 +220,26 @@ const EnhancedBookingPage: React.FC = () => {
       .padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}`;
   };
 
-  const isTimeOverlap = (slot: string, start: string, end: string): boolean => {
-    const toMinutes = (time: string) => {
-      const [h, m] = time.split(":").map(Number);
-      return h * 60 + m;
-    };
+  const toMinutes = (time: string | undefined): number => {
+    if (!time || !time.match(/^\d{2}:\d{2}$/)) {
+      console.warn(`Invalid time format: ${time}, defaulting to 0 minutes`);
+      return 0; // Trả về 0 nếu thời gian không hợp lệ
+    }
+
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  const isTimeOverlap = (
+    slot: string,
+    start: string | undefined,
+    end: string | undefined
+  ): boolean => {
+    // Kiểm tra nếu start hoặc end không hợp lệ
+    if (!start || !end || !start.match(/^\d{2}:\d{2}$/) || !end.match(/^\d{2}:\d{2}$/)) {
+      console.warn(`Invalid startTime (${start}) or endTime (${end})`);
+      return false; // Bỏ qua slot này nếu thời gian không hợp lệ
+    }
 
     const slotTime = toMinutes(slot);
     const startTime = toMinutes(start);
@@ -227,9 +272,9 @@ const EnhancedBookingPage: React.FC = () => {
           }
         }
 
-        const isOverlapping = bookedSlots.some((b) => {
-          return isTimeOverlap(slot, b.startTime, b.endTime);
-        });
+        const isOverlapping = bookedSlots.some((b) =>
+          isTimeOverlap(slot, b.startTime, b.endTime)
+        );
 
         if (!isOverlapping) {
           slots.push(slot);
