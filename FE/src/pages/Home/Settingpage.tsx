@@ -349,6 +349,7 @@ const SettingPage: React.FC = () => {
                     placeholder="Enter your username"
                     style={{ borderRadius: 8 }}
                     maxLength={50} // Optional: Limit input length in UI
+                    disabled
                   />
                 </Form.Item>
               </Col>
@@ -414,6 +415,7 @@ const SettingPage: React.FC = () => {
                   <Select
                     placeholder="Select your gender"
                     style={{ borderRadius: 8 }}
+                    disabled
                   >
                     <Select.Option value="male">Male</Select.Option>
                     <Select.Option value="female">Female</Select.Option>
