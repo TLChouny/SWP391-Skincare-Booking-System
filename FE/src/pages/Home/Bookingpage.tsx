@@ -25,9 +25,7 @@ const EnhancedBookingPage: React.FC = () => {
   const [notes, setNotes] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(
-    null
-  );
+  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [paymentUrl, setPaymentUrl] = useState<string>("");
   const [qrCode, setQrCode] = useState<string>("");
@@ -74,9 +72,8 @@ const EnhancedBookingPage: React.FC = () => {
         }
 
         const data = await response.json();
-        console.log("Booked Slots Data:", data); // Log dữ liệu từ API
+        console.log("Booked Slots Data:", data);
 
-        // Kiểm tra và lọc dữ liệu hợp lệ
         const validSlots = (data || []).filter(
           (slot: any) =>
             slot.startTime &&
@@ -171,6 +168,22 @@ const EnhancedBookingPage: React.FC = () => {
     return true;
   };
 
+  const calculateDiscountPercentage = (
+    price?: number | { $numberDecimal: string },
+    discountedPrice?: number | null | undefined
+  ): number => {
+    let priceValue = 0;
+    if (typeof price === "object" && price?.$numberDecimal) {
+      priceValue = Number.parseFloat(price.$numberDecimal);
+    } else if (typeof price === "number") {
+      priceValue = price;
+    }
+
+    if (isNaN(priceValue) || priceValue === 0 || discountedPrice == null) return 0;
+
+    return Math.round(((priceValue - discountedPrice) / priceValue) * 100);
+  };
+
   const formatPriceDisplay = (
     price?: number | { $numberDecimal: string },
     discountedPrice?: number | null | undefined
@@ -223,7 +236,7 @@ const EnhancedBookingPage: React.FC = () => {
   const toMinutes = (time: string | undefined): number => {
     if (!time || !time.match(/^\d{2}:\d{2}$/)) {
       console.warn(`Invalid time format: ${time}, defaulting to 0 minutes`);
-      return 0; // Trả về 0 nếu thời gian không hợp lệ
+      return 0;
     }
 
     const [h, m] = time.split(":").map(Number);
@@ -235,17 +248,15 @@ const EnhancedBookingPage: React.FC = () => {
     start: string | undefined,
     end: string | undefined
   ): boolean => {
-    // Kiểm tra nếu start hoặc end không hợp lệ
     if (!start || !end || !start.match(/^\d{2}:\d{2}$/) || !end.match(/^\d{2}:\d{2}$/)) {
       console.warn(`Invalid startTime (${start}) or endTime (${end})`);
-      return false; // Bỏ qua slot này nếu thời gian không hợp lệ
+      return false;
     }
 
     const slotTime = toMinutes(slot);
     const startTime = toMinutes(start);
     const endTime = toMinutes(end);
 
-    // Nếu slot nằm trong khoảng [start, end)
     return slotTime >= startTime && slotTime < endTime;
   };
 
@@ -652,7 +663,7 @@ const EnhancedBookingPage: React.FC = () => {
                 </p>
               </div>
             ) : service ? (
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
                 <motion.img
                   whileHover={{ scale: 1.05 }}
                   src={service.image || "/default-service.jpg"}
@@ -662,6 +673,17 @@ const EnhancedBookingPage: React.FC = () => {
                     (e.target as HTMLImageElement).src = "/default-service.jpg";
                   }}
                 />
+                {/* Ô tròn đỏ hiển thị % discount */}
+                {service.discountedPrice != null && (
+                  <div className="absolute top-4 right-4 z-20 flex items-center justify-center">
+                    <div className="bg-red-500 text-white font-bold rounded-full h-16 w-16 flex items-center justify-center transform rotate-12 shadow-lg">
+                      <span className="text-lg">
+                        {calculateDiscountPercentage(service.price, service.discountedPrice)}%
+                      </span>
+                      <span className="text-xs block -mt-1">OFF</span>
+                    </div>
+                  </div>
+                )}
                 <div className="p-6">
                   <h3 className="text-2xl font-bold text-gray-800 mb-4">
                     {service.name}
@@ -673,10 +695,7 @@ const EnhancedBookingPage: React.FC = () => {
                     <div>
                       <p className="text-xl font-semibold text-yellow-500">
                         Price:{" "}
-                        {formatPriceDisplay(
-                          service.price,
-                          service.discountedPrice
-                        )}
+                        {formatPriceDisplay(service.price, service.discountedPrice)}
                       </p>
                       <p className="text-lg text-gray-600">
                         Duration: {service.duration || "N/A"} minutes
@@ -709,7 +728,7 @@ const EnhancedBookingPage: React.FC = () => {
                   value={filterRating}
                   onChange={(e) => {
                     setFilterRating(e.target.value);
-                    setCurrentReviewPage(1); // Reset to page 1 when filter changes
+                    setCurrentReviewPage(1);
                   }}
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 >
