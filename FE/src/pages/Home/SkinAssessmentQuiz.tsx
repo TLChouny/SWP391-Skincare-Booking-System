@@ -125,6 +125,7 @@ const SkinAssessmentQuiz: React.FC = () => {
           transition={{ duration: 0.8 }}
         >
           Skin Assessment Test
+          <div className='mt-2 h-1 w-24 bg-gradient-to-r from-yellow-600 to-white-400 rounded mx-auto'></div>
         </motion.h1>
 
         <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex-1 flex flex-col">

@@ -179,13 +179,18 @@ const Header: React.FC = () => {
               </Link>
             </li>
             <li>
+              <Link to="/contact" className="hover:text-yellow-300 transition duration-300">
+              Contact
+              </Link>
+            </li>
+            {/* <li>
               <button
                 onClick={() => setShowModal(true)}
                 className="hover:text-yellow-300 transition duration-300 text-base"
               >
                 Contact
               </button>
-            </li>
+            </li> */}
           </ul>
         </nav>
 

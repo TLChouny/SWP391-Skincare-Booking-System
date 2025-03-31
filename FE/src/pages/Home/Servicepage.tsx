@@ -192,6 +192,7 @@ const ServicePage: React.FC = () => {
               variants={cardVariants}
             >
               Skincare Combo Packages
+              <div className='mt-2 h-1 w-24 bg-gradient-to-r from-yellow-600 to-white-400 rounded mx-auto'></div>
             </motion.h2>
           </div>
 
