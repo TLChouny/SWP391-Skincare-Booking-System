@@ -28,11 +28,6 @@ function ManageRating() {
     fetchRatings();
   }, []);
 
-  // Callback to refresh ratings after an update
-  const onUpdateSuccess = () => {
-    fetchRatings();
-  };
-
   // Filter ratings based on the search term and rating filter
   const filteredRatings = ratings.filter((item) => {
     const matchesName = item.serviceName
@@ -55,7 +50,6 @@ function ManageRating() {
     { title: "User", dataIndex: "createName", key: "createName" },
   ];
 
-  // Updated form items: note the field names match the table/API (serviceRating, serviceContent)
   const formItems = (editingId: string | null) => (
     <>
       <Form.Item
@@ -99,9 +93,8 @@ function ManageRating() {
         dataSource={filteredRatings}
         formItems={formItems}
         apiEndpoint="/ratings"
-        mode="full"
+        mode="readonly"
         filterControls={filterControls}
-        onUpdateSuccess={onUpdateSuccess}
       />
     </div>
   );
