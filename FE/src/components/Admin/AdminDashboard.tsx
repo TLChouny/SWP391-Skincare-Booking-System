@@ -9,6 +9,7 @@ import {
   QuestionOutlined,
   ProductOutlined,
   MoneyCollectOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
@@ -45,6 +46,7 @@ const items: MenuItem[] = [
   getItem("Payment", "/admin/payment-management", <QrcodeOutlined />),
   getItem("Rating", "/admin/rating-management", <StarOutlined />),
   getItem("Question", "/admin/question-management", <QuestionOutlined />),
+  getItem("Setting", "/admin/settings", <SettingOutlined />),
 ];
 
 const AdminDashboard: React.FC = () => {

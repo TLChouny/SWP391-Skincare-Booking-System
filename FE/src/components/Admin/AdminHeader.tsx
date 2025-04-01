@@ -37,17 +37,17 @@ const AdminHeader: React.FC = () => {
   };
 
   const userMenuItems: MenuProps["items"] = [
-    {
-      key: "settings",
-      icon: <SettingOutlined className="text-lg" />,
-      label: <span className="text-gray-700">Settings</span>,
-      className: "hover:bg-yellow-50 py-2 px-4",
-      onClick: () => navigate("/settings"),
-    },
-    {
-      type: "divider",
-      className: "my-1",
-    },
+    // {
+    //   key: "settings",
+    //   icon: <SettingOutlined className="text-lg" />,
+    //   label: <span className="text-gray-700">Settings</span>,
+    //   className: "hover:bg-yellow-50 py-2 px-4",
+    //   onClick: () => navigate("/settings"),
+    // },
+    // {
+    //   type: "divider",
+    //   className: "my-1",
+    // },
     {
       key: "logout",
       icon: <LogoutOutlined className="text-lg text-red-600" />,
@@ -62,13 +62,13 @@ const AdminHeader: React.FC = () => {
       className="bg-[#dad5c9] py-2 shadow-lg sticky top-0 z-50 flex items-center justify-between px-20"
     >
       <div className="flex items-center space-x-3">
-        <Link to="/">
+        {/* <Link to="/"> */}
           <img
             src={logo || "/placeholder.svg"}
             alt="LuLuSpa Logo"
             className="w-12 h-12 rounded-full"
           />
-        </Link>
+        {/* </Link> */}
         <span className="text-xl font-semibold text-gray-800">Welcome</span>
       </div>
 

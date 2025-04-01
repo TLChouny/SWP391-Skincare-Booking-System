@@ -4,6 +4,7 @@ import {
   // ScheduleOutlined,
   CheckOutlined,
   LogoutOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu } from "antd";
@@ -37,6 +38,7 @@ const items: MenuItem[] = [
   //   <ScheduleOutlined />
   // ),
   getItem("Check Out", "/staff/check-out", <LogoutOutlined />),
+  getItem("Setting", "/staff/settings", <SettingOutlined />),
   // getItem(
   //   "Appointment Schedules",
   //   "/staff/appointment-schedules",

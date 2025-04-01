@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   // HistoryOutlined,
   ScheduleOutlined,
+  SettingOutlined,
   // CustomerServiceOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
@@ -33,6 +34,7 @@ const items: MenuItem[] = [
     "/therapist/list-of-assigned",
     <ScheduleOutlined />
   ),
+  getItem("Setting", "/therapist/settings", <SettingOutlined />),
 
   // getItem(
   //   "Perform Service",
@@ -54,13 +56,14 @@ const TherapistManagement: React.FC = () => {
       <AdminHeader />
       <Layout style={{ marginTop: "10px" }}>
         <Sider
-          className='mt-5'
-          theme='light'
+          className="mt-5"
+          theme="light"
           collapsible
           collapsed={collapsed}
-          onCollapse={(value) => setCollapsed(value)}>
-          <div className='demo-logo-vertical' />
-          <Menu defaultSelectedKeys={["1"]} mode='inline' items={items} />
+          onCollapse={(value) => setCollapsed(value)}
+        >
+          <div className="demo-logo-vertical" />
+          <Menu defaultSelectedKeys={["1"]} mode="inline" items={items} />
         </Sider>
         <Layout>
           <Content style={{ margin: " 16px" }}>
