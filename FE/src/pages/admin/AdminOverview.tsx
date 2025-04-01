@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Row, Col, Statistic, Spin, Table } from "antd";
+import { Card, Row, Col, Statistic, Spin, Table, Tag } from "antd";
 import {
   BarChart,
   Bar,
@@ -16,6 +16,7 @@ import {
   DollarOutlined,
   StarOutlined,
   FireOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import {
   calculateTotalBookings,
@@ -32,7 +33,7 @@ import {
   getProducts,
 } from "../../api/api";
 import { useAuth } from "../../context/AuthContext";
-import { Booking, Service } from "../../types/booking";
+import { Booking } from "../../types/booking";
 
 interface TopService {
   serviceName: string;
@@ -50,6 +51,7 @@ const AdminOverview: React.FC = () => {
     totalBookingsCheckedOutAndReviewed: 0,
   });
   const [topServices, setTopServices] = useState<TopService[]>([]);
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,44 +61,42 @@ const AdminOverview: React.FC = () => {
       }
 
       try {
-        const [
-          userResponse,
-          cartsResponse,
-          paymentsResponse,
-          ratingsResponse,
-          servicesResponse,
-        ] = await Promise.all([
-          getUsers(token),
-          getCarts(token),
-          getPayments(token),
-          getRatings(token),
-          getProducts(token),
-        ]);
+        const [userResponse, cartsResponse, paymentsResponse, ratingsResponse] =
+          await Promise.all([
+            getUsers(token),
+            getCarts(token),
+            getPayments(token),
+            getRatings(token),
+            getProducts(token),
+          ]);
 
-        const users = Array.isArray(userResponse.data) ? userResponse.data : [];
         const carts = Array.isArray(cartsResponse.data.carts)
           ? cartsResponse.data.carts
           : Array.isArray(cartsResponse.data)
           ? cartsResponse.data
           : [];
-        const payments = Array.isArray(paymentsResponse.data.data)
-          ? paymentsResponse.data.data
-          : [];
-        const ratings = Array.isArray(ratingsResponse.data)
-          ? ratingsResponse.data
-          : [];
-        const services = Array.isArray(servicesResponse.data)
-          ? servicesResponse.data
-          : [];
 
-        const totalUsers = calculateTotalUsers(users);
-        const totalBookings = calculateTotalBookings(carts);
-        const totalPayments = calculateTotalSuccessfulPayments(payments);
-        const avgRating = calculateOverallAverageRating(ratings);
-        const totalBookingsCheckedOutAndReviewed =
-          calculateTotalBookingsByStatus(carts, ["checked-out", "reviewed"]);
+        // Chuẩn hóa dữ liệu
+        const normalizedCarts = carts.map((cart: any) => ({
+          ...cart,
+          CartID: cart.CartID || cart.BookingID || cart._id,
+          startTime: cart.startTime || cart.start_time || null,
+          endTime: cart.endTime || cart.end_time || null,
+          bookingDate: cart.bookingDate || cart.createdAt || null,
+          totalPrice: cart.totalPrice || cart.originalPrice || 0,
+          Skincare_staff:
+            cart.Skincare_staff || cart.selectedTherapist?.name || null,
+        }));
 
-        const filteredCarts = carts.filter((cart: Booking) =>
+        const sortedCarts = [...normalizedCarts].sort((a, b) => {
+          const dateA = a.bookingDate ? new Date(a.bookingDate).getTime() : 0;
+          const dateB = b.bookingDate ? new Date(b.bookingDate).getTime() : 0;
+          return dateB - dateA;
+        });
+
+        setRecentBookings(sortedCarts);
+
+        const filteredCarts = normalizedCarts.filter((cart: Booking) =>
           ["checked-out", "reviewed"].includes(cart.status)
         );
 
@@ -119,11 +119,16 @@ const AdminOverview: React.FC = () => {
           .slice(0, 5);
 
         setStats({
-          totalUsers,
-          totalBookings,
-          totalPayments,
-          avgRating,
-          totalBookingsCheckedOutAndReviewed,
+          totalUsers: calculateTotalUsers(userResponse.data),
+          totalBookings: calculateTotalBookings(normalizedCarts),
+          totalPayments: calculateTotalSuccessfulPayments(
+            paymentsResponse.data.data || []
+          ),
+          avgRating: calculateOverallAverageRating(ratingsResponse.data),
+          totalBookingsCheckedOutAndReviewed: calculateTotalBookingsByStatus(
+            normalizedCarts,
+            ["checked-out", "reviewed"]
+          ),
         });
         setTopServices(topServicesData);
       } catch (error) {
@@ -164,9 +169,155 @@ const AdminOverview: React.FC = () => {
     },
   ];
 
+  const formatPriceDisplay = (
+    originalPrice: number,
+    discountedPrice?: number | null
+  ) => {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span
+          style={{
+            textDecoration: discountedPrice != null ? "line-through" : "none",
+            color: discountedPrice != null ? "#6b7280" : "#1f2937",
+            fontWeight: 500,
+          }}>
+          {originalPrice.toLocaleString("vi-VN")} VND
+        </span>
+        {discountedPrice != null && (
+          <span style={{ color: "#16a34a", fontWeight: 600 }}>
+            {discountedPrice.toLocaleString("vi-VN")} VND
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  const formatDateTime = (dateInput: string | number | undefined) => {
+    if (!dateInput) return "N/A";
+    const date =
+      typeof dateInput === "number" ? new Date(dateInput) : new Date(dateInput);
+    if (isNaN(date.getTime())) {
+      if (typeof dateInput === "string") {
+        // Xử lý định dạng ngày đầy đủ
+        const dateOnlyParts = dateInput.match(/(\d{4})-(\d{2})-(\d{2})/);
+        if (dateOnlyParts) {
+          const [_, year, month, day] = dateOnlyParts;
+          return `${day}/${month}/${year}`; // Chỉ hiển thị ngày, không kèm giờ
+        }
+      }
+      return "N/A";
+    }
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`; // Chỉ hiển thị ngày, không kèm giờ
+  };
+
+  const formatTimeOnly = (
+    timeInput: string | undefined,
+    dateInput?: string | number
+  ) => {
+    if (!timeInput) return "N/A";
+
+    // Kiểm tra định dạng giờ (HH:mm)
+    const timeParts = timeInput.match(/(\d{2}):(\d{2})/);
+    if (timeParts) {
+      const [_, hours, minutes] = timeParts;
+      // Nếu có ngày đi kèm, kết hợp ngày và giờ
+      if (dateInput) {
+        const date =
+          typeof dateInput === "number"
+            ? new Date(dateInput)
+            : new Date(dateInput);
+        if (!isNaN(date.getTime())) {
+          const day = String(date.getDate()).padStart(2, "0");
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const year = date.getFullYear();
+          return `${day}/${month}/${year} ${hours}:${minutes}`;
+        }
+      }
+      // Nếu không có ngày, chỉ hiển thị giờ
+      return `${hours}:${minutes}`;
+    }
+
+    return "N/A";
+  };
+
+  const recentBookingColumns = [
+    {
+      title: "Booking ID",
+      dataIndex: "BookingID",
+      key: "BookingID",
+      render: (text: string) => text || "N/A",
+    },
+    {
+      title: "Service Name",
+      dataIndex: "serviceName",
+      key: "serviceName",
+      render: (text: string) => (
+        <span style={{ fontWeight: 500 }}>{text || "N/A"}</span>
+      ),
+    },
+    {
+      title: "Customer Name",
+      dataIndex: "customerName",
+      key: "customerName",
+      render: (text: string) => text || "N/A",
+    },
+    {
+      title: "Therapist Name",
+      dataIndex: "Skincare_staff",
+      key: "Skincare_staff",
+      render: (text: string) => text || "Not assigned",
+    },
+    {
+      title: "Price",
+      key: "price",
+      render: (record: Booking) =>
+        formatPriceDisplay(record.totalPrice || 0, record.discountedPrice),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status: string) => {
+        let color = "default";
+        if (status === "pending") color = "orange";
+        if (status === "checked-in") color = "blue";
+        if (status === "completed") color = "green";
+        if (status === "checked-out") color = "purple";
+        if (status === "cancel") color = "red";
+        if (status === "reviewed") color = "volcano";
+        return <Tag color={color}>{status ? status.toUpperCase() : "N/A"}</Tag>;
+      },
+    },
+    {
+      title: "Booking Time",
+      key: "bookingTime",
+      render: (record: Booking) => (
+        <div>
+          <div>
+            <strong>Date:</strong> {formatDateTime(record.bookingDate)}
+          </div>
+          <div>
+            <strong>Start:</strong> {formatTimeOnly(record.startTime)}
+          </div>
+          <div>
+            <strong>End:</strong> {formatTimeOnly(record.endTime)}
+          </div>
+        </div>
+      ),
+      sorter: (a: Booking, b: Booking) => {
+        const dateA = a.bookingDate ? new Date(a.bookingDate).getTime() : 0;
+        const dateB = b.bookingDate ? new Date(b.bookingDate).getTime() : 0;
+        return dateA - dateB;
+      },
+    },
+  ];
+
   const cardStyle = {
     height: "100%",
-    width: "31.5vh",
+    width: "30vh",
     minWidth: 0,
     display: "flex",
     flexDirection: "column" as const,
@@ -180,7 +331,6 @@ const AdminOverview: React.FC = () => {
         <Spin size='large' className='flex justify-center mt-8' />
       ) : (
         <>
-          {/* Thống kê trên một hàng ngang với kích thước bằng nhau */}
           <Row gutter={[16, 16]} style={{ flexWrap: "nowrap" }}>
             <Col span={4.8}>
               <Card style={cardStyle}>
@@ -236,7 +386,6 @@ const AdminOverview: React.FC = () => {
             </Col>
           </Row>
 
-          {/* Biểu đồ và bảng như bố cục ban đầu */}
           <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
             <Col xs={24} lg={12}>
               <Card title='Overview Statistics' style={{ height: "100%" }}>
@@ -270,6 +419,30 @@ const AdminOverview: React.FC = () => {
                   dataSource={topServices}
                   rowKey='serviceName'
                   pagination={false}
+                  size='middle'
+                  bordered
+                />
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Bảng booking gần đây */}
+          <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
+            <Col span={24}>
+              <Card
+                title={
+                  <>
+                    <ClockCircleOutlined style={{ marginRight: 8 }} />
+                    Recent Bookings
+                  </>
+                }>
+                <Table
+                  columns={recentBookingColumns}
+                  dataSource={recentBookings}
+                  rowKey={(record) =>
+                    record.BookingID || Math.random().toString()
+                  }
+                  pagination={{ pageSize: 5 }}
                   size='middle'
                   bordered
                 />

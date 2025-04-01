@@ -111,19 +111,13 @@ Push: git push origin feature/your-feature.
 Submit a Pull Request.
 📜 License
 This project is licensed under the MIT License - see  for details.
+📸 Screenshots (Optional)
+Add screenshots of your app here for visual appeal.
+Homepage:
+![image](https://github.com/user-attachments/assets/ee464a49-7210-4776-b3a4-b6a51ce0a714)
+
+Booking:
+![image](https://github.com/user-attachments/assets/1ac66255-e098-4352-a935-e809ef4c8c5c)
+
 
 Happy coding! 🚀
-
-### Điểm nổi bật:
-1. **Icon Emoji**: Sử dụng các biểu tượng như 🌟, 🚀, 📋 để làm nội dung sinh động hơn.
-2. **Badge Tech**: Thêm badge từ Shields.io để hiển thị công nghệ một cách chuyên nghiệp.
-3. **Chi tiết hơn**: Bổ sung phần cấu trúc thư mục, hướng dẫn test, và cách đóng góp rõ ràng.
-4. **Dễ đọc**: Sử dụng tiêu đề, danh sách, và code block để phân chia nội dung.
-
-### Cách sử dụng:
-- Sao chép toàn bộ nội dung trên.
-- Dán vào file `README.md` trong dự án của bạn.
-- Thay đổi `https://github.com/your-username/SWP391-Skincare-Booking-System.git` thành URL repository thực tế của bạn.
-- Nếu bạn có thêm file cấu hình hoặc tính năng cụ thể (như test script), hãy cập nhật thêm vào README.
-
-Nếu bạn muốn thêm nội dung cụ thể hơn (ví dụ: API endpoints, screenshots), hãy cho tôi biết để tôi chỉnh sửa thêm nhé! Chúc dự án của bạn thành công! 🌟
