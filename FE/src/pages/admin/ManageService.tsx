@@ -311,9 +311,10 @@ function ManageService() {
     </div>
   );
 
-  const assignedVoucherIds = products
-    .find((p) => p._id === selectedProductId)
-    ?.vouchers?.map((v: { _id: string }) => v._id);
+  const assignedVoucherIds =
+    products
+      .find((p) => p._id === selectedProductId)
+      ?.vouchers?.map((v: { _id: string }) => v._id) || [];
 
   return (
     <div>
