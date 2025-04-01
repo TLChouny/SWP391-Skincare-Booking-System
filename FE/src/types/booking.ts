@@ -34,6 +34,7 @@ export type Booking = {
   customerEmail: string;
   notes?: string;
   bookingDate: string;
+  duration: number;
   startTime: string;
   endTime?: string;
   selectedTherapist?: Therapist | null; // From EnhancedBookingPage

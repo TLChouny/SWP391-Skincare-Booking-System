@@ -302,10 +302,10 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout }) => {
                 const style = tab.status === "all"
                   ? { icon: "📋", color: "#374151", backgroundColor: "#f3f4f6" }
                   : statusStyles[tab.status as keyof typeof statusStyles] || {
-                      icon: "❓",
-                      color: "#6b7280",
-                      backgroundColor: "#f3f4f6",
-                    };
+                    icon: "❓",
+                    color: "#6b7280",
+                    backgroundColor: "#f3f4f6",
+                  };
 
                 return (
                   <motion.div
@@ -384,7 +384,7 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout }) => {
                       >
                         <h4 style={{ fontSize: "1.125rem", fontWeight: 600, color: "#1f2937" }}>{item.serviceName}</h4>
                         <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>
-                          <span style={{ fontWeight: 500 }}>Booking Date:</span> {item.bookingDate} - {item.startTime}
+                          <span style={{ fontWeight: 500 }}>Booking Date:</span> {item.bookingDate} | {item.startTime} - {item.endTime}
                         </p>
                         <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>
                           <span style={{ fontWeight: 500 }}>Customer:</span> {item.customerName}
@@ -394,6 +394,9 @@ const CartComponent: React.FC<CartComponentProps> = ({ handleCheckout }) => {
                             <span style={{ fontWeight: 500 }}>Therapist:</span> {item.Skincare_staff}
                           </p>
                         )}
+                        <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+                          <span style={{ fontWeight: 500 }}>Duration:</span> {item.duration} minutes
+                        </p>
                         <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>
                           <span style={{ fontWeight: 500 }}>Total:</span>{" "}
                           {formatPriceDisplay(item.originalPrice || item.totalPrice || 0, item.discountedPrice)}
