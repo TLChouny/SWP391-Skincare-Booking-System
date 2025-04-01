@@ -519,7 +519,7 @@ const EnhancedBookingPage: React.FC = () => {
 
     setCustomerName("");
     setCustomerPhone("");
-    setCustomerEmail(user?.email || user?.username || "");
+    setCustomerEmail("");
     setNotes("");
     setSelectedDate("");
     setSelectedSlot(null);

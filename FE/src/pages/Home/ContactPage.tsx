@@ -260,12 +260,12 @@ const ContactPage = () => {
                   className="grid grid-cols-1 md:grid-cols-2 gap-6"
                 >
                   {[
-                    { day: "Monday", hours: "9:00 AM - 17:30 PM" },
-                    { day: "Tuesday", hours: "9:00 AM - 17:30 PM" },
-                    { day: "Wednesday", hours: "9:00 AM - 17:30 PM" },
-                    { day: "Thursday", hours: "9:00 AM - 17:30 PM" },
-                    { day: "Friday", hours: "9:00 AM - 17:30 PM" },
-                    { day: "Saturday", hours: "9:00 AM - 17:30 PM" },
+                    { day: "Monday", hours: "9:00 AM - 19:00 PM" },
+                    { day: "Tuesday", hours: "9:00 AM - 19:00 PM" },
+                    { day: "Wednesday", hours: "9:00 AM - 19:00 PM" },
+                    { day: "Thursday", hours: "9:00 AM - 19:00 PM" },
+                    { day: "Friday", hours: "9:00 AM - 19:00 PM" },
+                    { day: "Saturday", hours: "9:00 AM - 19:00 PM" },
                     { day: "Sunday", hours: "Closed" },
                   ].map((item, index) => (
                     <motion.div
