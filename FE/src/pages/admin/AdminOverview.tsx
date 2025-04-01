@@ -300,10 +300,10 @@ const AdminOverview: React.FC = () => {
             <strong>Date:</strong> {formatDateTime(record.bookingDate)}
           </div>
           <div>
-            <strong>Start:</strong> {formatTimeOnly(record.startTime)}
+            <strong>StartTime:</strong> {formatTimeOnly(record.startTime)}
           </div>
           <div>
-            <strong>End:</strong> {formatTimeOnly(record.endTime)}
+            <strong>EndTime:</strong> {formatTimeOnly(record.endTime)}
           </div>
         </div>
       ),
