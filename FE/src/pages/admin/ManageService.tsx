@@ -7,16 +7,24 @@ import { useAuth } from "../../context/AuthContext";
 function ManageService() {
   const { token } = useAuth();
   const title = "Service";
-  const [categories, setCategories] = useState<{ _id: string; name: string }[]>([]);
-  const [vouchers, setVouchers] = useState<{ _id: string; code: string; discountPercentage: number }[]>([]);
+  const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
+    []
+  );
+  const [vouchers, setVouchers] = useState<
+    { _id: string; code: string; discountPercentage: number }[]
+  >([]);
   const [isVoucherModalVisible, setIsVoucherModalVisible] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
   const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchName, setSearchName] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined
+  );
 
   // Fetch products
   const fetchProducts = async () => {
@@ -29,7 +37,10 @@ function ManageService() {
       setProducts(res.data || []);
       setFilteredProducts(res.data || []); // Ban đầu hiển thị tất cả
     } catch (error: any) {
-      console.error("Error fetching products:", error.response?.data || error.message);
+      console.error(
+        "Error fetching products:",
+        error.response?.data || error.message
+      );
     } finally {
       setLoading(false);
     }
@@ -49,7 +60,10 @@ function ManageService() {
         });
         setCategories(res.data || []);
       } catch (error: any) {
-        console.error("Error fetching categories:", error.response?.data || error.message);
+        console.error(
+          "Error fetching categories:",
+          error.response?.data || error.message
+        );
       }
     };
     fetchCategories();
@@ -65,7 +79,10 @@ function ManageService() {
         });
         setVouchers(res.data || []);
       } catch (error: any) {
-        console.error("Error fetching vouchers:", error.response?.data || error.message);
+        console.error(
+          "Error fetching vouchers:",
+          error.response?.data || error.message
+        );
       }
     };
     fetchVouchers();
@@ -84,7 +101,9 @@ function ManageService() {
 
     // Lọc theo category
     if (selectedCategory) {
-      result = result.filter((product) => product.category?._id === selectedCategory);
+      result = result.filter(
+        (product) => product.category?._id === selectedCategory
+      );
     }
 
     setFilteredProducts(result);
@@ -172,13 +191,21 @@ function ManageService() {
   const formItems = (editingId: string | null) => {
     return (
       <>
-        <Form.Item name="name" label="Name" rules={[{ required: true, message: "Please input service name" }]}>
+        <Form.Item
+          name="name"
+          label="Name"
+          rules={[{ required: true, message: "Please input service name" }]}
+        >
           <Input />
         </Form.Item>
         <Form.Item name="description" label="Description">
           <Input.TextArea />
         </Form.Item>
-        <Form.Item name="price" label="Price" rules={[{ required: true, message: "Please input price" }]}>
+        <Form.Item
+          name="price"
+          label="Price"
+          rules={[{ required: true, message: "Please input price" }]}
+        >
           <InputNumber min={0} style={{ width: "100%" }} />
         </Form.Item>
         <Form.Item
@@ -208,40 +235,39 @@ function ManageService() {
     );
   };
 
-const handleAddVoucher = async () => {
-  if (!token || !selectedProductId || !selectedVoucher) return;
+  const handleAddVoucher = async () => {
+    if (!token || !selectedProductId || !selectedVoucher) return;
 
-  const selectedProduct = products.find((p) => p._id === selectedProductId);
-  const hasVoucher = selectedProduct?.vouchers?.length > 0;
+    const selectedProduct = products.find((p) => p._id === selectedProductId);
+    const hasVoucher = selectedProduct?.vouchers?.length > 0;
 
-  if (hasVoucher) {
-    Modal.warning({
-      title: "This service already has a voucher",
-      content: "Please remove the current voucher before adding a new one.",
-    });
-    return;
-  }
+    if (hasVoucher) {
+      Modal.warning({
+        title: "This service already has a voucher",
+        content: "Please remove the current voucher before adding a new one.",
+      });
+      return;
+    }
 
-  try {
-    setLoading(true);
-    await api.post(
-      `/products/${selectedProductId}/vouchers`,
-      { voucherId: selectedVoucher },
-      { headers: { "x-auth-token": token } }
-    );
-    setIsVoucherModalVisible(false);
-    setSelectedVoucher(null);
-    fetchProducts();
-  } catch (error: any) {
-    console.error(
-      "Error adding voucher:",
-      error.response?.data || error.message
-    );
-  } finally {
-    setLoading(false);
-  }
-};
-
+    try {
+      setLoading(true);
+      await api.post(
+        `/products/${selectedProductId}/vouchers`,
+        { voucherId: selectedVoucher },
+        { headers: { "x-auth-token": token } }
+      );
+      setIsVoucherModalVisible(false);
+      setSelectedVoucher(null);
+      fetchProducts();
+    } catch (error: any) {
+      console.error(
+        "Error adding voucher:",
+        error.response?.data || error.message
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRemoveVoucher = async (productId: string, voucherId: string) => {
     if (!token) return;
@@ -252,7 +278,10 @@ const handleAddVoucher = async () => {
       });
       fetchProducts();
     } catch (error: any) {
-      console.error("Error removing voucher:", error.response?.data || error.message);
+      console.error(
+        "Error removing voucher:",
+        error.response?.data || error.message
+      );
     } finally {
       setLoading(false);
     }
@@ -282,10 +311,9 @@ const handleAddVoucher = async () => {
     </div>
   );
 
-   const assignedVoucherIds =
-     products
-       .find((p) => p._id === selectedProductId)
-       ?.vouchers?.map((v) => v._id) || [];
+  const assignedVoucherIds = products
+    .find((p) => p._id === selectedProductId)
+    ?.vouchers?.map((v: { _id: string }) => v._id);
 
   return (
     <div>
