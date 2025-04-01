@@ -104,7 +104,11 @@ function ManageService() {
       key: "price",
       render: (price: number, record: any) => (
         <div>
-          <span style={{ textDecoration: record.discountedPrice ? "line-through" : "none" }}>
+          <span
+            style={{
+              textDecoration: record.discountedPrice ? "line-through" : "none",
+            }}
+          >
             {price.toLocaleString()} VND
           </span>
           {record.discountedPrice && (
@@ -127,7 +131,11 @@ function ManageService() {
       dataIndex: "image",
       key: "image",
       render: (image: string) =>
-        image ? <img src={image} alt="Service" width={50} height={50} /> : "No Image",
+        image ? (
+          <img src={image} alt="Service" width={50} height={50} />
+        ) : (
+          "No Image"
+        ),
     },
     {
       title: "Vouchers",
@@ -145,15 +153,17 @@ function ManageService() {
               {voucher.code} ({voucher.discountPercentage}%)
             </Tag>
           ))}
-          <Button
-            type="link"
-            onClick={() => {
-              setSelectedProductId(record._id);
-              setIsVoucherModalVisible(true);
-            }}
-          >
-            Add Voucher
-          </Button>
+          {record.vouchers.length === 0 && (
+            <Button
+              type="link"
+              onClick={() => {
+                setSelectedProductId(record._id);
+                setIsVoucherModalVisible(true);
+              }}
+            >
+              Add Voucher
+            </Button>
+          )}
         </div>
       ),
     },
@@ -198,24 +208,40 @@ function ManageService() {
     );
   };
 
-  const handleAddVoucher = async () => {
-    if (!token || !selectedProductId || !selectedVoucher) return;
-    try {
-      setLoading(true);
-      await api.post(
-        `/products/${selectedProductId}/vouchers`,
-        { voucherId: selectedVoucher },
-        { headers: { "x-auth-token": token } }
-      );
-      setIsVoucherModalVisible(false);
-      setSelectedVoucher(null);
-      fetchProducts();
-    } catch (error: any) {
-      console.error("Error adding voucher:", error.response?.data || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleAddVoucher = async () => {
+  if (!token || !selectedProductId || !selectedVoucher) return;
+
+  const selectedProduct = products.find((p) => p._id === selectedProductId);
+  const hasVoucher = selectedProduct?.vouchers?.length > 0;
+
+  if (hasVoucher) {
+    Modal.warning({
+      title: "This service already has a voucher",
+      content: "Please remove the current voucher before adding a new one.",
+    });
+    return;
+  }
+
+  try {
+    setLoading(true);
+    await api.post(
+      `/products/${selectedProductId}/vouchers`,
+      { voucherId: selectedVoucher },
+      { headers: { "x-auth-token": token } }
+    );
+    setIsVoucherModalVisible(false);
+    setSelectedVoucher(null);
+    fetchProducts();
+  } catch (error: any) {
+    console.error(
+      "Error adding voucher:",
+      error.response?.data || error.message
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleRemoveVoucher = async (productId: string, voucherId: string) => {
     if (!token) return;
@@ -256,6 +282,11 @@ function ManageService() {
     </div>
   );
 
+   const assignedVoucherIds =
+     products
+       .find((p) => p._id === selectedProductId)
+       ?.vouchers?.map((v) => v._id) || [];
+
   return (
     <div>
       <ManageTemplate
@@ -274,18 +305,25 @@ function ManageService() {
         onCancel={() => setIsVoucherModalVisible(false)}
         confirmLoading={loading}
       >
-        <Select
-          style={{ width: "100%" }}
-          placeholder="Select a voucher"
-          onChange={(value) => setSelectedVoucher(value)}
-          value={selectedVoucher}
-        >
-          {vouchers.map((voucher) => (
-            <Select.Option key={voucher._id} value={voucher._id}>
-              {voucher.code} ({voucher.discountPercentage}%)
-            </Select.Option>
-          ))}
-        </Select>
+        {assignedVoucherIds.length === 0 ? (
+          <Select
+            style={{ width: "100%" }}
+            placeholder="Select a voucher"
+            onChange={(value) => setSelectedVoucher(value)}
+            value={selectedVoucher}
+          >
+            {vouchers.map((voucher) => (
+              <Select.Option key={voucher._id} value={voucher._id}>
+                {voucher.code} ({voucher.discountPercentage}%)
+              </Select.Option>
+            ))}
+          </Select>
+        ) : (
+          <p>
+            This service already has a voucher. Please remove it before adding
+            another.
+          </p>
+        )}
       </Modal>
     </div>
   );
