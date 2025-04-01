@@ -26,7 +26,7 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Layout from "../../layout/Layout";
 import { User } from "../../types/booking";
@@ -566,6 +566,7 @@ const SettingAdmin: React.FC = () => {
               Logout
             </Button>
           </div>
+          <ToastContainer/>
         </Card>
       </div>
   );
