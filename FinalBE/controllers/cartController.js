@@ -83,7 +83,7 @@ exports.createCart = async (req, res) => {
       const existingBooking = await Cart.findOne({
         bookingDate,
         Skincare_staff,
-        status: { $in: ["pending", "checked-in"] },
+        status: { $in: ["pending", "checked-in", "completed"] },
         $or: [{ startTime: { $lt: endTime }, endTime: { $gt: startTime } }],
       });
 
