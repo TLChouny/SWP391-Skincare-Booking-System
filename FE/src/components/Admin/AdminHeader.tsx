@@ -7,6 +7,8 @@ import { UserOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo7.png";
 import { ChevronDown } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const { Header } = Layout;
 
@@ -58,10 +60,9 @@ const AdminHeader: React.FC = () => {
   ];
 
   return (
-    <Header
-      className="bg-[#dad5c9] py-2 shadow-lg sticky top-0 z-50 flex items-center justify-between px-20"
-    >
-      <div className="flex items-center space-x-3">
+    <Header className="bg-[#dad5c9] text-black py-2 shadow-lg sticky top-0 z-50">
+      <div className="container mx-auto flex justify-between items-center px-2">
+        <div className="flex items-center space-x-3">
         {/* <Link to="/"> */}
           <img
             src={logo || "/placeholder.svg"}
@@ -113,6 +114,9 @@ const AdminHeader: React.FC = () => {
           )}
         </div>
       </div>
+      </div>
+      <ToastContainer autoClose={3000}/>
+
     </Header>
   );
 };

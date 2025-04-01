@@ -28,7 +28,7 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import Layout from "../../layout/Layout";
+import Layout from "../../layout/Layout";
 import { User } from "../../types/booking";
 
 // Define the shape of the form values
@@ -139,7 +139,13 @@ const SettingAdmin: React.FC = () => {
         }
       );
 
-      toast.success("Account information updated successfully!");
+      toast.success(
+        "Avatar updated successfully!Please log in again to see the changes.",
+        {
+          autoClose: 3000,
+          onClose: () => handleLogout(), // Trigger logout after toast closes
+        }
+      );
       setUser((prevUser) => ({
         ...prevUser,
         avatar: `${API_BASE_URL}${
@@ -153,7 +159,6 @@ const SettingAdmin: React.FC = () => {
 
     return false;
   };
-
   const handleUpdateUser = async (values: FormValues) => {
     if (!token) {
       toast.error("Authentication required");
@@ -267,7 +272,6 @@ const SettingAdmin: React.FC = () => {
     );
 
   return (
-    // <Layout>
       <div
         style={{
           padding: "40px 20px",
@@ -564,7 +568,6 @@ const SettingAdmin: React.FC = () => {
           </div>
         </Card>
       </div>
-    // {/* </Layout> */}
   );
 };
 

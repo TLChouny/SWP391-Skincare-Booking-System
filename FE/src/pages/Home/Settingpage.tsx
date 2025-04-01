@@ -139,7 +139,13 @@ const SettingPage: React.FC = () => {
         }
       );
 
-      toast.success("Account information updated successfully!");
+      toast.success(
+        "Avatar updated successfully! Please log in again to see the changes.",
+        {
+          autoClose: 3000,
+          onClose: () => handleLogout(), // Trigger logout after toast closes
+        }
+      );
       setUser((prevUser) => ({
         ...prevUser,
         avatar: `${API_BASE_URL}${
