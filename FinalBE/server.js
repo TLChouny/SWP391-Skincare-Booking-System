@@ -28,8 +28,9 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
       "https://swp-391-skincare-booking-system.vercel.app",
       "https://pay.payos.vn",
       "https://touching-regularly-lynx.ngrok-free.app",
-    'https://swp-391-skincare-booking-system-cd82mt5e8.vercel.app',
-  'https://swp-391-skincare-booking-system-bs28juhs7-scatterzeros-projects.vercel.app'
+      "https://swp-391-skincare-booking-system-cd82mt5e8.vercel.app",
+      "https://swp-391-skincare-booking-system-bs28juhs7-scatterzeros-projects.vercel.app",
+      "https://swp-391-skincare-booking-system-74bgo0kqk-scatterzeros-projects.vercel.app"
     ];
 
 app.use(
