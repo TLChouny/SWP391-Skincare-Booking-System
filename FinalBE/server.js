@@ -21,25 +21,25 @@ const blogRoutes = require("./routes/blogRoutes");
 const app = express();
 
 // ✅ Cấu hình CORS (Đặt đúng vị trí)
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://swp-391-skincare-booking-system.vercel.app",
-  "https://pay.payos.vn",
-  "https://touching-regularly-lynx.ngrok-free.app",
-];
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : [
+      "http://localhost:3000",
+      "https://swp-391-skincare-booking-system.vercel.app",
+      "https://pay.payos.vn",
+      "https://touching-regularly-lynx.ngrok-free.app",
+    ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // ⚠️ Chấp nhận nếu không có origin (Postman, PayOS webhook)
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        console.warn("🚫 Blocked by CORS:", origin);
+        console.error("🚫 Blocked by CORS: Origin", origin, "is not allowed");
         callback(new Error("Not allowed by CORS"));
       }
     },
-
     credentials: true,
   })
 );
