@@ -89,6 +89,11 @@ app.use("/api/payments", paymentRoutes);
     }
   });
 
+  app.post('/receive-hook', (req, res) => {
+    console.log(req.body);
+    res.sendStatus(200);
+  });
+
 // ✅ Connect DB
 mongoose
   .connect(process.env.MONGO_URI, {
