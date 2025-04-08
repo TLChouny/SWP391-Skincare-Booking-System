@@ -24,17 +24,22 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:3000",
   "https://swp-391-skincare-booking-system.vercel.app",
+  "https://pay.payos.vn",
+  "https://touching-regularly-lynx.ngrok-free.app",
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
+      // ⚠️ Chấp nhận nếu không có origin (Postman, PayOS webhook)
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.warn("🚫 Blocked by CORS:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
+
     credentials: true,
   })
 );
@@ -56,29 +61,32 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/ratings", ratingRoutes);
-app.use("/api/payments/webhook", webhookRoutes);
+app.use("/", webhookRoutes);
 app.use("/api/payments", paymentRoutes);
-
-// ✅ Payment API (Sửa `YOUR_DOMAIN`)
-// app.post("/create-payment-link", async (req, res) => {
-//   const YOUR_DOMAIN = process.env.CLIENT_URL || "http://localhost:3000"; // 🔥 Sửa lỗi hardcode
-
-//   const body = {
-//     orderCode: Number(String(Date.now()).slice(-6)),
-//     amount: 1000,
-//     description: "Thanh toan don hang",
-//     returnUrl: `${YOUR_DOMAIN}/success.html`,
-//     cancelUrl: `${YOUR_DOMAIN}/cancel.html`,
-//   };
-
-//   try {
-//     const paymentLinkResponse = await payOS.createPaymentLink(body);
-//     res.redirect(paymentLinkResponse.checkoutUrl);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send("Something went wrong");
-//   }
+// app.post("/receive-hook", (req, res) => {
+//   console.log("Received webhook:", req.body);
+//   res.status(200).send("Webhook received");
 // });
+// ✅ Payment API (Sửa `YOUR_DOMAIN`)
+  app.post("/create-payment-link", async (req, res) => {
+    const YOUR_DOMAIN = process.env.CLIENT_URL || "http://localhost:3000"; // 🔥 Sửa lỗi hardcode
+
+    const body = {
+      orderCode: Number(String(Date.now()).slice(-6)),
+      amount: 5000,
+      description: "Thanh toan don hang",
+      returnUrl: `${YOUR_DOMAIN}/success.html`,
+      cancelUrl: `${YOUR_DOMAIN}/cancel.html`,
+    };
+
+    try {
+      const paymentLinkResponse = await payOS.createPaymentLink(body);
+      res.redirect(paymentLinkResponse.checkoutUrl);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Something went wrong");
+    }
+  });
 
 // ✅ Connect DB
 mongoose

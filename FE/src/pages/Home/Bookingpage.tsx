@@ -303,6 +303,7 @@ const EnhancedBookingPage: React.FC = () => {
     }
 
     const completedItems = cart.filter((item) => item.status === "completed");
+    const shouldShowCheckoutButton = completedItems.length > 0;
     if (completedItems.length === 0) {
       toast.error("No completed items in the cart to checkout.");
       return;
