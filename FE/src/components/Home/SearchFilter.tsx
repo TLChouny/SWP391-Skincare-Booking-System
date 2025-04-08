@@ -59,7 +59,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({ services, onFilter }) => {
     if (searchTerm) {
       filtered = filtered.filter((service) =>
         service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        service.description.toLowerCase().includes(searchTerm.toLowerCase())
+        service.description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     if (selectedCategory !== "all") {

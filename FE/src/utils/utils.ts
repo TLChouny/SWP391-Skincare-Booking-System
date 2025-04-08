@@ -11,7 +11,7 @@ export const calculateTotalBookings = (carts: Booking[]): number => {
 
 export const calculateTotalSuccessfulPayments = (payments: any[]) => {
   return payments
-    .filter((payment) => payment.status === "checked-out")
+    .filter((payment) => payment.status === "success")
     .reduce((sum, payment) => sum + (payment.amount || 0), 0);
 };
 

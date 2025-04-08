@@ -1,9 +1,11 @@
+// ... các import giữ nguyên
 import React, { useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { useAuth } from "../context/AuthContext";
+import { User } from "../types/booking";
 import layerImage from "../assets/logo7.png";
 
 const Login: React.FC = () => {
@@ -14,72 +16,78 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
+  const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api"
+      : "https://luluspa-production.up.railway.app/api";
+
   const validateEmail = (email: string): boolean => email.trim() !== "";
   const validatePassword = (password: string): boolean => password.length >= 8;
 
-  const handleSubmit = async (e: FormEvent): Promise<void> => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!validateEmail(email)) {
       toast.error("Email cannot be empty");
       return;
     }
-
     if (!validatePassword(password)) {
       toast.error("Password must be at least 8 characters long");
       return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
-      const API_URL =
-        window.location.hostname === "localhost"
-          ? "http://localhost:5000/api"
-          : "https://luluspa-production.up.railway.app/api";
-
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        toast.error(errorData.msg || "Login failed");
-        return;
+        throw new Error(data.msg || "Login failed");
       }
 
-      const data = await response.json();
-      toast.success("Login successful");
-
-      // Lưu đầy đủ thông tin user vào AuthContext
-      const userData = {
-        username: data.username,
-        role: data.role,
-        avatar: data.avatar || null, // Lấy avatar từ API, fallback về null nếu không có
+      const userData: User = {
+        _id: data._id || data.user?._id || "",
+        username: data.username || data.user?.username || "",
+        email: data.email || data.user?.email || "",
+        phone: data.phone || data.user?.phone || "",
+        role: data.role || data.user?.role || "user",
+        avatar: data.avatar || data.user?.avatar || "",
+        gender: data.gender || data.user?.gender || "",
+        address: data.address || data.user?.address || "",
+        description: data.description || data.user?.description || "",
       };
+
       setToken(data.token);
       setUser(userData);
-
-      // Lưu thông tin user vào localStorage
-      localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(userData));
+      toast.success("Login successful");
 
-      // Redirect dựa trên role
-      if (data.role === "user") {
-        navigate("/");
-      } else if (data.role === "admin") {
-        navigate("/admin");
-      } else if (data.role === "staff") {
-        navigate("/staff/check-in");
-      } else if (data.role === "skincare_staff") {
-        navigate("/therapist/list-of-assigned");
+      // Redirect theo role
+      switch (userData.role) {
+        case "user":
+          navigate("/");
+          break;
+        case "admin":
+          navigate("/admin");
+          break;
+        case "staff":
+          navigate("/staff/check-in");
+          break;
+        case "skincare_staff":
+          navigate("/therapist/list-of-assigned");
+          break;
+        default:
+          navigate("/");
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Login failed");
+      toast.error( "Email or password was wrong, please try again!");
     } finally {
       setLoading(false);
     }
@@ -140,6 +148,7 @@ const Login: React.FC = () => {
               >
                 {loading ? "Processing..." : "Login"}
               </button>
+
               <div className="mt-1 text-center">
                 <Link
                   to="/forgot-password"

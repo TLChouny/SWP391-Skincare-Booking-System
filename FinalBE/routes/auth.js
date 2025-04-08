@@ -259,12 +259,20 @@ router.post(
         ? `${baseUrl}${user.avatar}` // URL tuyệt đối nếu có avatar
         : `${baseUrl}/default-avatar.png`; // Fallback nếu không có avatar
 
-      res.json({
-        token,
-        username: user.username,
-        role: user.role,
-        avatar: avatarUrl, // Trả về URL đầy đủ
-      });
+        res.json({
+          token,
+          user: {
+            _id: user._id, // Đảm bảo trả về _id
+            username: user.username,
+            email: user.email,
+            phone: user.phone || "",
+            role: user.role || "user",
+            avatar: user.avatar || "",
+            gender: user.gender || "",
+            address: user.address || "",
+            description: user.description || "",
+          },
+        });
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Lỗi máy chủ");

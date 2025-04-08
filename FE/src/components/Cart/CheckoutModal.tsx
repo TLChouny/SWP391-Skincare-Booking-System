@@ -7,10 +7,10 @@ import { JSX } from "react/jsx-runtime";
 interface CheckoutModalProps {
   showModal: boolean;
   setShowModal: (show: boolean) => void;
-  cart: Booking[];
-  fetchCart: () => Promise<void>;
-  loadingCart: boolean;
-  cartError: string | null;
+  booking: Booking[];
+  fetchBooking: () => Promise<void>;
+  loadingBooking: boolean;
+  bookingError: string | null;
   paymentUrl: string;
   setPaymentUrl: (url: string) => void;
   qrCode: string;
@@ -21,10 +21,10 @@ interface CheckoutModalProps {
 const CheckoutModal: React.FC<CheckoutModalProps> = ({
   showModal,
   setShowModal,
-  cart,
-  fetchCart,
-  loadingCart,
-  cartError,
+  booking,
+  fetchBooking,
+  loadingBooking,
+  bookingError,
   paymentUrl,
   setPaymentUrl,
   qrCode,
@@ -33,6 +33,46 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 }) => {
   const [isPaymentCreated, setIsPaymentCreated] = useState(false);
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
+  const [isCheckedOut, setIsCheckedOut] = useState<boolean>(false);
+
+  // Kiểm tra trạng thái "checked-out" khi booking thay đổi
+  useEffect(() => {
+    if (booking.length > 0) {
+      const allCheckedOut = booking.every(
+        (item) => item.status === "checked-out"
+      );
+      setIsCheckedOut(allCheckedOut);
+    }
+  }, [booking]);
+
+  // Tự động gọi handleCheckout khi modal mở và chưa có payment
+  useEffect(() => {
+    if (
+      showModal &&
+      !isPaymentCreated &&
+      !paymentUrl &&
+      !isCreatingPayment &&
+      !isCheckedOut
+    ) {
+      handleCheckout();
+    }
+  }, [
+    showModal,
+    isPaymentCreated,
+    paymentUrl,
+    isCreatingPayment,
+    isCheckedOut,
+  ]);
+
+  // Reset state khi modal đóng
+  useEffect(() => {
+    if (!showModal) {
+      setIsPaymentCreated(false);
+      setIsCreatingPayment(false);
+      setPaymentUrl("");
+      setQrCode("");
+    }
+  }, [showModal]);
 
   const formatPriceDisplay = (
     originalPrice: number,
@@ -59,7 +99,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   };
 
   const calculateTotal = (): number => {
-    return cart
+    return booking
       .filter((item) => item.status === "completed")
       .reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   };
@@ -70,27 +110,31 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   };
 
   const handleCheckout = async () => {
-    if (isCreatingPayment) {
-      return;
-    }
+    if (isCreatingPayment || isCheckedOut) return;
 
-    const completedItems = cart.filter((item) => item.status === "completed");
+    const completedItems = booking.filter(
+      (item) => item.status === "completed"
+    );
     if (completedItems.length === 0) {
-      toast.error("No items are selected for payment.");
+      toast.error("No bookings are selected for payment.");
       setShowModal(false);
       return;
     }
 
-    if (isPaymentCreated || paymentUrl) {
-      return;
-    }
+    if (isPaymentCreated || paymentUrl) return;
 
     setIsCreatingPayment(true);
     try {
       const totalAmount = calculateTotal();
+      if (totalAmount <= 0) {
+        throw new Error("Total amount must be greater than 0.");
+      }
+
       const orderName = completedItems[0]?.serviceName || "Multiple Services";
       let description = `Service ${orderName.substring(0, 25)}`;
       if (description.length > 25) description = description.substring(0, 25);
+
+      const bookingIds = completedItems.map((item) => item.BookingID);
 
       const BASE_DOMAIN =
         window.location.hostname === "localhost"
@@ -100,48 +144,76 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
       const returnUrl = `${BASE_DOMAIN}/success.html`;
       const cancelUrl = `${BASE_DOMAIN}/cancel.html`;
 
-      const response = await fetch(`${API_BASE_URL}/payments/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: totalAmount,
-          orderName,
-          description,
-          returnUrl,
-          cancelUrl,
-        }),
-      });
+      if (
+        !orderName ||
+        !description ||
+        !returnUrl ||
+        !cancelUrl ||
+        !totalAmount ||
+        !bookingIds.length
+      ) {
+        throw new Error("Missing required fields in payment request.");
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/payments/create-payment-link`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: totalAmount,
+            orderName,
+            description,
+            returnUrl,
+            cancelUrl,
+            bookingIds,
+          }),
+        }
+      );
 
       const data = await response.json();
+      console.log("Payment response:", data);
+
       if (!response.ok || data.error !== 0 || !data.data) {
-        throw new Error(`API Error: ${data.message || "Unknown error"}`);
+        throw new Error(data.message || "Failed to create payment link");
       }
 
       setPaymentUrl(data.data.checkoutUrl);
       setQrCode(data.data.qrCode);
       setIsPaymentCreated(true);
-    } catch (error: any) {
-      console.error("❌ Error during payment process:", error);
-      toast.error("Failed to initiate payment. Please try again.");
+
+      // Polling liên tục để kiểm tra trạng thái booking
+      const interval = setInterval(async () => {
+        await fetchBooking(); // cập nhật danh sách mới
+
+        const hasCompleted = booking.some(
+          (item) => item.status === "completed"
+        );
+        if (!hasCompleted) {
+          setIsCheckedOut(true);
+          setShowModal(false);
+          toast.success("Payment completed. Booking is now checked out.");
+          clearInterval(interval);
+        }
+      }, 5000);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        const stillHasCompleted = booking.some(
+          (item) => item.status === "completed"
+        );
+        if (stillHasCompleted) {
+          toast.error("Payment status not updated. Please check manually.");
+        }
+      }, 120000);
+    } catch (error) {
+      console.error("Checkout Error:", error);
+      toast.error("Checkout failed. Please try again.");
       setShowModal(false);
     } finally {
       setIsCreatingPayment(false);
     }
   };
-
-  useEffect(() => {
-    if (showModal && !isPaymentCreated && !paymentUrl && !isCreatingPayment) {
-      handleCheckout();
-    }
-  }, [showModal, cart]);
-
-  useEffect(() => {
-    if (!showModal) {
-      setIsPaymentCreated(false);
-      setIsCreatingPayment(false);
-    }
-  }, [showModal]);
-
   const modalOverlayStyle: React.CSSProperties = {
     position: "fixed",
     top: 0,
@@ -233,12 +305,26 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
             style={modalContentStyle}
           >
             <div style={modalBodyStyle}>
-              <h3 style={{ fontSize: "1.5rem", fontWeight: 600, color: "#1f2937", marginBottom: "1.5rem" }}>
+              <h3
+                style={{
+                  fontSize: "1.5rem",
+                  fontWeight: 600,
+                  color: "#1f2937",
+                  marginBottom: "1.5rem",
+                }}
+              >
                 Confirm Payment
               </h3>
 
-              {loadingCart ? (
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "1.5rem 0" }}>
+              {loadingBooking ? (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    padding: "1.5rem 0",
+                  }}
+                >
                   <svg
                     style={{
                       animation: "spin 1s linear infinite",
@@ -265,26 +351,35 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     ></path>
                   </svg>
                   <span style={{ marginLeft: "0.5rem", color: "#6b7280" }}>
-                    Loading cart...
+                    Loading bookings...
                   </span>
                 </div>
-              ) : cartError ? (
-                <p style={{ textAlign: "center", color: "#dc2626" }}>{cartError}</p>
-              ) : cart.filter((item) => item.status === "completed").length === 0 ? (
+              ) : bookingError ? (
+                <p style={{ textAlign: "center", color: "#dc2626" }}>
+                  {bookingError}
+                </p>
+              ) : isCheckedOut ? (
                 <p style={{ textAlign: "center", color: "#6b7280" }}>
-                  No items to pay for.
+                  This booking has already been checked out.
+                </p>
+              ) : booking.filter((item) => item.status === "completed")
+                  .length === 0 ? (
+                <p style={{ textAlign: "center", color: "#6b7280" }}>
+                  No bookings to pay for.
                 </p>
               ) : (
                 <>
                   <ul style={{ maxHeight: "40vh", overflowY: "auto" }}>
-                    {cart
+                    {booking
                       .filter((item) => item.status === "completed")
                       .map((item, index, array) => (
                         <li
-                          key={item.CartID || index}
+                          key={item.BookingID || index}
                           style={{
                             ...listItemStyle,
-                            ...(index === array.length - 1 ? listItemLastStyle : {}),
+                            ...(index === array.length - 1
+                              ? listItemLastStyle
+                              : {}),
                           }}
                         >
                           <div style={{ fontSize: "0.875rem" }}>
@@ -300,7 +395,13 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                               </p>
                             )}
                           </div>
-                          <span style={{ fontWeight: 700, color: "#1f2937", whiteSpace: "nowrap" }}>
+                          <span
+                            style={{
+                              fontWeight: 700,
+                              color: "#1f2937",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             {formatPriceDisplay(
                               item.originalPrice || item.totalPrice || 0,
                               item.discountedPrice
@@ -311,27 +412,47 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   </ul>
 
                   <div style={totalSectionStyle}>
-                    <p style={{ textAlign: "right", fontSize: "1.25rem", fontWeight: 700, color: "#1f2937" }}>
+                    <p
+                      style={{
+                        textAlign: "right",
+                        fontSize: "1.25rem",
+                        fontWeight: 700,
+                        color: "#1f2937",
+                      }}
+                    >
                       Total: {formatTotal()}
                     </p>
                   </div>
 
                   {qrCode && (
                     <div style={qrCodeSectionStyle}>
-                      <p style={{ fontSize: "1.125rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+                      <p
+                        style={{
+                          fontSize: "1.125rem",
+                          fontWeight: 600,
+                          marginBottom: "0.5rem",
+                        }}
+                      >
                         Scan QR to Pay
                       </p>
                       <img
                         src={qrCode}
                         alt="QR Code"
-                        style={{ maxWidth: "180px", margin: "0 auto", display: "block" }}
+                        style={{
+                          maxWidth: "180px",
+                          margin: "0 auto",
+                          display: "block",
+                        }}
                       />
                       <p style={{ marginTop: "1rem", color: "#2563eb" }}>
                         <a
                           href={paymentUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ textDecoration: "underline", color: "#2563eb" }}
+                          style={{
+                            textDecoration: "underline",
+                            color: "#2563eb",
+                          }}
                         >
                           Click here if QR doesn't work
                         </a>
@@ -349,13 +470,16 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 onClick={() => setShowModal(false)}
                 style={buttonSecondaryStyle}
                 onMouseEnter={(e) =>
-                  Object.assign(e.currentTarget.style, buttonSecondaryHoverStyle)
+                  Object.assign(
+                    e.currentTarget.style,
+                    buttonSecondaryHoverStyle
+                  )
                 }
                 onMouseLeave={(e) =>
                   Object.assign(e.currentTarget.style, buttonSecondaryStyle)
                 }
               >
-                Cancel
+                Close
               </motion.button>
             </div>
           </motion.div>

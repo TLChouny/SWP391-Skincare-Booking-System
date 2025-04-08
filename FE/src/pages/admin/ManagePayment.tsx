@@ -30,7 +30,7 @@ function ManagePayment() {
     }
     setLoading(true);
     try {
-      const res = await api.get("/payments", {
+      const res = await api.get("/payments/all", {
         headers: { "x-auth-token": token },
       });
       console.log("API response from /payments:", res.data.data); // Debug dữ liệu API

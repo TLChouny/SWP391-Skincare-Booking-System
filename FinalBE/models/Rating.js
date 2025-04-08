@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
 const ratingSchema = new mongoose.Schema({
-  bookingID: { type: String, required: true },
-  serviceID: { type: String }, // Loại bỏ required: true nếu không cần thiết
+  BookingID: { type: String, required: true },
+  service_id: { type: String }, // Loại bỏ required: true nếu không cần thiết
   serviceName: { type: String },
   serviceRating: { type: Number, required: true },
   serviceContent: { type: String, required: true },

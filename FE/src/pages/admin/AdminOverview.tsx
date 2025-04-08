@@ -26,11 +26,11 @@ import {
   calculateTotalBookingsByStatus,
 } from "../../utils/utils";
 import {
-  getCarts,
+  getBookings,
   getPayments,
   getUsers,
   getRatings,
-  getProducts,
+  getServices,
 } from "../../api/api";
 import { useAuth } from "../../context/AuthContext";
 import { Booking } from "../../types/booking";
@@ -61,31 +61,31 @@ const AdminOverview: React.FC = () => {
       }
 
       try {
-        const [userResponse, cartsResponse, paymentsResponse, ratingsResponse] =
+        const [userResponse, bookingsResponse, paymentsResponse, ratingsResponse] =
           await Promise.all([
             getUsers(token),
-            getCarts(token),
+            getBookings(token),
             getPayments(token),
             getRatings(token),
-            getProducts(token),
+            getServices(token),
           ]);
 
-        const carts = Array.isArray(cartsResponse.data.carts)
-          ? cartsResponse.data.carts
-          : Array.isArray(cartsResponse.data)
-          ? cartsResponse.data
+        const bookings = Array.isArray(bookingsResponse.data.bookings)
+          ? bookingsResponse.data.carts
+          : Array.isArray(bookingsResponse.data)
+          ? bookingsResponse.data
           : [];
 
         // Chuẩn hóa dữ liệu
-        const normalizedCarts = carts.map((cart: any) => ({
-          ...cart,
-          CartID: cart.CartID || cart.BookingID || cart._id,
-          startTime: cart.startTime || cart.start_time || null,
-          endTime: cart.endTime || cart.end_time || null,
-          bookingDate: cart.bookingDate || cart.createdAt || null,
-          totalPrice: cart.totalPrice || cart.originalPrice || 0,
+        const normalizedCarts = bookings.map((bookings: any) => ({
+          ...bookings,
+          CartID: bookings.CartID || bookings.BookingID || bookings._id,
+          startTime: bookings.startTime || bookings.start_time || null,
+          endTime: bookings.endTime || bookings.end_time || null,
+          bookingDate: bookings.bookingDate || bookings.createdAt || null,
+          totalPrice: bookings.totalPrice || bookings.originalPrice || 0,
           Skincare_staff:
-            cart.Skincare_staff || cart.selectedTherapist?.name || null,
+          bookings.Skincare_staff || bookings.selectedTherapist?.name || null,
         }));
 
         const sortedCarts = [...normalizedCarts].sort((a, b) => {

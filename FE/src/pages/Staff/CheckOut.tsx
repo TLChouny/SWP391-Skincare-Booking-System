@@ -7,19 +7,7 @@ import {
   FaHourglassHalf,
   FaBan,
 } from "react-icons/fa";
-
-interface Payment {
-  _id: string;
-  orderCode: string;
-  orderName: string;
-  amount: number;
-  description?: string;
-  status: "pending" | "success" | "failed" | "cancelled";
-  returnUrl?: string;
-  cancelUrl?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { Payment } from "../../types/booking";
 
 interface ApiResponse {
   error: number;
@@ -44,15 +32,13 @@ const StaffCheckOut: React.FC = () => {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("authToken");
-      if (!token) throw new Error("Please log in to view payments.");
-      const response = await fetch(`${API_BASE_URL}/payments`, {
+      const response = await fetch(`${API_BASE_URL}/payments/all`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "x-auth-token": token,
         },
       });
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
@@ -61,6 +47,7 @@ const StaffCheckOut: React.FC = () => {
           }`
         );
       }
+
       const data: ApiResponse = await response.json();
       if (!Array.isArray(data.data)) {
         console.error(
@@ -80,66 +67,7 @@ const StaffCheckOut: React.FC = () => {
       setLoading(false);
     }
   };
-  const updatePaymentStatus = async (
-    paymentId: string,
-    newStatus: "success" | "failed"
-  ) => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        toast.error("Please log in to update payment status.");
-        return;
-      }
-      const payment = payments.find((p) => p._id === paymentId);
-      if (!payment) {
-        toast.error("Payment not found.");
-        return;
-      }
-      if (payment.status !== "pending") {
-        toast.error("Can only update payments with 'pending' status.");
-        return;
-      }
 
-      const response = await fetch(
-        `${API_BASE_URL}/payments/update/${payment.orderCode}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": token,
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          `Failed to update payment: ${response.status} - ${
-            errorData.message || "Unknown error"
-          }`
-        );
-      }
-
-      const updatedPayment: ApiResponse = await response.json();
-      const updatedPaymentData = Array.isArray(updatedPayment.data)
-        ? updatedPayment.data[0]
-        : updatedPayment.data;
-
-      setPayments((prevPayments) =>
-        prevPayments.map((p) =>
-          p._id === paymentId ? { ...p, status: updatedPaymentData.status } : p
-        )
-      );
-      toast.success(`Payment marked as ${newStatus}!`);
-    } catch (error) {
-      console.error("Error updating payment status:", error);
-      toast.error(
-        error instanceof Error
-          ? `Update failed: ${error.message}`
-          : "Update failed."
-      );
-    }
-  };
   const indexOfLastPayment = currentPage * paymentsPerPage;
   const indexOfFirstPayment = indexOfLastPayment - paymentsPerPage;
   const currentPayments = payments.slice(
@@ -156,49 +84,46 @@ const StaffCheckOut: React.FC = () => {
   };
 
   return (
-    <div className='container mx-auto p-6'>
+    <div className="container mx-auto p-6">
       <ToastContainer />
-      <h1 className='text-3xl font-bold text-center mb-6'>
-        Staff Check-out Management
+      <h1 className="text-3xl font-bold text-center mb-6">
+        All Payments View
       </h1>
       {loading ? (
-        <p className='text-center text-gray-600'>Loading data...</p>
+        <p className="text-center text-gray-600">Loading data...</p>
       ) : (
         <>
-          <div className='overflow-x-auto'>
-            <table className='min-w-full bg-white border border-gray-300 rounded-lg shadow-md'>
-              <thead className='bg-gray-100'>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+              <thead className="bg-gray-100">
                 <tr>
-                  <th className='py-3 px-4 border-b text-left whitespace-nowrap sticky left-0 bg-gray-100 z-10'>
-                    Order Code
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap sticky left-0 bg-gray-100 z-10">
+                    Payment Code
                   </th>
-                  <th className='py-3 px-4 border-b text-left whitespace-nowrap'>
-                    Order Name
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
+                    Payment Name
                   </th>
-                  <th className='py-3 px-4 border-b text-left whitespace-nowrap'>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Amount (VND)
                   </th>
-                  <th className='py-3 px-4 border-b text-left whitespace-nowrap'>
+                  {/* <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Description
-                  </th>
-                  <th className='py-3 px-4 border-b text-left whitespace-nowrap'>
+                  </th> */}
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Status
                   </th>
-                  <th className='py-3 px-4 border-b text-left whitespace-nowrap'>
-                    Action
-                  </th>
-                  <th className='py-3 px-4 border-b text-left whitespace-nowrap'>
+                  {/* <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Created At
                   </th>
-                  <th className='py-3 px-4 border-b text-left whitespace-nowrap'>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Updated At
-                  </th>
+                  </th> */}
                 </tr>
               </thead>
               <tbody>
                 {currentPayments.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className='text-center py-4 text-gray-600'>
+                    <td colSpan={7} className="text-center py-4 text-gray-600">
                       No payments available
                     </td>
                   </tr>
@@ -206,20 +131,21 @@ const StaffCheckOut: React.FC = () => {
                   currentPayments.map((payment) => (
                     <tr
                       key={payment._id}
-                      className='hover:bg-gray-50 transition-colors duration-300'>
-                      <td className='py-2 px-4 border-b whitespace-nowrap sticky left-0 bg-white z-10'>
-                        {payment.orderCode}
+                      className="hover:bg-gray-50 transition-colors duration-300"
+                    >
+                      <td className="py-2 px-4 border-b whitespace-nowrap sticky left-0 bg-white z-10">
+                        {payment.paymentID}
                       </td>
-                      <td className='py-2 px-4 border-b whitespace-nowrap'>
-                        {payment.orderName}
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        {payment.description}
                       </td>
-                      <td className='py-2 px-4 border-b whitespace-nowrap'>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
                         {payment.amount.toLocaleString("vi-VN")}
                       </td>
-                      <td className='py-2 px-4 border-b whitespace-nowrap'>
+                      {/* <td className="py-2 px-4 border-b whitespace-nowrap">
                         {payment.description || "N/A"}
-                      </td>
-                      <td className='py-2 px-4 border-b whitespace-nowrap'>
+                      </td> */}
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2 py-1 rounded-full text-sm font-medium ${
                             payment.status === "pending"
@@ -229,58 +155,37 @@ const StaffCheckOut: React.FC = () => {
                               : payment.status === "failed"
                               ? "bg-red-100 text-red-800"
                               : "bg-gray-100 text-gray-800"
-                          }`}>
+                          }`}
+                        >
                           {payment.status === "pending" && (
-                            <FaHourglassHalf className='mr-1' />
+                            <FaHourglassHalf className="mr-1" />
                           )}
                           {payment.status === "success" && (
-                            <FaCheckCircle className='mr-1' />
+                            <FaCheckCircle className="mr-1" />
                           )}
                           {payment.status === "failed" && (
-                            <FaTimesCircle className='mr-1' />
+                            <FaTimesCircle className="mr-1" />
                           )}
                           {payment.status === "cancelled" && (
-                            <FaBan className='mr-1' />
+                            <FaBan className="mr-1" />
                           )}
                           {payment.status.charAt(0).toUpperCase() +
                             payment.status.slice(1)}
                         </span>
                       </td>
-                      <td className='py-2 px-4 border-b whitespace-nowrap'>
-                        {payment.status === "pending" ? (
-                          <>
-                            <button
-                              onClick={() =>
-                                updatePaymentStatus(payment._id, "success")
-                              }
-                              className='bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600 transition-all duration-300 mr-2 whitespace-nowrap'>
-                              Mark Success
-                            </button>
-                            <button
-                              onClick={() =>
-                                updatePaymentStatus(payment._id, "failed")
-                              }
-                              className='bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600 transition-all duration-300 whitespace-nowrap'>
-                              Mark Failed
-                            </button>
-                          </>
-                        ) : (
-                          <span className='text-gray-500'>No Action</span>
-                        )}
-                      </td>
-                      <td className='py-2 px-4 border-b whitespace-nowrap'>
+                      {/* <td className="py-2 px-4 border-b whitespace-nowrap">
                         {new Date(payment.createdAt).toLocaleString()}
                       </td>
-                      <td className='py-2 px-4 border-b whitespace-nowrap'>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
                         {new Date(payment.updatedAt).toLocaleString()}
-                      </td>
+                      </td> */}
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
-          <div className='flex justify-center mt-4 space-x-4'>
+          <div className="flex justify-center mt-4 space-x-4">
             <button
               onClick={goToPreviousPage}
               disabled={currentPage === 1}
@@ -288,10 +193,11 @@ const StaffCheckOut: React.FC = () => {
                 currentPage === 1
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-blue-500 text-white hover:bg-blue-600"
-              } transition-all duration-300`}>
+              } transition-all duration-300`}
+            >
               Previous
             </button>
-            <span className='py-2 px-4'>
+            <span className="py-2 px-4">
               Page {currentPage} of {totalPages}
             </span>
             <button
@@ -301,17 +207,19 @@ const StaffCheckOut: React.FC = () => {
                 currentPage === totalPages
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-blue-500 text-white hover:bg-blue-600"
-              } transition-all duration-300`}>
+              } transition-all duration-300`}
+            >
               Next
             </button>
           </div>
         </>
       )}
-      <div className='text-center mt-6'>
+      <div className="text-center mt-6">
         <button
           onClick={fetchPayments}
-          className='bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition-all duration-300'
-          disabled={loading}>
+          className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition-all duration-300"
+          disabled={loading}
+        >
           {loading ? "Refreshing..." : "Refresh Payments"}
         </button>
       </div>

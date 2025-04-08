@@ -3,54 +3,84 @@ import axios from "axios";
 import { Button, Radio, message, Card, Steps } from "antd";
 import Layout from "../../layout/Layout";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom"; // Thêm useNavigate để điều hướng
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { Quizz, QuizzResult } from "../../types/booking";
 
 const { Step } = Steps;
 
-interface Question {
-  id: number;
-  question: string;
-  options: string[];
-}
+const SkinAssessmentQuizz: React.FC = () => {
+  const [quizzs, setQuizzs] = useState<Quizz[]>([]);
+  const [answers, setAnswers] = useState<{ [key: string]: string }>({});
+  const [current, setCurrent] = useState<number>(0);
+  const [result, setResult] = useState<QuizzResult | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-const SkinAssessmentQuiz: React.FC = () => {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
-  const [current, setCurrent] = useState(0);
-  const [result, setResult] = useState<string | null>(null);
-  const [bestMatch, setBestMatch] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { token, isAuthenticated, setToken, setUser } = useAuth(); // Thêm setToken, setUser để xử lý đăng xuất
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Khởi tạo useNavigate
+  const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000/api"
+      : "https://luluspa-production.up.railway.app/api";
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      const API_BASE_URL =
-        window.location.hostname === "localhost"
-          ? "http://localhost:5000/api"
-          : "https://luluspa-production.up.railway.app/api";
+    console.log("Token in Quizz:", token);
+    console.log("Is Authenticated:", isAuthenticated);
+    if (isAuthenticated && token) {
+     
 
-      try {
-        const response = await axios.get(`${API_BASE_URL}/questions`);
-        const formattedQuestions = response.data.map((q: any) => ({
-          id: q._id,
-          question: q.text,
-          options: q.options.map((opt: any) => opt.text),
-        }));
-        setQuestions(formattedQuestions);
-      } catch (error) {
-        message.error("Không thể tải câu hỏi, vui lòng thử lại sau.");
+ fetchQuizzs();
+    } else {
+      message.error("Vui lòng đăng nhập để thực hiện bài kiểm tra da!");
+      setTimeout(() => navigate("/login"), 2000);
+    }
+  }, [isAuthenticated, token, navigate]);
+
+  const fetchQuizzs = async () => {
+    if (!token) {
+      message.error("Token không hợp lệ, vui lòng đăng nhập lại!");
+      navigate("/login");
+      return;
+    }
+    try {
+      const response = await axios.get(`${API_BASE_URL}/quizzs`, {
+        headers: {
+          "x-auth-token": token, // Sử dụng header x-auth-token
+        },
+      });
+      const formattedQuizzs: Quizz[] = response.data.map((q: any) => ({
+        _id: q._id,
+        text: q.text,
+        options: q.options.map((opt: any) => ({
+          text: opt.text,
+          points: opt.points,
+        })),
+        createdAt: q.createdAt,
+      }));
+      setQuizzs(formattedQuizzs);
+    } catch (error: any) {
+      console.error("Error fetching quizzs:", error.response?.status, error.response?.data);
+      message.error(
+        error.response?.data?.msg || "Không thể tải câu hỏi, vui lòng thử lại sau."
+      );
+      if (error.response?.status === 401) {
+        // Xử lý trường hợp token không hợp lệ hoặc đã đăng xuất
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+        setToken(null);
+        setUser(null);
+        navigate("/login");
       }
-    };
-    fetchQuestions();
-  }, []);
+    }
+  };
 
-  const handleAnswerChange = (questionId: number, answer: string) => {
-    setAnswers({ ...answers, [questionId]: answer });
+  const handleAnswerChange = (quizzId: string, answer: string) => {
+    setAnswers((prev) => ({ ...prev, [quizzId]: answer }));
   };
 
   const handleNext = () => {
-    if (answers[questions[current].id]) {
+    if (answers[quizzs[current]._id]) {
       setCurrent(current + 1);
     } else {
       message.warning("Vui lòng chọn một đáp án trước khi tiếp tục!");
@@ -58,7 +88,13 @@ const SkinAssessmentQuiz: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    const allAnswered = questions.every((question) => answers[question.id]);
+    if (!isAuthenticated || !token) {
+      message.error("Vui lòng đăng nhập để gửi bài kiểm tra!");
+      navigate("/login");
+      return;
+    }
+
+    const allAnswered = quizzs.every((quizz) => answers[quizz._id]);
     if (!allAnswered) {
       message.warning("Vui lòng trả lời tất cả các câu hỏi trước khi hoàn thành!");
       return;
@@ -66,17 +102,15 @@ const SkinAssessmentQuiz: React.FC = () => {
 
     setLoading(true);
     try {
-      const formattedAnswers = Object.entries(answers).map(
-        ([questionId, answer]) => {
-          const question = questions.find((q) => q.id.toString() === questionId);
-          return {
-            questionId: questionId,
-            selectedOptionIndex: question
-              ? question.options.indexOf(answer)
-              : -1,
-          };
-        }
-      );
+      const formattedAnswers = Object.entries(answers).map(([quizzId, answer]) => {
+        const quizz = quizzs.find((q) => q._id === quizzId);
+        return {
+          quizzId,
+          selectedOptionIndex: quizz
+            ? quizz.options.findIndex((opt) => opt.text === answer)
+            : -1,
+        };
+      });
 
       if (formattedAnswers.some((ans) => ans.selectedOptionIndex === -1)) {
         message.error("Có câu trả lời không hợp lệ. Vui lòng kiểm tra lại.");
@@ -84,27 +118,47 @@ const SkinAssessmentQuiz: React.FC = () => {
         return;
       }
 
-      const API_BASE_URL =
-        window.location.hostname === "localhost"
-          ? "http://localhost:5000/api"
-          : "https://luluspa-production.up.railway.app/api";
+      console.log("Token before submit:", token);
+      console.log("Submitting answers:", formattedAnswers);
 
-      const response = await axios.post(`${API_BASE_URL}/questions/submit`, {
-        answers: formattedAnswers,
+      const response = await axios.post(
+        `${API_BASE_URL}/quizzs/submit`,
+        { answers: formattedAnswers },
+        {
+          headers: {
+            "x-auth-token": token, // Sử dụng header x-auth-token
+          },
+        }
+      );
+
+      console.log("Response from server:", response.data);
+
+      setResult({
+        message: response.data.message || "Kết quả đã được gửi thành công.",
+        scores: response.data.scores,
+        bestMatch: response.data.bestMatch || "Không có kết quả phù hợp.",
       });
-
-      setResult(response.data.message || "Kết quả đã được gửi thành công.");
-      setBestMatch(response.data.bestMatch || "Không có kết quả phù hợp.");
-    } catch (error) {
-      message.error("Gửi bài kiểm tra thất bại, vui lòng thử lại.");
+    } catch (error: any) {
+      console.error("Error submitting quizz:", error.response?.status, error.response?.data);
+      message.error(
+        error.response?.data?.msg || "Gửi bài kiểm tra thất bại, vui lòng thử lại."
+      );
+      if (error.response?.status === 401) {
+        // Xử lý trường hợp token không hợp lệ hoặc đã đăng xuất
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+        setToken(null);
+        setUser(null);
+        navigate("/login");
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  // Hàm xử lý khi nhấn vào Best Match
   const handleBestMatchClick = () => {
-    if (bestMatch && bestMatch !== "Không có kết quả phù hợp.") {
-      navigate(`/services?category=${bestMatch.toLowerCase()}`);
+    if (result?.bestMatch && result.bestMatch !== "Không có kết quả phù hợp.") {
+      navigate(`/services?category=${result.bestMatch.toLowerCase()}`);
     }
   };
 
@@ -113,7 +167,27 @@ const SkinAssessmentQuiz: React.FC = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
   };
 
-  const isCurrentAnswered = !!answers[questions[current]?.id];
+  const isCurrentAnswered = !!answers[quizzs[current]?._id];
+
+  if (!isAuthenticated) {
+    return (
+      <Layout>
+        <div className="w-full min-h-screen bg-gradient-to-r from-yellow-100 to-blue-200 flex flex-col justify-center items-center">
+          <motion.h1
+            className="text-4xl md:text-5xl font-extrabold text-center mb-12 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            Vui lòng đăng nhập
+          </motion.h1>
+          <p className="text-lg text-gray-700">
+            Bạn cần đăng nhập để thực hiện bài kiểm tra da.
+          </p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -124,15 +198,15 @@ const SkinAssessmentQuiz: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          Skin Assessment Test
-          <div className='mt-2 h-1 w-24 bg-gradient-to-r from-yellow-600 to-white-400 rounded mx-auto'></div>
+          Skin Assessment Quizz
+          <div className="mt-2 h-1 w-24 bg-gradient-to-r from-yellow-600 to-white-400 rounded mx-auto"></div>
         </motion.h1>
 
         <div className="px-4 sm:px-8 md:px-16 lg:px-24 flex-1 flex flex-col">
           <Steps
             current={current}
             onChange={(newCurrent) => {
-              if (newCurrent <= current || answers[questions[current]?.id]) {
+              if (newCurrent <= current || answers[quizzs[current]?._id]) {
                 setCurrent(newCurrent);
               } else {
                 message.warning("Vui lòng trả lời câu hỏi hiện tại trước!");
@@ -140,12 +214,12 @@ const SkinAssessmentQuiz: React.FC = () => {
             }}
             className="mb-6 max-w-3xl mx-auto"
           >
-            {questions.map((_, index) => (
+            {quizzs.map((_, index) => (
               <Step key={index} />
             ))}
           </Steps>
 
-          {questions[current] && (
+          {quizzs[current] && (
             <motion.div
               variants={cardVariants}
               initial="hidden"
@@ -154,7 +228,7 @@ const SkinAssessmentQuiz: React.FC = () => {
               <Card
                 title={
                   <span className="font-medium text-2xl">
-                    {questions[current].question}
+                    {quizzs[current].text}
                   </span>
                 }
                 bordered={false}
@@ -162,18 +236,18 @@ const SkinAssessmentQuiz: React.FC = () => {
               >
                 <Radio.Group
                   onChange={(e) =>
-                    handleAnswerChange(questions[current].id, e.target.value)
+                    handleAnswerChange(quizzs[current]._id, e.target.value)
                   }
-                  value={answers[questions[current].id]}
+                  value={answers[quizzs[current]._id]}
                   className="w-full"
                 >
-                  {questions[current].options.map((option, index) => (
+                  {quizzs[current].options.map((option, index) => (
                     <Radio
                       key={index}
-                      value={option}
+                      value={option.text}
                       className="block text-xl my-4 p-4 hover:bg-blue-100 rounded-lg transition-all ease-in-out duration-300"
                     >
-                      {option}
+                      {option.text}
                     </Radio>
                   ))}
                 </Radio.Group>
@@ -187,7 +261,7 @@ const SkinAssessmentQuiz: React.FC = () => {
                   >
                     Back
                   </Button>
-                  {current === questions.length - 1 ? (
+                  {current === quizzs.length - 1 ? (
                     <Button
                       type="primary"
                       onClick={handleSubmit}
@@ -219,23 +293,35 @@ const SkinAssessmentQuiz: React.FC = () => {
               animate="visible"
             >
               <Card
-                title="Result"
+                title="Kết quả"
                 bordered={false}
                 className="shadow-lg mb-6 p-6 bg-white rounded-lg max-w-3xl mx-auto"
               >
-                <p className="text-2xl text-green-600 font-semibold">{result}</p>
-                {bestMatch && (
+                <p className="text-2xl text-green-600 font-semibold">
+                  {result.message}
+                </p>
+                <div className="mt-4">
+                  <h4 className="text-xl font-medium">Điểm số của bạn:</h4>
+                  <ul className="list-disc pl-5 mt-2">
+                    {Object.entries(result.scores).map(([category, score]) => (
+                      <li key={category} className="text-lg text-gray-700">
+                        {category}: {score}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {result.bestMatch && (
                   <div className="mt-4">
-                    <h4 className="text-xl font-medium">Best Match:</h4>
+                    <h4 className="text-xl font-medium">Phù hợp nhất:</h4>
                     <p
                       className={`text-lg ${
-                        bestMatch !== "Không có kết quả phù hợp."
+                        result.bestMatch !== "Không có kết quả phù hợp."
                           ? "text-blue-600 cursor-pointer hover:underline"
                           : "text-gray-600"
                       }`}
                       onClick={handleBestMatchClick}
                     >
-                      {bestMatch.charAt(0).toUpperCase() + bestMatch.slice(1)}
+                      {result.bestMatch}
                     </p>
                   </div>
                 )}
@@ -248,4 +334,4 @@ const SkinAssessmentQuiz: React.FC = () => {
   );
 };
 
-export default SkinAssessmentQuiz;
+export default SkinAssessmentQuizz;

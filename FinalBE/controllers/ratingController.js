@@ -1,21 +1,25 @@
 const Rating = require("../models/Rating");
-const Product = require("../models/Product");
+const Service = require("../models/Service");
 const User = require("../models/User");
-const Cart = require("../models/cartModel");
+const Booking = require("../models/Booking");
+
+// Tạo đánh giá mới
 exports.createRating = async (req, res) => {
   try {
     const {
-      bookingID,
-      service_id,
+      BookingID,
+      service_id, // Đổi service_id thành serviceID để khớp với schema
+      serviceName, // Thêm serviceName vào kiểm tra nếu cần
       serviceRating,
       serviceContent,
       images,
       createName,
     } = req.body;
 
+    // Kiểm tra các trường bắt buộc
     if (
-      !bookingID ||
-      !service_id ||
+      !BookingID ||
+      !service_id || // Đổi service_id thành serviceID
       !serviceRating ||
       !serviceContent ||
       !createName
@@ -23,36 +27,42 @@ exports.createRating = async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const existingRating = await Rating.findOne({ bookingID, createName });
-
+    // Kiểm tra xem người dùng đã đánh giá booking này chưa
+    const existingRating = await Rating.findOne({ BookingID, createName });
     if (existingRating) {
       return res
         .status(400)
-        .json({ error: "You have already reviewed this order." });
+        .json({ error: "You have already reviewed this booking." });
     }
 
-    const cart = await Cart.findOne({ BookingID: bookingID });
-
-    if (!cart) {
-      return res.status(404).json({ error: "Order not found." });
+    // Tìm booking
+    const booking = await Booking.findOne({ BookingID: BookingID });
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found." });
     }
 
-    if (!cart.service_id) {
-      return res.status(400).json({ error: "Service ID is missing in order." });
+    // Kiểm tra serviceID trong booking
+    if (booking.service_id !== service_id) { // Đổi .equals thành so sánh thông thường vì service_id là chuỗi
+      return res.status(400).json({ error: "Service ID does not match booking." });
     }
 
-    if (cart.status !== "checked-out") {
-      return res
-        .status(400)
-        .json({
-          error: "You can only review orders that have been checked-out.",
-        });
+    // Kiểm tra trạng thái booking
+    if (booking.status !== "checked-out") {
+      return res.status(400).json({
+        error: "You can only review bookings that have been checked-out.",
+      });
+    }
+
+    // Lấy thông tin dịch vụ để lấy tên
+    const service = await Service.findOne({ service_id: service_id }); // Tìm service bằng service_id
+    if (!service) {
+      return res.status(404).json({ error: "Service not found." });
     }
 
     const newRating = new Rating({
-      bookingID,
-      service_id: cart.service_id,
-      serviceName: cart.serviceName,
+      BookingID,
+      service_id, // Đổi service_id thành serviceID
+      serviceName: service.name || serviceName, // Ưu tiên lấy từ Service, nếu không có thì lấy từ req.body
       serviceRating,
       serviceContent,
       images,
@@ -62,27 +72,32 @@ exports.createRating = async (req, res) => {
 
     await newRating.save();
 
-    cart.status = "reviewed";
-    await cart.save();
+    // Cập nhật trạng thái booking
+    booking.status = "reviewed";
+    await booking.save();
 
-    return res
-      .status(201)
-      .json({ message: "Review submitted successfully!", rating: newRating });
+    return res.status(201).json({
+      message: "Review submitted successfully!",
+      rating: newRating,
+    });
   } catch (err) {
     console.error("❌ Error creating rating:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
 
+// Lấy tất cả đánh giá
 exports.getRatings = async (req, res) => {
   try {
     const ratings = await Rating.find();
     res.json(ratings);
   } catch (err) {
+    console.error("❌ Error fetching ratings:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
 
+// Lấy đánh giá theo ID
 exports.getRatingById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -92,10 +107,12 @@ exports.getRatingById = async (req, res) => {
 
     res.json(rating);
   } catch (err) {
+    console.error("❌ Error fetching rating by ID:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
 
+// Lấy đánh giá theo tên dịch vụ
 exports.getRatingsByServiceName = async (req, res) => {
   try {
     const { serviceName } = req.params;
@@ -109,10 +126,12 @@ exports.getRatingsByServiceName = async (req, res) => {
 
     res.json(ratings);
   } catch (err) {
+    console.error("❌ Error fetching ratings by service name:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
 
+// Cập nhật đánh giá
 exports.updateRating = async (req, res) => {
   try {
     const { id } = req.params;
@@ -129,10 +148,12 @@ exports.updateRating = async (req, res) => {
     await rating.save();
     res.json({ message: "Rating updated successfully", rating });
   } catch (err) {
+    console.error("❌ Error updating rating:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
 
+// Xóa đánh giá
 exports.deleteRating = async (req, res) => {
   try {
     const { id } = req.params;
@@ -143,31 +164,30 @@ exports.deleteRating = async (req, res) => {
     await Rating.findByIdAndDelete(id);
     res.json({ message: "Rating deleted successfully" });
   } catch (err) {
+    console.error("❌ Error deleting rating:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
+
 // Kiểm tra xem người dùng đã đánh giá dịch vụ này chưa
 exports.checkUserReview = async (req, res) => {
   try {
-    const { bookingID, username } = req.query;
+    const { BookingID, username } = req.query;
 
-    if (!bookingID || !username) {
+    if (!BookingID || !username) {
       return res.status(400).json({ error: "Missing required parameters" });
     }
 
-    // ✅ Kiểm tra nếu rating tồn tại
     const existingRating = await Rating.findOne({
-      bookingID,
+      BookingID,
       createName: username,
     });
 
-    if (existingRating) {
-      return res.status(200).json({ reviewed: true });
-    } else {
-      return res.status(200).json({ reviewed: false });
-    }
+    return res.status(200).json({ reviewed: !!existingRating });
   } catch (error) {
     console.error("❌ Error checking user review:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+module.exports = exports;

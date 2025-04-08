@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const ratingController = require("../controllers/ratingController");
+const { authMiddleware, authorize } = require("../middleware/auth");
 
 // API tạo đánh giá
 router.post("/", ratingController.createRating);
@@ -20,5 +21,5 @@ router.put("/:id", ratingController.updateRating);
 router.delete("/:id", ratingController.deleteRating);
 
 // 🔥 API kiểm tra xem người dùng đã đánh giá dịch vụ chưa
-router.get("/check-review", ratingController.checkUserReview);
+router.get("/check-review",authMiddleware,authorize(["admin"]), ratingController.checkUserReview);
 module.exports = router;

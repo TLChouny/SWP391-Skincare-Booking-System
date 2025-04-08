@@ -26,54 +26,49 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Layout from "../../layout/Layout";
 import { User } from "../../types/booking";
+import { useNavigate } from "react-router-dom";
 
 // Define the shape of the form values
 interface FormValues {
   username: string;
   email: string;
-  phone: string;
-  gender: string;
-  address: string;
-  description: string;
+  phone?: string;
+  gender?: string;
+  address?: string;
+  description?: string;
 }
 
-// Extend User interface to include role
-interface ExtendedUser extends User {
-  role?: string;
-}
-
-// const API_BASE_URL = "http://localhost:5000";
 const API_BASE_URL =
-    window.location.hostname === "localhost"
-      ? "http://localhost:5000"
-      : "https://luluspa-production.up.railway.app";
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://luluspa-production.up.railway.app";
 
 const SettingPage: React.FC = () => {
-  const { token } = useAuth();
+  const { token, setToken } = useAuth(); // Destructure setToken từ useAuth
   const [form] = Form.useForm();
-  const [user, setUser] = useState<ExtendedUser>({
+  const [user, setUser] = useState<User>({
     username: "",
     email: "",
-    avatar: "",
     phone: "",
-    gender: "",
-    address: "",
-    description: "",
     role: "",
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [newPassword, setNewPassword] = useState<string>("");
   const [oldPassword, setOldPassword] = useState<string>("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (token) {
       fetchUserData();
+    } else {
+      toast.error("Authentication required", { autoClose: 3000 });
+      navigate("/login");
     }
-  }, [token]);
+  }, [token, navigate]);
 
   useEffect(() => {
     form.setFieldsValue({
@@ -97,22 +92,39 @@ const SettingPage: React.FC = () => {
         headers: { "x-auth-token": token },
       });
 
-      const userData: ExtendedUser = {
+      const userData: User = {
+        _id: response.data._id || undefined,
         username: response.data.username || "",
         email: response.data.email || "",
         avatar: response.data.avatar
           ? `${API_BASE_URL}${response.data.avatar}?t=${new Date().getTime()}`
-          : `${API_BASE_URL}/default-avatar.png`,
+          : undefined,
         phone: response.data.phone_number || "",
-        gender: response.data.gender || "",
-        address: response.data.address || "",
-        description: response.data.Description || "",
-        role: response.data.role || "", // Assuming role is returned from API
+        gender: response.data.gender || undefined,
+        address: response.data.address || undefined,
+        description: response.data.description || undefined,
+        role: response.data.role || "",
       };
 
       setUser(userData);
-    } catch {
-      toast.error("Failed to fetch user information!", { autoClose: 3000 });
+
+      const updatedUser = {
+        ...JSON.parse(localStorage.getItem("user") || "{}"),
+        _id: userData._id,
+        username: userData.username,
+        email: userData.email,
+        phone: userData.phone,
+        gender: userData.gender,
+        address: userData.address,
+        description: userData.description,
+        role: userData.role,
+        avatar: userData.avatar,
+      };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to fetch user information!";
+      toast.error(errorMessage, { autoClose: 3000 });
     } finally {
       setLoading(false);
     }
@@ -120,7 +132,10 @@ const SettingPage: React.FC = () => {
 
   const handleFileChange = async (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("File size exceeds 10MB! Please select an image under 10MB.");
+      toast.error("File size exceeds 10MB! Please select an image under 10MB.", {
+        autoClose: 3000,
+        position: "top-right",
+      });
       return false;
     }
 
@@ -139,13 +154,18 @@ const SettingPage: React.FC = () => {
         }
       );
 
-      toast.success(
-        "Avatar updated successfully! Please log in again to see the changes.",
-        {
-          autoClose: 3000,
-          onClose: () => handleLogout(), // Trigger logout after toast closes
-        }
-      );
+      const updatedUser = {
+        ...JSON.parse(localStorage.getItem("user") || "{}"),
+        avatar: `${API_BASE_URL}${response.data.user.avatar}?t=${new Date().getTime()}`,
+      };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      window.dispatchEvent(new Event("user-updated"));
+
+      toast.success("Avatar updated successfully!", {
+        autoClose: 3000,
+      });
+
       setUser((prevUser) => ({
         ...prevUser,
         avatar: `${API_BASE_URL}${
@@ -153,8 +173,13 @@ const SettingPage: React.FC = () => {
         }?t=${new Date().getTime()}`,
       }));
       fetchUserData();
-    } catch {
-      toast.error("Failed to update account information!");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to update avatar!";
+      toast.error(errorMessage, {
+        autoClose: 3000,
+        position: "top-right",
+      });
     }
 
     return false;
@@ -162,30 +187,43 @@ const SettingPage: React.FC = () => {
 
   const handleUpdateUser = async (values: FormValues) => {
     if (!token) {
-      toast.error("Authentication required");
+      toast.error("Authentication required", {
+        autoClose: 3000,
+        position: "top-right",
+      });
       return;
     }
 
-    // Check if username exceeds 50 characters
     if (values.username.length > 50) {
-      toast.error("Username must not exceed 50 characters!");
+      toast.error("Username must not exceed 50 characters!", {
+        autoClose: 3000,
+        position: "top-right",
+      });
       return;
     }
 
-    // Check if phone is provided and has exactly 10 digits
     if (values.phone && !/^\d{10}$/.test(values.phone)) {
-      toast.error("Phone number must be exactly 10 digits!");
+      toast.error("Phone number must be exactly 10 digits!", {
+        autoClose: 3000,
+        position: "top-right",
+      });
       return;
     }
 
     const formData = new FormData();
     formData.append("username", values.username);
-    formData.append("email", values.email); // Email included but disabled in UI
-    formData.append("phone_number", values.phone);
-    formData.append("gender", values.gender);
-    formData.append("address", values.address);
-    if (user.role === "skincare_staff") {
-      formData.append("description", values.description); // Only append description for skincare_staff
+    formData.append("email", values.email);
+    if (values.phone) {
+      formData.append("phone_number", values.phone);
+    }
+    if (values.gender) {
+      formData.append("gender", values.gender);
+    }
+    if (values.address) {
+      formData.append("address", values.address);
+    }
+    if (user.role === "skincare_staff" && values.description) {
+      formData.append("description", values.description);
     }
 
     try {
@@ -196,67 +234,95 @@ const SettingPage: React.FC = () => {
         },
       });
 
-      // Show success message and prompt to log in again
-      toast.success(
-        "Account information updated successfully! Please log in again to see the changes.",
-        {
-          autoClose: 3000,
-          onClose: () => handleLogout(), // Trigger logout after toast closes
-        }
-      );
-    } catch {
-      toast.error("Failed to update account information!");
+      const updatedUser = {
+        ...JSON.parse(localStorage.getItem("user") || "{}"),
+        username: values.username,
+        email: values.email,
+        phone: values.phone,
+        gender: values.gender,
+        address: values.address,
+        description: user.role === "skincare_staff" ? values.description : undefined,
+      };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      window.dispatchEvent(new Event("user-updated"));
+
+      toast.success("Account information updated successfully!", {
+        autoClose: 3000,
+        position: "top-right",
+      });
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to update account information!";
+      toast.error(errorMessage, {
+        autoClose: 3000,
+        position: "top-right",
+      });
     }
   };
 
   const handleChangePassword = async () => {
     if (!token) {
-      toast.error("Authentication required");
+      toast.error("Authentication required", {
+        autoClose: 3000,
+        position: "top-right",
+      });
       return;
     }
 
     if (!user.email || !oldPassword || !newPassword) {
-      toast.error("Please fill in all fields!");
+      toast.error("Please fill in all fields!", {
+        autoClose: 3000,
+        position: "top-right",
+      });
       return;
     }
 
-    // Check if new password is at least 8 characters long
     if (newPassword.length < 8) {
-      toast.error("New password must be at least 8 characters long!");
+      toast.error("New password must be at least 8 characters long!", {
+        autoClose: 3000,
+        position: "top-right",
+      });
       return;
     }
 
     try {
       await axios.post(
-        `${API_BASE_URL}/api/auth/forgot-password`,
+        `${API_BASE_URL}/api/auth/change-password`,
         {
           email: user.email,
-          old_password: oldPassword,
-          new_password: newPassword,
+          oldPassword: oldPassword,
+          newPassword: newPassword,
         },
         { headers: { "x-auth-token": token } }
       );
 
-      // Show success message and prompt to log in again
       toast.success(
         "Password changed successfully! Please log in again with your new password.",
         {
           autoClose: 3000,
-          onClose: () => handleLogout(), // Trigger logout after toast closes
+          position: "top-right",
+          onClose: () => handleLogout(),
         }
       );
       setOldPassword("");
       setNewPassword("");
-    } catch {
-      toast.error("Failed to change password!", { autoClose: 3000 });
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to change password!";
+      toast.error(errorMessage, {
+        autoClose: 3000,
+        position: "top-right",
+      });
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("user");
-    toast.success("Logout successfully!", { autoClose: 3000 });
-    window.location.href = "/login";
+    setToken(null); // Xóa token khỏi context
+    localStorage.removeItem("user"); // Xóa thông tin user khỏi localStorage
+    localStorage.removeItem("token"); // Xóa token khỏi localStorage
+    navigate("/login"); // Điều hướng về trang login
+    toast.success("Logged out successfully!", { autoClose: 3000 });
   };
 
   if (loading)
@@ -264,7 +330,7 @@ const SettingPage: React.FC = () => {
       <Spin
         size="large"
         style={{
-          display: "flex", // Fixed the typo here
+          display: "flex",
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
@@ -274,6 +340,18 @@ const SettingPage: React.FC = () => {
 
   return (
     <Layout>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div
         style={{
           padding: "40px 20px",
@@ -354,7 +432,7 @@ const SettingPage: React.FC = () => {
                   <Input
                     placeholder="Enter your username"
                     style={{ borderRadius: 8 }}
-                    maxLength={50} // Optional: Limit input length in UI
+                    maxLength={50}
                     disabled
                   />
                 </Form.Item>
@@ -540,7 +618,6 @@ const SettingPage: React.FC = () => {
             <Button
               onClick={handleChangePassword}
               type="primary"
-              htmlType="submit"
               block
               style={{
                 backgroundColor: "#1890ff",

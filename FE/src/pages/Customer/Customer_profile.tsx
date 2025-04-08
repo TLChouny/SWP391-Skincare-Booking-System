@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Booking } from "../../types/booking";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const statusStyles = {
   pending: { bg: "bg-yellow-100", text: "text-yellow-800", icon: "⏳" },
@@ -17,14 +18,13 @@ const statusStyles = {
 } as const;
 
 const CustomerProfile: React.FC = () => {
-  const { user } = useAuth();
-  const [orders, setOrders] = useState<Booking[]>([]);
+  const { user, token, booking, fetchBooking, loadingBooking, bookingError, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchOrderId, setSearchOrderId] = useState<string>("");
   const [sortStatus, setSortStatus] = useState<string>("All");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const ordersPerPage = 10;
   const API_BASE_URL =
     window.location.hostname === "localhost"
@@ -41,62 +41,20 @@ const CustomerProfile: React.FC = () => {
   const [serviceImage, setServiceImage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.username) {
-      fetchOrders();
-      fetchProducts();
-    } else {
-      setOrders([]);
-      setLoading(false);
-    }
-  }, [user]);
-
-  const fetchOrders = async () => {
-    if (!user?.username) {
-      setError("You need to log in to view your order history.");
-      setLoading(false);
+    if (!isAuthenticated || !user) {
+      toast.error("Please log in to view your order history.");
+      navigate("/login");
       return;
     }
 
-    setLoading(true);
-    setError(null);
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        throw new Error("You need to log in to view your order history.");
-      }
-
-      const response = await fetch(
-        `${API_BASE_URL}/cart/user/${encodeURIComponent(user.username)}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": token,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch orders");
-      }
-
-      const data: Booking[] = await response.json();
-      setOrders(data);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchBooking();
+  }, [isAuthenticated, user, fetchBooking, navigate]);
 
   const fetchProducts = async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
+    if (!token) return;
 
-      const response = await fetch(`${API_BASE_URL}/products`, {
+    try {
+      const response = await fetch(`${API_BASE_URL}/services`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -105,6 +63,9 @@ const CustomerProfile: React.FC = () => {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Unauthorized: Please log in again.");
+        }
         throw new Error("Failed to fetch products");
       }
 
@@ -112,12 +73,22 @@ const CustomerProfile: React.FC = () => {
       setProducts(data);
     } catch (err) {
       console.error("Error fetching products:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Error fetching products."
+      );
     }
   };
 
+  useEffect(() => {
+    if (token) {
+      fetchProducts();
+    }
+  }, [token]);
+
   const openReviewModal = (order: Booking) => {
-    if (!order.BookingID) {
-      message.warning("Invalid order ID.");
+    console.log("Order selected for review:", order);
+    if (!order.BookingID || !order.service_id) {
+      message.warning("Invalid order: Missing BookingID or service_id.");
       return;
     }
     setSelectedOrder(order);
@@ -132,26 +103,45 @@ const CustomerProfile: React.FC = () => {
   };
 
   const handleSubmitReview = async () => {
-    if (!selectedOrder || !user?.username) {
-      message.error("Error: No order selected or not logged in.");
+    if (!selectedOrder || !user?.username || !token) {
+      message.error("Error: No order selected, not logged in, or token missing.");
+      navigate("/login");
       return;
     }
 
-    const reviewData = {
-      bookingID: selectedOrder.BookingID,
+    console.log("Selected order for review:", selectedOrder);
+    if (!selectedOrder.BookingID || !selectedOrder.service_id) {
+      message.error("Error: Invalid booking or service information.");
+      return;
+    }
+
+    if (!reviewText.trim()) {
+      message.warning("Please enter a review comment.");
+      return;
+    }
+
+    console.log("Submitting review with data:", {
+      BookingID: selectedOrder.BookingID,
       service_id: selectedOrder.service_id,
       serviceName: selectedOrder.serviceName,
       serviceRating: rating,
       serviceContent: reviewText,
       createName: user.username,
+      images: [],
+    });
+
+    setIsSubmittingReview(true);
+    const reviewData = {
+      BookingID: selectedOrder.BookingID,
+      service_id: selectedOrder.service_id,
+      serviceName: selectedOrder.serviceName,
+      serviceRating: rating,
+      serviceContent: reviewText,
+      createName: user.username,
+      images: [],
     };
 
     try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        throw new Error("You need to log in to submit a review.");
-      }
-
       const response = await fetch(`${API_BASE_URL}/ratings`, {
         method: "POST",
         headers: {
@@ -164,23 +154,25 @@ const CustomerProfile: React.FC = () => {
       const responseData = await response.json();
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Unauthorized: Please log in again.");
+        }
         throw new Error(responseData.error || "Unable to submit review.");
       }
 
       toast.success("Review submitted successfully!");
-
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.BookingID === selectedOrder.BookingID
-            ? { ...order, status: "reviewed" }
-            : order
-        )
-      );
-
+      await fetchBooking();
       closeReviewModal();
     } catch (err) {
-      toast.error("Error submitting review.");
+      toast.error(
+        err instanceof Error ? err.message : "Error submitting review."
+      );
       console.error("Error submitting review:", err);
+      if (err instanceof Error && err.message.includes("Unauthorized")) {
+        navigate("/login");
+      }
+    } finally {
+      setIsSubmittingReview(false);
     }
   };
 
@@ -200,7 +192,8 @@ const CustomerProfile: React.FC = () => {
     setServiceImage(null);
   };
 
-  const filteredAndSortedOrders = orders
+  const filteredAndSortedOrders = booking
+    .filter((order) => order.BookingID && order.service_id)
     .filter((order) =>
       searchOrderId
         ? (order.BookingID || "N/A")
@@ -224,7 +217,6 @@ const CustomerProfile: React.FC = () => {
     setCurrentPage(page);
   };
 
-  // Hàm định dạng giá tiền với dấu chấm ngăn cách hàng nghìn
   const formatPrice = (price: number | undefined | null) => {
     if (price === undefined || price === null) return "N/A";
     return `${Math.round(price).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} VNĐ`;
@@ -232,9 +224,9 @@ const CustomerProfile: React.FC = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-8 bg-gray-50 min-h-screen">
+      <div className="container mx-auto p-4 sm:p-8 bg-gray-50 min-h-screen">
         <motion.h1
-          className="text-4xl font-extrabold text-center mb-10 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+          className="text-3xl sm:text-4xl font-extrabold text-center mb-8 sm:mb-10 bg-gradient-to-r from-yellow-600 to-white-500 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -244,7 +236,7 @@ const CustomerProfile: React.FC = () => {
         </motion.h1>
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6 flex flex-col sm:flex-row gap-4">
+          <div className="p-4 sm:p-6 flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Search by Booking ID
@@ -277,108 +269,109 @@ const CustomerProfile: React.FC = () => {
                   { value: "completed", label: "Completed" },
                   { value: "cancel", label: "Cancel" },
                   { value: "checked-out", label: "Checked Out" },
+                  { value: "reviewed", label: "Reviewed" },
                 ]}
               />
             </div>
           </div>
 
-          {loading ? (
+          {loadingBooking ? (
             <Skeleton active paragraph={{ rows: 10 }} className="p-6" />
-          ) : error ? (
-            <p className="text-center text-red-600 p-6">{error}</p>
+          ) : bookingError ? (
+            <p className="text-center text-red-600 p-6">{bookingError}</p>
           ) : filteredAndSortedOrders.length === 0 ? (
             <p className="text-center text-gray-600 p-6">No orders found</p>
           ) : (
             <>
-              <table className="min-w-full">
-                <thead className="bg-gradient-to-r from-blue-50 to-green-50">
-                  <tr>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[15%]">
-                      Booking ID
-                    </th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[20%]">
-                      Service Name
-                    </th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[15%]">
-                      Customer
-                    </th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[15%]">
-                      Status
-                    </th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[10%]">
-                      Review
-                    </th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[20%]">
-                      Received result
-                    </th>
-                    <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 w-[5%]">
-                      {/* Details */}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentOrders.map((order) => (
-                    <motion.tr
-                      key={order.CartID}
-                      className="border-b border-gray-200 hover:bg-gray-100 transition-colors duration-200"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <td className="py-4 px-6 text-gray-800 w-[15%]">
-                        {order.BookingID || "N/A"}
-                      </td>
-                      <td className="py-4 px-6 text-gray-800 w-[20%] whitespace-nowrap">
-                        {order.serviceName}
-                      </td>
-                      <td className="py-4 px-6 text-gray-800 w-[15%] whitespace-nowrap">
-                        {order.customerName}
-                      </td>
-                      <td className="py-4 px-6 w-[15%]">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            statusStyles[order.status]?.bg || "bg-gray-100"
-                          } ${
-                            statusStyles[order.status]?.text || "text-gray-800"
-                          }`}
-                        >
-                          {statusStyles[order.status]?.icon || "⏳"}
-                          <span className="ml-1">{order.status}</span>
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 w-[10%]">
-                        {order.status === "checked-out" && !order.reviewed ? (
-                          <Button
-                            type="primary"
-                            onClick={() => openReviewModal(order)}
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="bg-gradient-to-r from-blue-50 to-green-50">
+                    <tr>
+                      <th className="py-4 px-4 sm:px-6 text-left text-sm font-semibold text-gray-700 w-[15%]">
+                        Booking ID
+                      </th>
+                      <th className="py-4 px-4 sm:px-6 text-left text-sm font-semibold text-gray-700 w-[20%]">
+                        Service Name
+                      </th>
+                      <th className="py-4 px-4 sm:px-6 text-left text-sm font-semibold text-gray-700 w-[15%]">
+                        Customer
+                      </th>
+                      <th className="py-4 px-4 sm:px-6 text-left text-sm font-semibold text-gray-700 w-[15%]">
+                        Status
+                      </th>
+                      <th className="py-4 px-4 sm:px-6 text-left text-sm font-semibold text-gray-700 w-[10%]">
+                        Review
+                      </th>
+                      <th className="py-4 px-4 sm:px-6 text-left text-sm font-semibold text-gray-700 w-[20%]">
+                        Received Result
+                      </th>
+                      <th className="py-4 px-4 sm:px-6 text-left text-sm font-semibold text-gray-700 w-[5%]">
+                        Details
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentOrders.map((order) => (
+                      <motion.tr
+                        key={order.BookingID || Math.random()}
+                        className="border-b border-gray-200 hover:bg-gray-100 transition-colors duration-200"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <td className="py-4 px-4 sm:px-6 text-gray-800 w-[15%]">
+                          {order.BookingID || "N/A"}
+                        </td>
+                        <td className="py-4 px-4 sm:px-6 text-gray-800 w-[20%] whitespace-nowrap">
+                          {order.serviceName || "N/A"}
+                        </td>
+                        <td className="py-4 px-4 sm:px-6 text-gray-800 w-[15%] whitespace-nowrap">
+                          {order.customerName || "N/A"}
+                        </td>
+                        <td className="py-4 px-4 sm:px-6 w-[15%]">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                              statusStyles[order.status]?.bg || "bg-gray-100"
+                            } ${
+                              statusStyles[order.status]?.text || "text-gray-800"
+                            }`}
                           >
-                            Review
-                          </Button>
-                        ) : order.reviewed ? (
-                          <span className="text-green-500 font-bold">
-                            Reviewed
+                            {statusStyles[order.status]?.icon || "⏳"}
+                            <span className="ml-1">{order.status || "N/A"}</span>
                           </span>
-                        ) : (
-                          <span className="text-gray-400">{order.status}</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-6 text-gray-800 w-[20%]">
-                        {order.description
-                          ? order.description
-                          : "No result yet"}
-                      </td>
-                      <td className="py-4 px-6 w-[5%] text-center">
-                        <span
-                          onClick={() => openDetailModal(order)}
-                          className="text-gray-500 hover:text-blue-500 cursor-pointer text-lg"
-                        >
-                          👁️
-                        </span>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                        <td className="py-4 px-4 sm:px-6 w-[10%]">
+                          {order.status === "checked-out" ? (
+                            <Button
+                              type="primary"
+                              onClick={() => openReviewModal(order)}
+                            >
+                              Review
+                            </Button>
+                          ) : order.status === "reviewed" ? (
+                            <span className="text-green-500 font-bold">
+                              Reviewed
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">{order.status || "N/A"}</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4 sm:px-6 text-gray-800 w-[20%]">
+                          {order.description || "No result yet"}
+                        </td>
+                        <td className="py-4 px-4 sm:px-6 w-[5%] text-center">
+                          <span
+                            onClick={() => openDetailModal(order)}
+                            className="text-gray-500 hover:text-blue-500 cursor-pointer text-lg"
+                          >
+                            👁️
+                          </span>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               <div className="flex justify-center py-6">
                 <Button
@@ -422,6 +415,7 @@ const CustomerProfile: React.FC = () => {
         onOk={handleSubmitReview}
         okText="Submit"
         cancelText="Cancel"
+        okButtonProps={{ disabled: isSubmittingReview, loading: isSubmittingReview }}
         styles={{ body: { padding: "24px" } }}
       >
         <motion.div
@@ -447,7 +441,6 @@ const CustomerProfile: React.FC = () => {
         </motion.div>
       </Modal>
 
-      {/* Modal chi tiết */}
       <Modal
         title={
           <div className="text-2xl font-bold text-black">
@@ -479,7 +472,6 @@ const CustomerProfile: React.FC = () => {
             className="p-6 bg-white"
           >
             <div className="space-y-6">
-              {/* Thông tin đơn hàng */}
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-black mb-2">Order Information</h3>
                 <div className="space-y-2">
@@ -497,13 +489,13 @@ const CustomerProfile: React.FC = () => {
                       }`}
                     >
                       {statusStyles[selectedDetailOrder.status]?.icon || "⏳"}{" "}
-                      {selectedDetailOrder.status}
+                      {selectedDetailOrder.status || "N/A"}
                     </span>
                   </p>
                   <div className="flex justify-between border-b border-gray-200 pb-2">
                     <div className="flex-1">
                       <strong className="font-semibold">Start Time:</strong>
-                      <span className="ml-2">{selectedDetailOrder.startTime}</span>
+                      <span className="ml-2">{selectedDetailOrder.startTime || "N/A"}</span>
                     </div>
                     <div className="flex-1 text-right">
                       <strong className="font-semibold">End Time:</strong>
@@ -512,39 +504,37 @@ const CustomerProfile: React.FC = () => {
                   </div>
                   <p className="flex justify-between pt-2">
                     <strong className="font-semibold">Booking Date:</strong>
-                    <span>{selectedDetailOrder.bookingDate}</span>
+                    <span>{selectedDetailOrder.bookingDate || "N/A"}</span>
                   </p>
                 </div>
               </div>
 
-              {/* Thông tin khách hàng */}
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-black mb-2">Customer Information</h3>
                 <div className="space-y-1">
                   <p className="flex justify-between">
                     <strong className="font-semibold">Name:</strong>
-                    <span>{selectedDetailOrder.customerName}</span>
+                    <span>{selectedDetailOrder.customerName || "N/A"}</span>
                   </p>
                   <p className="flex justify-between">
                     <strong className="font-semibold">Phone:</strong>
-                    <span>{selectedDetailOrder.customerPhone}</span>
+                    <span>{selectedDetailOrder.customerPhone || "N/A"}</span>
                   </p>
                   <p className="flex justify-between">
                     <strong className="font-semibold">Email:</strong>
-                    <span>{selectedDetailOrder.customerEmail}</span>
+                    <span>{selectedDetailOrder.customerEmail || "N/A"}</span>
                   </p>
                 </div>
               </div>
 
-              {/* Thông tin dịch vụ */}
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-black mb-2">Service Information</h3>
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <div className="w-48">
                     {serviceImage ? (
                       <img
                         src={serviceImage}
-                        alt={selectedDetailOrder.serviceName}
+                        alt={selectedDetailOrder.serviceName || "Service"}
                         className="w-48 h-48 object-cover rounded-lg shadow-md"
                       />
                     ) : (
@@ -556,15 +546,11 @@ const CustomerProfile: React.FC = () => {
                   <div className="flex-1 space-y-2">
                     <p className="flex justify-between">
                       <strong className="font-semibold">Service Name:</strong>
-                      <span>{selectedDetailOrder.serviceName}</span>
+                      <span>{selectedDetailOrder.serviceName || "N/A"}</span>
                     </p>
                     <p className="flex justify-between">
                       <strong className="font-semibold">Therapist:</strong>
-                      <span>
-                        {selectedDetailOrder.selectedTherapist?.name ||
-                          selectedDetailOrder.Skincare_staff ||
-                          "Not assigned"}
-                      </span>
+                      <span>{selectedDetailOrder.Skincare_staff || "Not assigned"}</span>
                     </p>
                     <p className="flex justify-between">
                       <strong className="font-semibold">Original Price:</strong>
@@ -584,7 +570,6 @@ const CustomerProfile: React.FC = () => {
                 </div>
               </div>
 
-              {/* Ghi chú và kết quả */}
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-black mb-2">Additional Information</h3>
                 <div className="space-y-1">

@@ -4,18 +4,18 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../context/AuthContext";
 import { Booking } from "../../types/booking";
 import { Modal, Input } from "antd";
+
 const statusStyles = {
   pending: { bg: "bg-yellow-100", text: "text-yellow-800", icon: "⏳" },
   "checked-in": { bg: "bg-blue-100", text: "text-blue-800", icon: "✔" },
   completed: { bg: "bg-green-100", text: "text-green-800", icon: "✔" },
   "checked-out": { bg: "bg-purple-100", text: "text-purple-800", icon: "🚪" },
   cancel: { bg: "bg-red-100", text: "text-red-800", icon: "✖" },
-  reviewed: { bg: "bg-indigo-100", text: "text-indigo-800", icon: "📝" }, 
+  reviewed: { bg: "bg-indigo-100", text: "text-indigo-800", icon: "📝" },
 } as const;
 
-
 const ListOfAssign: React.FC = () => {
-  const { user, cart, setCart, fetchCart, loadingCart, cartError } = useAuth();
+  const { user, booking, setBooking, fetchBooking, loadingBooking, bookingError } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const bookingsPerPage = 5;
@@ -27,28 +27,27 @@ const ListOfAssign: React.FC = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [resultText, setResultText] = useState("");
   const [isViewMode, setIsViewMode] = useState(false);
-  useEffect(() => {
-    if (user) {
-      fetchCart();
-    }
-  }, [user, fetchCart]);
 
   useEffect(() => {
-    setBookings(cart);
-  }, [cart]);
+    if (user) {
+      fetchBooking();
+    }
+  }, [user, fetchBooking]);
+
+  useEffect(() => {
+    setBookings(booking);
+  }, [booking]);
 
   useEffect(() => {
     if (!isModalOpen) {
-      setResultText(""); 
-      setSelectedBooking(null); 
+      setResultText("");
+      setSelectedBooking(null);
     }
   }, [isModalOpen]);
 
-  const openModal = (booking: Booking, viewOnly = false) => {
-    setSelectedBooking(booking);
-
-    setResultText(viewOnly ? booking.description || "No result available" : "");
-
+  const openModal = (bookingItem: Booking, viewOnly = false) => {
+    setSelectedBooking(bookingItem);
+    setResultText(viewOnly ? bookingItem.description || "No result available" : "");
     setIsViewMode(viewOnly);
     setIsModalOpen(true);
   };
@@ -56,8 +55,8 @@ const ListOfAssign: React.FC = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setTimeout(() => {
-      setResultText(""); 
-      setSelectedBooking(null); 
+      setResultText("");
+      setSelectedBooking(null);
     }, 300);
   };
 
@@ -66,11 +65,12 @@ const ListOfAssign: React.FC = () => {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/cart/${selectedBooking.CartID}`,
+        `${API_BASE_URL}/bookings/${selectedBooking.BookingID}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("token") || "",
           },
           body: JSON.stringify({ description: resultText }),
         }
@@ -81,35 +81,30 @@ const ListOfAssign: React.FC = () => {
       }
 
       toast.success("Result updated successfully");
-
-      setResultText("");
-      setSelectedBooking(null);
-
       closeModal();
-
-      await fetchCart();
+      await fetchBooking();
     } catch (error) {
       toast.error("Error updating result");
       console.error(error);
     }
   };
 
-  const handleComplete = async (cartId: string) => {
-    if (!cartId) {
-      toast.error("Invalid CartID");
+  const handleComplete = async (bookingId: string) => {
+    if (!bookingId) {
+      toast.error("Invalid BookingID");
       return;
     }
 
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("token");
       if (!token) throw new Error("Please log in to mark as complete.");
 
-      const booking = bookings.find((b) => b.CartID === cartId);
-      if (!booking) throw new Error("Booking not found.");
-      if (booking.status !== "checked-in")
+      const bookingItem = bookings.find((b) => b.BookingID === bookingId);
+      if (!bookingItem) throw new Error("Booking not found.");
+      if (bookingItem.status !== "checked-in")
         throw new Error("Can only complete 'checked-in' bookings.");
 
-      const response = await fetch(`${API_BASE_URL}/cart/${cartId}`, {
+      const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -127,19 +122,19 @@ const ListOfAssign: React.FC = () => {
         );
       }
 
-      const updatedCart = await response.json();
+      const updatedBooking = await response.json();
       setBookings((prev) =>
         prev.map((b) =>
-          b.CartID === cartId ? { ...b, ...updatedCart.cart } : b
+          b.BookingID === bookingId ? { ...b, ...updatedBooking.booking } : b
         )
       );
-      setCart((prev) =>
+      setBooking((prev) =>
         prev.map((b) =>
-          b.CartID === cartId ? { ...b, ...updatedCart.cart } : b
+          b.BookingID === bookingId ? { ...b, ...updatedBooking.booking } : b
         )
       );
       toast.success("Booking marked as completed!");
-      await fetchCart(); 
+      await fetchBooking();
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
@@ -169,7 +164,7 @@ const ListOfAssign: React.FC = () => {
       <h1 className="text-3xl font-bold text-center mb-6">
         Therapist Assigned Bookings
       </h1>
-      {loadingCart ? (
+      {loadingBooking ? (
         <div className="text-center">
           <svg
             className="animate-spin h-8 w-8 mx-auto text-blue-500"
@@ -193,15 +188,15 @@ const ListOfAssign: React.FC = () => {
           </svg>
           <p className="mt-2 text-gray-600">Loading bookings...</p>
         </div>
-      ) : cartError ? (
-        <p className="text-center text-red-600">{cartError}</p>
+      ) : bookingError ? (
+        <p className="text-center text-red-600">{bookingError}</p>
       ) : bookings.length === 0 ? (
         <p className="text-center text-gray-600">No bookings assigned to you</p>
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md ">
-              <thead className="bg-gray-100 ">
+            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+              <thead className="bg-gray-100">
                 <tr>
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap sticky left-0 bg-gray-100 z-10">
                     Booking
@@ -233,46 +228,46 @@ const ListOfAssign: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentBookings.map((booking) => {
+                {currentBookings.map((bookingItem) => {
                   const statusStyle =
-                    statusStyles[booking.status] || statusStyles.pending;
+                    statusStyles[bookingItem.status] || statusStyles.pending;
                   return (
                     <tr
-                      key={booking.CartID || Math.random().toString()}
+                      key={bookingItem.BookingID || Math.random().toString()}
                       className="hover:bg-gray-50 transition-colors duration-300"
                     >
                       <td className="py-2 px-4 border-b whitespace-nowrap sticky left-0 bg-white z-10">
-                        {booking.BookingID || "N/A"}
+                        {bookingItem.BookingID || "N/A"}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.customerName}
+                        {bookingItem.customerName}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.serviceName}
-                      </td>
-                      <td className="py-2 px-4 border-b whitespace NOWRAP">
-                        {booking.bookingDate}
+                        {bookingItem.serviceName}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.startTime}
+                        {bookingItem.bookingDate}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.totalPrice?.toLocaleString("vi-VN") || "N/A"}
+                        {bookingItem.startTime}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        {bookingItem.totalPrice?.toLocaleString("vi-VN") || "N/A"}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium ${statusStyle.bg} ${statusStyle.text}`}
                         >
-                          {statusStyle.icon} {booking.status}
+                          {statusStyle.icon} {bookingItem.status}
                         </span>
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.status === "checked-in" ? (
-                          booking.description &&
-                          booking.description.trim() !== "" ? (
+                        {bookingItem.status === "checked-in" ? (
+                          bookingItem.description &&
+                          bookingItem.description.trim() !== "" ? (
                             <button
                               onClick={() =>
-                                handleComplete(booking.CartID || "")
+                                handleComplete(bookingItem.BookingID || "")
                               }
                               className="bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600 transition-all duration-300 whitespace-nowrap"
                             >
@@ -287,23 +282,20 @@ const ListOfAssign: React.FC = () => {
                           <span className="text-gray-500">No Action</span>
                         )}
                       </td>
-
                       <td className="py-2 px-4 border-b">
                         <button
-                          onClick={() => openModal(booking, true)}
+                          onClick={() => openModal(bookingItem, true)}
                           className="bg-gray-500 text-white py-1 px-3 rounded hover:bg-gray-600 transition-all mr-2"
                         >
                           View
                         </button>
-                        {booking.status === "checked-in" ? (
-                          <>
-                            <button
-                              onClick={() => openModal(booking, false)}
-                              className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600 transition-all mr-2"
-                            >
-                              Update result
-                            </button>
-                          </>
+                        {bookingItem.status === "checked-in" ? (
+                          <button
+                            onClick={() => openModal(bookingItem, false)}
+                            className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600 transition-all mr-2"
+                          >
+                            Update result
+                          </button>
                         ) : (
                           <span className="text-gray-500"></span>
                         )}
@@ -343,11 +335,11 @@ const ListOfAssign: React.FC = () => {
           </div>
           <div className="text-center mt-6">
             <button
-              onClick={fetchCart}
+              onClick={fetchBooking}
               className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition-all duration-300"
-              disabled={loadingCart}
+              disabled={loadingBooking}
             >
-              {loadingCart ? "Refreshing..." : "Refresh Bookings"}
+              {loadingBooking ? "Refreshing..." : "Refresh Bookings"}
             </button>
           </div>
         </>
@@ -356,14 +348,14 @@ const ListOfAssign: React.FC = () => {
         title={isViewMode ? "View Result" : "Update Result"}
         open={isModalOpen}
         onCancel={closeModal}
-        onOk={!isViewMode ? saveResult : closeModal} 
-        okText={isViewMode ? "Close" : "Save"} 
+        onOk={!isViewMode ? saveResult : closeModal}
+        okText={isViewMode ? "Close" : "Save"}
         cancelButtonProps={{
           style: { display: isViewMode ? "none" : "inline-block" },
-        }} 
+        }}
       >
         {isViewMode ? (
-          <p className="text-lg text-gray-700">{resultText}</p> 
+          <p className="text-lg text-gray-700">{resultText}</p>
         ) : (
           <Input.TextArea
             value={resultText}

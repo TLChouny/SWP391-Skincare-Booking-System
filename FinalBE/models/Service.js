@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
 
-const ProductSchema = new mongoose.Schema(
+const ServiceSchema = new mongoose.Schema(
   {
     service_id: { type: Number, unique: true },
     name: { type: String, required: true },
     description: { type: String },
-    price: { type: Number, required: true }, 
+    price: { type: Number, required: true },
+    currency: { type: String, default: "VND" },
     duration: { type: Number, required: true },
     category: {
       type: mongoose.Schema.Types.ObjectId,
@@ -13,7 +14,7 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
     image: { type: String, default: "" },
-    vouchers: [{ // Thêm field vouchers
+    vouchers: [{ 
       type: mongoose.Schema.Types.ObjectId,
       ref: "Voucher",
     }],
@@ -24,7 +25,7 @@ const ProductSchema = new mongoose.Schema(
   { timestamps: false }
 );
 
-ProductSchema.pre("save", async function (next) {
+ServiceSchema.pre("save", async function (next) {
   if (this.isModified("vouchers")) {
     const vouchers = await mongoose.model("Voucher").find({ _id: { $in: this.vouchers } });
     console.log("Vouchers:", vouchers);
@@ -41,4 +42,4 @@ ProductSchema.pre("save", async function (next) {
   next();
 });
 
-module.exports = mongoose.model("Product", ProductSchema);
+module.exports = mongoose.model("Service", ServiceSchema);

@@ -19,12 +19,12 @@ interface Staff {
 }
 
 const StaffCheckIn: React.FC = () => {
-  const { user, cart, setCart, fetchCart, loadingCart, cartError } = useAuth();
+  const { user, booking, setBooking, fetchBooking, loadingBooking, bookingError } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [availableStaff, setAvailableStaff] = useState<Staff[]>([]);
   const [staffLoading, setStaffLoading] = useState<boolean>(false);
   const [selectedStaff, setSelectedStaff] = useState<{
-    [cartId: string]: string | null;
+    [bookingId: string]: string | null;
   }>({});
   const [currentPage, setCurrentPage] = useState(1);
   const bookingsPerPage = 15;
@@ -35,26 +35,28 @@ const StaffCheckIn: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      fetchCart();
+      fetchBooking();
       fetchStaff();
     }
-  }, [user, fetchCart]);
+  }, [user, fetchBooking]);
 
   useEffect(() => {
-    setBookings(cart);
-    const updatedSelectedStaff: { [cartId: string]: string | null } = {};
-    cart.forEach((booking) => {
-      if (booking.CartID && booking.Skincare_staff) {
-        updatedSelectedStaff[booking.CartID] = booking.Skincare_staff;
-      }
+    setBookings(booking);
+    setSelectedStaff((prev) => {
+      const updatedSelectedStaff = { ...prev };
+      booking.forEach((b) => {
+        if (b.BookingID && b.Skincare_staff) {
+          updatedSelectedStaff[b.BookingID] = b.Skincare_staff;
+        }
+      });
+      return updatedSelectedStaff;
     });
-    setSelectedStaff(updatedSelectedStaff);
-  }, [cart]);
+  }, [booking]);
 
   const fetchStaff = async () => {
     setStaffLoading(true);
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("token");
       if (!token) throw new Error("Please log in to fetch staff list.");
 
       const response = await fetch(`${API_BASE_URL}/users/skincare-staff`, {
@@ -92,29 +94,28 @@ const StaffCheckIn: React.FC = () => {
   };
 
   const updateStaffAssignment = async (
-    cartId: string,
+    bookingId: string,
     staffName: string | null
   ) => {
-    if (!cartId) {
-      toast.error("Invalid CartID");
+    if (!bookingId) {
+      toast.error("Invalid BookingID");
       return;
     }
 
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("token");
       if (!token) throw new Error("Please log in to assign staff.");
 
-      const booking = bookings.find((b) => b.CartID === cartId);
-      if (!booking) throw new Error("Booking not found.");
+      const bookingItem = bookings.find((b) => b.BookingID === bookingId);
+      if (!bookingItem) throw new Error("Booking not found.");
 
-      // Kiểm tra xem therapist đã có lịch trùng chưa
-      const isStaffBooked = cart.some(
+      const isStaffBooked = booking.some(
         (b) =>
-          b.CartID !== cartId && // Không kiểm tra chính booking hiện tại
+          b.BookingID !== bookingId &&
           b.Skincare_staff === staffName &&
-          b.bookingDate === booking.bookingDate &&
-          b.startTime === booking.startTime &&
-          ["pending", "checked-in", "completed"].includes(b.status) // Bao gồm cả completed
+          b.bookingDate === bookingItem.bookingDate &&
+          b.startTime === bookingItem.startTime &&
+          ["pending", "checked-in", "completed"].includes(b.status)
       );
 
       if (isStaffBooked) {
@@ -123,7 +124,7 @@ const StaffCheckIn: React.FC = () => {
         );
       }
 
-      const response = await fetch(`${API_BASE_URL}/cart/${cartId}`, {
+      const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -143,20 +144,20 @@ const StaffCheckIn: React.FC = () => {
 
       const updatedBooking = await response.json();
       setBookings((prev) =>
-        prev.map((booking) =>
-          booking.CartID === cartId
-            ? { ...booking, ...updatedBooking.cart }
-            : booking
+        prev.map((b) =>
+          b.BookingID === bookingId
+            ? { ...b, ...updatedBooking.booking }
+            : b
         )
       );
-      setCart((prev) =>
-        prev.map((booking) =>
-          booking.CartID === cartId
-            ? { ...booking, ...updatedBooking.cart }
-            : booking
+      setBooking((prev) =>
+        prev.map((b) =>
+          b.BookingID === bookingId
+            ? { ...b, ...updatedBooking.booking }
+            : b
         )
       );
-      setSelectedStaff((prev) => ({ ...prev, [cartId]: staffName }));
+      setSelectedStaff((prev) => ({ ...prev, [bookingId]: staffName }));
       toast.success("Staff assignment updated successfully!");
     } catch (error) {
       const errorMessage =
@@ -165,27 +166,27 @@ const StaffCheckIn: React.FC = () => {
     }
   };
 
-  const handleCheckIn = async (cartId: string) => {
-    if (!cartId) {
-      toast.error("Invalid CartID");
+  const handleCheckIn = async (bookingId: string) => {
+    if (!bookingId) {
+      toast.error("Invalid BookingID");
       return;
     }
 
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("token");
       if (!token) throw new Error("Please log in to perform check-in.");
 
-      const booking = bookings.find((b) => b.CartID === cartId);
-      if (!booking) throw new Error("Booking not found.");
-      if (booking.status !== "pending")
+      const bookingItem = bookings.find((b) => b.BookingID === bookingId);
+      if (!bookingItem) throw new Error("Booking not found.");
+      if (bookingItem.status !== "pending")
         throw new Error("Can only check-in 'pending' bookings.");
 
-      const assignedStaff = selectedStaff[cartId] || booking.Skincare_staff;
+      const assignedStaff = selectedStaff[bookingId] || bookingItem.Skincare_staff;
       if (!assignedStaff) {
         throw new Error("Please assign a therapist before checking in.");
       }
 
-      const response = await fetch(`${API_BASE_URL}/cart/${cartId}`, {
+      const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -206,25 +207,25 @@ const StaffCheckIn: React.FC = () => {
         );
       }
 
-      const updatedCart = await response.json();
+      const updatedBooking = await response.json();
       setBookings((prev) =>
         prev.map((b) =>
-          b.CartID === cartId ? { ...b, ...updatedCart.cart } : b
+          b.BookingID === bookingId ? { ...b, ...updatedBooking.booking } : b
         )
       );
-      setCart((prev) =>
+      setBooking((prev) =>
         prev.map((b) =>
-          b.CartID === cartId ? { ...b, ...updatedCart.cart } : b
+          b.BookingID === bookingId ? { ...b, ...updatedBooking.booking } : b
         )
       );
 
       setSelectedStaff((prev) => ({
         ...prev,
-        [cartId]: assignedStaff,
+        [bookingId]: assignedStaff,
       }));
 
       toast.success("Check-in successful!");
-      await fetchCart();
+      await fetchBooking();
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
@@ -232,74 +233,17 @@ const StaffCheckIn: React.FC = () => {
     }
   };
 
-  const handleCheckOut = async (cartId: string) => {
-    if (!cartId) {
-      toast.error("Invalid CartID");
-      return;
-    }
+  const getAvailableStaffForBooking = (bookingItem: Booking): Staff[] => {
+    if (!bookingItem.bookingDate || !bookingItem.startTime) return availableStaff;
 
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) throw new Error("Please log in to perform check-out.");
-
-      const booking = bookings.find((b) => b.CartID === cartId);
-      if (!booking) throw new Error("Booking not found.");
-      if (booking.status !== "completed") {
-        throw new Error(
-          "Can only check-out 'completed' bookings. Please wait for therapist to complete."
-        );
-      }
-
-      const response = await fetch(`${API_BASE_URL}/cart/${cartId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": token,
-        },
-        body: JSON.stringify({ status: "checked-out" }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          `Failed to check-out: ${response.status} - ${
-            errorData.message || "Unknown error"
-          }`
-        );
-      }
-
-      const updatedCart = await response.json();
-      setBookings((prev) =>
-        prev.map((b) =>
-          b.CartID === cartId ? { ...b, ...updatedCart.cart } : b
-        )
-      );
-      setCart((prev) =>
-        prev.map((b) =>
-          b.CartID === cartId ? { ...b, ...updatedCart.cart } : b
-        )
-      );
-      toast.success("Check-out successful!");
-      await fetchCart();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      toast.error(`Check-out failed: ${errorMessage}`);
-    }
-  };
-
-  // Hàm lọc danh sách therapist khả dụng dựa trên timeslot
-  const getAvailableStaffForBooking = (booking: Booking): Staff[] => {
-    if (!booking.bookingDate || !booking.startTime) return availableStaff;
-
-    const bookedStaff = cart
+    const bookedStaff = booking
       .filter(
         (b) =>
-          b.CartID !== booking.CartID && // Không kiểm tra chính booking hiện tại
-          b.bookingDate === booking.bookingDate &&
-          b.startTime === booking.startTime &&
+          b.BookingID !== bookingItem.BookingID &&
+          b.bookingDate === bookingItem.bookingDate &&
+          b.startTime === bookingItem.startTime &&
           b.Skincare_staff &&
-          ["pending", "checked-in", "completed"].includes(b.status) // Bao gồm cả completed
+          ["pending", "checked-in", "completed"].includes(b.status)
       )
       .map((b) => b.Skincare_staff!);
 
@@ -328,7 +272,7 @@ const StaffCheckIn: React.FC = () => {
       <h1 className="text-3xl font-bold text-center mb-6">
         Staff Check-in Management
       </h1>
-      {loadingCart ? (
+      {loadingBooking ? (
         <div className="text-center">
           <svg
             className="animate-spin h-8 w-8 mx-auto text-blue-500"
@@ -352,8 +296,8 @@ const StaffCheckIn: React.FC = () => {
           </svg>
           <p className="mt-2 text-gray-600">Loading bookings...</p>
         </div>
-      ) : cartError ? (
-        <p className="text-center text-red-600">{cartError}</p>
+      ) : bookingError ? (
+        <p className="text-center text-red-600">{bookingError}</p>
       ) : bookings.length === 0 ? (
         <p className="text-center text-gray-600">No bookings available</p>
       ) : (
@@ -362,6 +306,9 @@ const StaffCheckIn: React.FC = () => {
             <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
               <thead className="bg-gray-100">
                 <tr>
+                <th className="py-3 px-4 border-b text-left whitespace-nowrap sticky left-0 bg-gray-100 z-10">
+                    BookingID
+                  </th>
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap sticky left-0 bg-gray-100 z-10">
                     Customer Name
                   </th>
@@ -401,83 +348,79 @@ const StaffCheckIn: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentBookings.map((booking) => {
+                {currentBookings.map((bookingItem) => {
                   const hasTherapist =
-                    !!booking.Skincare_staff ||
-                    !!selectedStaff[booking.CartID || ""];
+                    !!bookingItem.Skincare_staff ||
+                    !!selectedStaff[bookingItem.BookingID || ""];
                   const statusStyle =
-                    statusStyles[booking.status] || statusStyles.pending;
+                    statusStyles[bookingItem.status] || statusStyles.pending;
                   const filteredAvailableStaff = ["pending", "checked-in"].includes(
-                    booking.status
+                    bookingItem.status
                   )
-                    ? getAvailableStaffForBooking(booking)
+                    ? getAvailableStaffForBooking(bookingItem)
                     : availableStaff;
 
                   return (
                     <tr
-                      key={booking.CartID || Math.random().toString()}
+                      key={bookingItem.BookingID || Math.random().toString()}
                       className="hover:bg-gray-50 transition-colors duration-300"
                     >
                       <td className="py-2 px-4 border-b whitespace-nowrap sticky left-0 bg-white z-10">
-                        {booking.customerName}
+                        {bookingItem.BookingID}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap sticky left-0 bg-white z-10">
+                        {bookingItem.customerName}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.customerEmail}
+                        {bookingItem.customerEmail}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.customerPhone}
+                        {bookingItem.customerPhone}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.serviceName}
+                        {bookingItem.serviceName}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.bookingDate}
+                        {bookingItem.bookingDate}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.startTime}
+                        {bookingItem.startTime}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.endTime || "N/A"}
+                        {bookingItem.endTime || "N/A"}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.totalPrice?.toLocaleString("vi-VN") || "N/A"}
+                        {bookingItem.totalPrice?.toLocaleString("vi-VN") || "N/A"}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-sm font-medium ${statusStyle.bg} ${statusStyle.text}`}
                         >
-                          {statusStyle.icon} {booking.status}
+                          {statusStyle.icon} {bookingItem.status}
                         </span>
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.status === "pending" && hasTherapist ? (
+                        {bookingItem.status === "pending" && hasTherapist ? (
                           <button
-                            onClick={() => handleCheckIn(booking.CartID || "")}
+                            onClick={() => handleCheckIn(bookingItem.BookingID || "")}
                             className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600 transition-all duration-300 whitespace-nowrap"
                           >
                             Check-in
                           </button>
-                        ) : booking.status === "cancel" ? (
+                        ) : bookingItem.status === "cancel" ? (
                           <span className="text-red-500 font-semibold">
                             Cancelled
                           </span>
-                        ) : booking.status === "checked-in" ? (
-                          <span className="text-gray-500">
-                            Waiting for Therapist to Complete
-                          </span>
-                        ) : booking.status === "completed" ? (
-                          <button
-                            onClick={() => handleCheckOut(booking.CartID || "")}
-                            className="bg-purple-500 text-white py-1 px-3 rounded hover:bg-purple-600 transition-all duration-300 whitespace-nowrap"
-                          >
-                            Check-out
-                          </button>
                         ) : (
-                          <span className="text-gray-500">N/A</span>
+                          <span className="text-gray-500">
+                            {bookingItem.status === "checked-in"
+                              ? "Waiting for Therapist to Complete"
+                              : "N/A"}
+                          </span>
                         )}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {["pending", "checked-in"].includes(booking.status) ? (
+                        {["pending", "checked-in"].includes(bookingItem.status) ? (
                           staffLoading ? (
                             <span className="text-gray-500">
                               Loading staff...
@@ -485,18 +428,18 @@ const StaffCheckIn: React.FC = () => {
                           ) : (
                             <select
                               value={
-                                selectedStaff[booking.CartID || ""] ||
-                                booking.Skincare_staff ||
+                                selectedStaff[bookingItem.BookingID || ""] ||
+                                bookingItem.Skincare_staff ||
                                 ""
                               }
                               onChange={(e) => {
                                 const staffName = e.target.value || null;
                                 setSelectedStaff((prev) => ({
                                   ...prev,
-                                  [booking.CartID || ""]: staffName,
+                                  [bookingItem.BookingID || ""]: staffName,
                                 }));
                                 updateStaffAssignment(
-                                  booking.CartID || "",
+                                  bookingItem.BookingID || "",
                                   staffName
                                 );
                               }}
@@ -513,12 +456,14 @@ const StaffCheckIn: React.FC = () => {
                           )
                         ) : (
                           <span className="text-gray-700">
-                            {booking.Skincare_staff || "N/A"}
+                            {bookingItem.Skincare_staff ||
+                              selectedStaff[bookingItem.BookingID || ""] ||
+                              "N/A"}
                           </span>
                         )}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {booking.notes || "N/A"}
+                        {bookingItem.notes || "N/A"}
                       </td>
                     </tr>
                   );
@@ -555,11 +500,11 @@ const StaffCheckIn: React.FC = () => {
           </div>
           <div className="text-center mt-6">
             <button
-              onClick={fetchCart}
+              onClick={fetchBooking}
               className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition-all duration-300"
-              disabled={loadingCart}
+              disabled={loadingBooking}
             >
-              {loadingCart ? "Refreshing..." : "Refresh Bookings"}
+              {loadingBooking ? "Refreshing..." : "Refresh Bookings"}
             </button>
           </div>
         </>

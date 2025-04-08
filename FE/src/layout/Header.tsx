@@ -7,36 +7,91 @@ import logo from "../assets/logo7.png";
 import { Link, useNavigate } from "react-router-dom";
 import { Divider, Dropdown, MenuProps } from "antd";
 import { ChevronDown, User } from "lucide-react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
+import axios from "axios";
+
+const API_BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://luluspa-production.up.railway.app";
 
 const Header: React.FC = () => {
-  const { token, setToken, setUser, setCart, fetchCart } = useAuth();
+  const { token, setToken } = useAuth();
   const [localUser, setLocalUser] = useState<{
-    avatar?: string;
+    avatar?: string | undefined;
     username: string;
-    role?: string;
+    role?: string | undefined;
   } | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      // console.log("User data:", parsedUser);
-      setLocalUser({
-        username: parsedUser.username,
-        role: parsedUser.role || null,
-        avatar: parsedUser.avatar || null,
+  // Hàm lấy dữ liệu người dùng từ server
+  const fetchUserFromServer = async () => {
+    if (!token) {
+      setLocalUser(null);
+      setRole(null);
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/auth/me`, {
+        headers: { "x-auth-token": token },
       });
-      setRole(parsedUser.role || null);
-    } else {
+
+      // Kiểm tra response.data có tồn tại không
+      if (!response.data) {
+        throw new Error("No user data returned from server");
+      }
+
+      // Định nghĩa userData với kiểu chính xác
+      const userData: {
+        username: string;
+        role?: string | undefined;
+        avatar?: string | undefined;
+      } = {
+        username: response.data.username || "",
+        role: response.data.role || undefined,
+        avatar: response.data.avatar
+          ? `${API_BASE_URL}${response.data.avatar}?t=${new Date().getTime()}`
+          : undefined, // Sử dụng undefined thay vì null
+      };
+
+      setLocalUser(userData);
+      setRole(userData.role || null);
+
+      // Cập nhật localStorage với dữ liệu mới nhất từ server
+      const storedUser = localStorage.getItem("user");
+      const currentUser = storedUser ? JSON.parse(storedUser) : {};
+      const updatedUser = {
+        ...currentUser,
+        username: userData.username,
+        role: userData.role,
+        avatar: userData.avatar,
+      };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to fetch user information!";
+      toast.error(errorMessage, { autoClose: 3000 });
       setLocalUser(null);
       setRole(null);
     }
+  };
+
+  useEffect(() => {
+    fetchUserFromServer();
+
+    // Lắng nghe custom event khi localStorage thay đổi
+    const handleUserUpdate = () => {
+      fetchUserFromServer();
+    };
+
+    window.addEventListener("user-updated", handleUserUpdate);
+    return () => {
+      window.removeEventListener("user-updated", handleUserUpdate);
+    };
   }, [token]);
 
   const handleBookNow = () => {
@@ -55,7 +110,7 @@ const Header: React.FC = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     navigate("/login");
-    toast.success("Logged out successfully!");
+    toast.success("Logged out successfully!", { autoClose: 3000 });
   };
 
   const getDashboardLink = () => {
@@ -77,7 +132,6 @@ const Header: React.FC = () => {
   };
 
   const handleProfileClick = () => {
-    // console.log("User role from localStorage:", localStorage.getItem("user"));
     navigate(getDashboardLink());
   };
 
@@ -85,7 +139,10 @@ const Header: React.FC = () => {
     {
       key: "dashboard",
       label: (
-        <div className="px-4 py-2 flex items-center gap-2 text-gray-700 hover:bg-yellow-50" onClick={handleProfileClick}>
+        <div
+          className="px-4 py-2 flex items-center gap-2 text-gray-700 hover:bg-yellow-50"
+          onClick={handleProfileClick}
+        >
           <User size={16} />
           <span>{role === "user" ? "Order History" : "My Dashboard"}</span>
         </div>
@@ -94,7 +151,10 @@ const Header: React.FC = () => {
     {
       key: "settings",
       label: (
-        <Link to="/settings" className="px-4 py-2 flex items-center gap-2 text-gray-700 hover:bg-yellow-50">
+        <Link
+          to="/settings"
+          className="px-4 py-2 flex items-center gap-2 text-gray-700 hover:bg-yellow-50"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -117,7 +177,10 @@ const Header: React.FC = () => {
     {
       key: "logout",
       label: (
-        <div className="px-4 py-2 flex items-center gap-2 text-red-600 hover:bg-yellow-50" onClick={handleLogout}>
+        <div
+          className="px-4 py-2 flex items-center gap-2 text-red-600 hover:bg-yellow-50"
+          onClick={handleLogout}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -139,6 +202,14 @@ const Header: React.FC = () => {
     },
   ];
 
+  // Hàm lấy chữ cái đầu của username hoặc giá trị mặc định
+  const getInitial = (username: string | undefined) => {
+    if (username && username.length > 0) {
+      return username.charAt(0).toUpperCase();
+    }
+    return "U"; // Giá trị mặc định nếu username rỗng hoặc không tồn tại
+  };
+
   return (
     <header className="bg-[#dad5c9] text-black py-2 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center px-2">
@@ -159,38 +230,45 @@ const Header: React.FC = () => {
         <nav>
           <ul className="hidden md:flex space-x-16 text-base font-medium">
             <li>
-              <Link to="/" className="hover:text-yellow-300 transition duration-300">
+              <Link
+                to="/"
+                className="hover:text-yellow-300 transition duration-300"
+              >
                 Home
               </Link>
             </li>
             <li>
-              <Link to="/services" className="hover:text-yellow-300 transition duration-300">
+              <Link
+                to="/services"
+                className="hover:text-yellow-300 transition duration-300"
+              >
                 Services
               </Link>
             </li>
             <li>
-              <Link to="/test" className="hover:text-yellow-300 transition duration-300">
+              <Link
+                to="/test"
+                className="hover:text-yellow-300 transition duration-300"
+              >
                 Test
               </Link>
             </li>
             <li>
-              <Link to="/blog" className="hover:text-yellow-300 transition duration-300">
+              <Link
+                to="/blog"
+                className="hover:text-yellow-300 transition duration-300"
+              >
                 Blog
               </Link>
             </li>
             <li>
-              <Link to="/contact" className="hover:text-yellow-300 transition duration-300">
-              Contact
-              </Link>
-            </li>
-            {/* <li>
-              <button
-                onClick={() => setShowModal(true)}
-                className="hover:text-yellow-300 transition duration-300 text-base"
+              <Link
+                to="/contact"
+                className="hover:text-yellow-300 transition duration-300"
               >
                 Contact
-              </button>
-            </li> */}
+              </Link>
+            </li>
           </ul>
         </nav>
 
@@ -205,7 +283,11 @@ const Header: React.FC = () => {
 
           <div className="flex items-center space-x-3">
             {localUser ? (
-              <Dropdown menu={{ items: userMenuItems }} trigger={["click"]} placement="bottomRight">
+              <Dropdown
+                menu={{ items: userMenuItems }}
+                trigger={["click"]}
+                placement="bottomRight"
+              >
                 <button className="flex items-center gap-2 bg-yellow-300/20 hover:bg-yellow-300/30 text-black px-2 py-1 rounded-lg transition-all duration-200">
                   <div className="bg-yellow-300 rounded-full w-12 h-12 flex items-center justify-center overflow-hidden">
                     {localUser.avatar ? (
@@ -216,11 +298,13 @@ const Header: React.FC = () => {
                       />
                     ) : (
                       <span className="text-black font-semibold text-lg">
-                        {localUser.username.charAt(0).toUpperCase()}
+                        {getInitial(localUser?.username)}
                       </span>
                     )}
                   </div>
-                  <span className="text-base font-medium">{localUser.username}</span>
+                  <span className="text-base font-medium">
+                    {localUser.username || "User"}
+                  </span>
                   <ChevronDown size={24} className="text-gray-600" />
                 </button>
               </Dropdown>
@@ -298,8 +382,6 @@ const Header: React.FC = () => {
           </div>
         </div>
       )}
-
-      <ToastContainer autoClose={3000} />
     </header>
   );
 };

@@ -89,6 +89,43 @@ const sendAdminVerificationEmail = async (email, verifyLink) => {
   }
 };
 
-module.exports = { sendOTP, sendResetPasswordOTP, sendAdminVerificationEmail };
+// Gửi email thông báo trạng thái thanh toán
+const sendPaymentStatusEmail = async ({
+  email,
+  customerName,
+  paymentID,
+  status,
+  amount,
+  bookingID,
+}) => {
+  const statusText = {
+    success: "Thành công",
+    failed: "Thất bại",
+    cancelled: "Đã hủy",
+    pending: "Đang chờ",
+  };
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Cập nhật trạng thái thanh toán cho đơn ${bookingID}`,
+    html: `
+      <h2>Xin chào ${customerName},</h2>
+      <p>Chúng tôi xin thông báo trạng thái thanh toán của bạn:</p>
+      <ul>
+        <li><strong>Mã thanh toán:</strong> ${paymentID}</li>
+        <li><strong>Mã đặt chỗ:</strong> ${bookingID}</li>
+        <li><strong>Số tiền:</strong> ${amount.toLocaleString()} VND</li>
+        <li><strong>Trạng thái:</strong> ${statusText[status]}</li>
+      </ul>
+      <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+      <p>Trân trọng,<br/>Đội ngũ hỗ trợ</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+module.exports = { sendOTP, sendResetPasswordOTP, sendAdminVerificationEmail, sendPaymentStatusEmail };
 
 

@@ -22,13 +22,13 @@ const get = (url: string, token: string) => {
 export const getUsers = (token: string) => get("/users", token);
 
 // CARTS
-export const getCarts = (token: string) => get("/cart", token);
+export const getBookings = (token: string) => get("/bookings", token);
 
 // PRODUCTS
-export const getProducts = (token: string) => get("/products", token);
+export const getServices = (token: string) => get("/services", token);
 
 // PAYMENTS
-export const getPayments = (token: string) => get("/payments", token);
+export const getPayments = (token: string) => get("/payments/all", token);
 
 // RATINGS
 export const getRatings = (token: string) => get("/ratings", token);
@@ -46,17 +46,17 @@ export const getReviews = (token: string) => get("/reviews", token);
 export const getBlogs = (token: string) => get("/blogs", token);
 
 // QUESTIONS
-export const getQuestions = (token: string) => get("/questions", token);
+export const getQuizzs = (token: string) => get("/quizzs", token);
 
 export default {
   getUsers,
-  getCarts,
-  getProducts,
+  getBookings,
+  getServices,
   getPayments,
   getRatings,
   getCategories,
   getVouchers,
   getReviews,
   getBlogs,
-  getQuestions,
+  getQuizzs,
 };

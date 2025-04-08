@@ -7,35 +7,54 @@ import { useAuth } from "../../context/AuthContext";
 function ManageService() {
   const { token } = useAuth();
   const title = "Service";
-  const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
-    []
-  );
+  const [categories, setCategories] = useState<{ _id: string; name: string }[]>([]);
   const [vouchers, setVouchers] = useState<
-    { _id: string; code: string; discountPercentage: number }[]
-  >([]);
+    { _id: string; code: string; discountPercentage: number; expiryDate: string }[]
+  >([]); // Thêm expiryDate vào kiểu dữ liệu
   const [isVoucherModalVisible, setIsVoucherModalVisible] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(
-    null
-  );
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchName, setSearchName] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
-    undefined
-  );
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
 
-  // Fetch products
+  // Hàm kiểm tra voucher có hết hạn hay không
+  const isVoucherExpired = (expiryDate: string) => {
+    const currentDate = new Date();
+    const expiry = new Date(expiryDate);
+    return expiry < currentDate; // Trả về true nếu voucher đã hết hạn
+  };
+
+  // Fetch products và tự động xóa voucher hết hạn
   const fetchProducts = async () => {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await api.get("/products", {
+      const res = await api.get("/services", {
         headers: { "x-auth-token": token },
       });
-      setProducts(res.data || []);
-      setFilteredProducts(res.data || []); // Ban đầu hiển thị tất cả
+      const services = res.data || [];
+
+      // Kiểm tra và xóa voucher hết hạn
+      for (const service of services) {
+        if (service.vouchers && service.vouchers.length > 0) {
+          const expiredVouchers = service.vouchers.filter((voucher: any) =>
+            isVoucherExpired(voucher.expiryDate)
+          );
+          for (const voucher of expiredVouchers) {
+            await handleRemoveVoucher(service._id, voucher._id);
+          }
+        }
+      }
+
+      // Cập nhật lại danh sách service sau khi xóa voucher hết hạn
+      const updatedRes = await api.get("/services", {
+        headers: { "x-auth-token": token },
+      });
+      setProducts(updatedRes.data || []);
+      setFilteredProducts(updatedRes.data || []);
     } catch (error: any) {
       console.error(
         "Error fetching products:",
@@ -165,11 +184,12 @@ function ManageService() {
           {vouchers?.map((voucher: any) => (
             <Tag
               key={voucher._id}
-              color="blue"
+              color={isVoucherExpired(voucher.expiryDate) ? "red" : "blue"}
               closable
               onClose={() => handleRemoveVoucher(record._id, voucher._id)}
             >
               {voucher.code} ({voucher.discountPercentage}%)
+              {isVoucherExpired(voucher.expiryDate) && " (Expired)"}
             </Tag>
           ))}
           {record.vouchers.length === 0 && (
@@ -249,10 +269,19 @@ function ManageService() {
       return;
     }
 
+    const selectedVoucherData = vouchers.find((v) => v._id === selectedVoucher);
+    if (selectedVoucherData && isVoucherExpired(selectedVoucherData.expiryDate)) {
+      Modal.warning({
+        title: "Voucher Expired",
+        content: "The selected voucher has expired and cannot be added.",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       await api.post(
-        `/products/${selectedProductId}/vouchers`,
+        `/services/${selectedProductId}/vouchers`,
         { voucherId: selectedVoucher },
         { headers: { "x-auth-token": token } }
       );
@@ -269,11 +298,11 @@ function ManageService() {
     }
   };
 
-  const handleRemoveVoucher = async (productId: string, voucherId: string) => {
+  const handleRemoveVoucher = async (service_id: string, voucherId: string) => {
     if (!token) return;
     try {
       setLoading(true);
-      await api.delete(`/products/${productId}/vouchers/${voucherId}`, {
+      await api.delete(`/services/${service_id}/vouchers/${voucherId}`, {
         headers: { "x-auth-token": token },
       });
       fetchProducts();
@@ -322,7 +351,7 @@ function ManageService() {
         title={title}
         columns={columns}
         formItems={formItems}
-        apiEndpoint="/products"
+        apiEndpoint="/services"
         dataSource={filteredProducts}
         onUpdateSuccess={fetchProducts}
         filterControls={filterControls}
@@ -341,11 +370,14 @@ function ManageService() {
             onChange={(value) => setSelectedVoucher(value)}
             value={selectedVoucher}
           >
-            {vouchers.map((voucher) => (
-              <Select.Option key={voucher._id} value={voucher._id}>
-                {voucher.code} ({voucher.discountPercentage}%)
-              </Select.Option>
-            ))}
+            {vouchers
+              .filter((voucher) => !isVoucherExpired(voucher.expiryDate)) // Chỉ hiển thị voucher chưa hết hạn
+              .map((voucher) => (
+                <Select.Option key={voucher._id} value={voucher._id}>
+                  {voucher.code} ({voucher.discountPercentage}%) - Expires on{" "}
+                  {new Date(voucher.expiryDate).toLocaleDateString()}
+                </Select.Option>
+              ))}
           </Select>
         ) : (
           <p>

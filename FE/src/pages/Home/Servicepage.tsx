@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import { JSX } from "react/jsx-runtime";
 import { Service } from "../../types/booking";
 import SearchFilter from "../../components/Home/SearchFilter";
+import logo7 from "../../assets/logo7.png";
 
 // Animation variants từ HomePage
 const cardVariants = {
@@ -84,7 +85,7 @@ const ServicePage: React.FC = () => {
         : "https://luluspa-production.up.railway.app/api";
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/products/`);
+      const response = await axios.get(`${API_BASE_URL}/services/`);
       const formattedServices = formatServices(response.data);
       setServices(formattedServices);
     } catch (error) {
@@ -101,8 +102,8 @@ const ServicePage: React.FC = () => {
         typeof service.price === "object" && service.price?.$numberDecimal
           ? Number.parseFloat(service.price.$numberDecimal)
           : typeof service.price === "string"
-          ? Number.parseFloat(service.price.replace(/\./g, ""))
-          : service.price || 0,
+            ? Number.parseFloat(service.price.replace(/\./g, ""))
+            : service.price || 0,
       discountedPrice: service.discountedPrice ?? null,
       isRecommended: recommendedType
         ? service.category?.name.toUpperCase().includes(recommendedType.toUpperCase())
@@ -122,9 +123,8 @@ const ServicePage: React.FC = () => {
     return (
       <div className="flex items-center gap-2">
         <span
-          className={`text-base font-semibold ${
-            discountedPrice != null ? "text-gray-500 line-through" : "text-yellow-600"
-          }`}
+          className={`text-base font-semibold ${discountedPrice != null ? "text-gray-500 line-through" : "text-yellow-600"
+            }`}
         >
           {price.toLocaleString("vi-VN")} VNĐ
         </span>
@@ -229,7 +229,7 @@ const ServicePage: React.FC = () => {
                             {Math.round(
                               ((service.price as number - service.discountedPrice!) /
                                 (service.price as number)) *
-                                100,
+                              100,
                             )}
                             %
                           </span>
@@ -238,11 +238,11 @@ const ServicePage: React.FC = () => {
                       </div>
                     )}
                     <img
-                      src={service.image || "/default-image.jpg"}
+                      src={service.image || logo7} // Sử dụng logo7 làm hình ảnh mặc định nếu service.image không tồn tại
                       alt={service.name}
                       className="w-full h-80 object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/default-image.jpg";
+                        (e.target as HTMLImageElement).src = logo7; // Sử dụng logo7 khi hình ảnh không tải được
                       }}
                     />
                     {service.discountedPrice != null && (
@@ -280,11 +280,10 @@ const ServicePage: React.FC = () => {
                           {service.duration ? `${service.duration} min` : "TBD"}
                         </div>
                         <motion.button
-                          className={`px-4 py-2 rounded-lg font-semibold text-sm transition duration-300 ${
-                            service.discountedPrice != null
+                          className={`px-4 py-2 rounded-lg font-semibold text-sm transition duration-300 ${service.discountedPrice != null
                               ? "bg-red-500 text-white hover:bg-red-600"
                               : "bg-yellow-400 text-gray-900 hover:bg-yellow-300"
-                          }`}
+                            }`}
                           variants={buttonVariants}
                           whileHover="hover"
                           whileTap="tap"
@@ -315,11 +314,10 @@ const ServicePage: React.FC = () => {
                         </p>
                         <motion.button
                           onClick={() => handleServiceClick(service._id)}
-                          className={`px-6 py-3 rounded-lg font-semibold text-sm transition duration-300 ${
-                            service.discountedPrice != null
+                          className={`px-6 py-3 rounded-lg font-semibold text-sm transition duration-300 ${service.discountedPrice != null
                               ? "bg-red-500 text-white hover:bg-red-600"
                               : "bg-yellow-400 text-gray-900 hover:bg-yellow-300"
-                          }`}
+                            }`}
                           variants={buttonVariants}
                           whileHover="hover"
                           whileTap="tap"
