@@ -17,7 +17,9 @@ const statusStyles = {
 const ListOfAssign: React.FC = () => {
   const { user, booking, setBooking, fetchBooking, loadingBooking, bookingError } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
   const bookingsPerPage = 5;
   const API_BASE_URL =
     window.location.hostname === "localhost"
@@ -36,7 +38,18 @@ const ListOfAssign: React.FC = () => {
 
   useEffect(() => {
     setBookings(booking);
+    setFilteredBookings(booking);
   }, [booking]);
+
+  useEffect(() => {
+    const filtered = bookings.filter(
+      (bookingItem) =>
+        bookingItem.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        bookingItem.BookingID?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredBookings(filtered);
+    setCurrentPage(1);
+  }, [searchTerm, bookings]);
 
   useEffect(() => {
     if (!isModalOpen) {
@@ -144,11 +157,11 @@ const ListOfAssign: React.FC = () => {
 
   const indexOfLastBooking = currentPage * bookingsPerPage;
   const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage;
-  const currentBookings = bookings.slice(
+  const currentBookings = filteredBookings.slice(
     indexOfFirstBooking,
     indexOfLastBooking
   );
-  const totalPages = Math.ceil(bookings.length / bookingsPerPage);
+  const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage);
 
   const goToPreviousPage = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -164,6 +177,17 @@ const ListOfAssign: React.FC = () => {
       <h1 className="text-3xl font-bold text-center mb-6">
         Therapist Assigned Bookings
       </h1>
+      
+      <div className="mb-6 flex justify-left">
+        <Input
+          placeholder="Search by customer name or booking ID..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-md w-full"
+          prefix={<span>🔍</span>}
+        />
+      </div>
+
       {loadingBooking ? (
         <div className="text-center">
           <svg
@@ -190,8 +214,12 @@ const ListOfAssign: React.FC = () => {
         </div>
       ) : bookingError ? (
         <p className="text-center text-red-600">{bookingError}</p>
-      ) : bookings.length === 0 ? (
-        <p className="text-center text-gray-600">No bookings assigned to you</p>
+      ) : filteredBookings.length === 0 ? (
+        <p className="text-center text-gray-600">
+          {searchTerm 
+            ? "No bookings found matching your search"
+            : "No bookings assigned to you"}
+        </p>
       ) : (
         <>
           <div className="overflow-x-auto">
@@ -212,6 +240,9 @@ const ListOfAssign: React.FC = () => {
                   </th>
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Start Time
+                  </th>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
+                    End Time
                   </th>
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Total Price (VND)
@@ -250,6 +281,9 @@ const ListOfAssign: React.FC = () => {
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
                         {bookingItem.startTime}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        {bookingItem.endTime}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
                         {bookingItem.totalPrice?.toLocaleString("vi-VN") || "N/A"}
