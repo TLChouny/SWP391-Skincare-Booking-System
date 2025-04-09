@@ -7,20 +7,24 @@ const handlePaymentWebhook = async (req, res) => {
 
     console.log("✅ Webhook Received:", req.body);
 
-    // Kiểm tra tính hợp lệ của webhook
+    // Không kiểm tra nghiêm ngặt dữ liệu webhook để đảm bảo trả về 200
+    // Chỉ ghi log nếu dữ liệu không hợp lệ, nhưng không trả về lỗi
     if (code !== "00" || !success || desc !== "success" || !data?.orderCode) {
-      return res.status(400).json({
-        error: -1,
-        message: "Invalid webhook data",
+      console.warn("⚠️ Dữ liệu webhook không hợp lệ:", { code, success, desc, orderCode: data?.orderCode });
+      return res.status(200).json({
+        error: 0,
+        message: "Webhook received but data is invalid, no updates performed",
+        data: null,
       });
     }
 
     const orderCode = Number(data.orderCode);
     if (isNaN(orderCode)) {
       console.warn(`⚠️ Invalid orderCode: ${data.orderCode}`);
-      return res.status(400).json({
-        error: -1,
-        message: "Invalid orderCode format",
+      return res.status(200).json({
+        error: 0,
+        message: "Webhook received but orderCode is invalid, no updates performed",
+        data: null,
       });
     }
 
@@ -28,16 +32,17 @@ const handlePaymentWebhook = async (req, res) => {
     const payment = await Payment.findOne({ orderCode });
     if (!payment) {
       console.warn(`❌ Payment with orderCode ${orderCode} not found`);
-      return res.status(404).json({
-        error: -1,
-        message: "Payment not found",
+      return res.status(200).json({
+        error: 0,
+        message: "Webhook received but payment not found, no updates performed",
+        data: null,
       });
     }
 
     // Nếu payment đã success thì không làm lại
     if (payment.status === "success") {
       console.log(`✅ Payment ${orderCode} already marked as success`);
-      return res.json({
+      return res.status(200).json({
         error: 0,
         message: "Payment already processed",
         data: { payment, updatedBookingCount: 0 },
@@ -53,9 +58,11 @@ const handlePaymentWebhook = async (req, res) => {
     // Tìm và cập nhật các booking liên quan
     const paymentID = payment.paymentID;
     if (!paymentID) {
-      return res.status(400).json({
-        error: -1,
-        message: "Missing paymentID in payment document",
+      console.warn("⚠️ Missing paymentID in payment document");
+      return res.status(200).json({
+        error: 0,
+        message: "Webhook received but paymentID is missing, no bookings updated",
+        data: { payment, updatedBookingCount: 0 },
       });
     }
 
@@ -81,10 +88,9 @@ const handlePaymentWebhook = async (req, res) => {
       { $set: { status: "checked-out", updatedAt: new Date() } }
     );
 
-
     console.log(`✅ Updated ${updated.modifiedCount} bookings to 'checked-out'`);
 
-    return res.json({
+    return res.status(200).json({
       error: 0,
       message: "Payment and bookings updated successfully",
       data: {
@@ -94,9 +100,10 @@ const handlePaymentWebhook = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Webhook error:", error.message || error);
-    return res.status(500).json({
-      error: -1,
-      message: "Server error",
+    // Trả về 200 ngay cả khi có lỗi để PayOS chấp nhận webhook
+    return res.status(200).json({
+      error: 0,
+      message: "Webhook received but server error occurred, no updates performed",
       data: error.message || "Unknown error",
     });
   }
@@ -104,9 +111,9 @@ const handlePaymentWebhook = async (req, res) => {
 
 const handleWebhook = (req, res) => {
   res.status(200).json({
-      message: "Webhook endpoint is active",
-      timestamp: new Date().toISOString(),
-      status: "OK",
+    message: "Webhook endpoint is active",
+    timestamp: new Date().toISOString(),
+    status: "OK",
   });
 };
 
