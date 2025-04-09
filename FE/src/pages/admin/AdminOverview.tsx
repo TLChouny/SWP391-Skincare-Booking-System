@@ -70,23 +70,31 @@ const AdminOverview: React.FC = () => {
             getServices(token),
           ]);
 
+        console.log("API Responses:", {
+          users: userResponse.data,
+          bookings: bookingsResponse.data,
+          payments: paymentsResponse.data,
+          ratings: ratingsResponse.data,
+        });
+
+        // Chuẩn hóa bookings
         const bookings = Array.isArray(bookingsResponse.data.bookings)
-          ? bookingsResponse.data.carts
+          ? bookingsResponse.data.bookings
           : Array.isArray(bookingsResponse.data)
           ? bookingsResponse.data
           : [];
 
-        // Chuẩn hóa dữ liệu
-        const normalizedCarts = bookings.map((bookings: any) => ({
-          ...bookings,
-          CartID: bookings.CartID || bookings.BookingID || bookings._id,
-          startTime: bookings.startTime || bookings.start_time || null,
-          endTime: bookings.endTime || bookings.end_time || null,
-          bookingDate: bookings.bookingDate || bookings.createdAt || null,
-          totalPrice: bookings.totalPrice || bookings.originalPrice || 0,
-          Skincare_staff:
-          bookings.Skincare_staff || bookings.selectedTherapist?.name || null,
+        const normalizedCarts = bookings.map((booking: any) => ({
+          ...booking,
+          BookingID: booking.BookingID || booking.CartID || booking._id,
+          startTime: booking.startTime || booking.start_time || null,
+          endTime: booking.endTime || booking.end_time || null,
+          bookingDate: booking.bookingDate || booking.createdAt || null,
+          totalPrice: booking.totalPrice || booking.originalPrice || 0,
+          Skincare_staff: booking.Skincare_staff || booking.selectedTherapist?.name || null,
         }));
+
+        console.log("Normalized Bookings:", normalizedCarts);
 
         const sortedCarts = [...normalizedCarts].sort((a, b) => {
           const dateA = a.bookingDate ? new Date(a.bookingDate).getTime() : 0;
@@ -108,9 +116,7 @@ const AdminOverview: React.FC = () => {
           }
         });
 
-        const topServicesData: TopService[] = Array.from(
-          serviceCountMap.entries()
-        )
+        const topServicesData: TopService[] = Array.from(serviceCountMap.entries())
           .map(([serviceName, bookingCount]) => ({
             serviceName,
             bookingCount,
@@ -118,12 +124,14 @@ const AdminOverview: React.FC = () => {
           .sort((a, b) => b.bookingCount - a.bookingCount)
           .slice(0, 5);
 
+        // Chuẩn hóa payments
+        const payments = paymentsResponse.data.data?.payments || paymentsResponse.data || [];
+        console.log("Payments for calculation:", payments);
+
         setStats({
           totalUsers: calculateTotalUsers(userResponse.data),
           totalBookings: calculateTotalBookings(normalizedCarts),
-          totalPayments: calculateTotalSuccessfulPayments(
-            paymentsResponse.data.data || []
-          ),
+          totalPayments: calculateTotalSuccessfulPayments(payments),
           avgRating: calculateOverallAverageRating(ratingsResponse.data),
           totalBookingsCheckedOutAndReviewed: calculateTotalBookingsByStatus(
             normalizedCarts,
@@ -180,7 +188,8 @@ const AdminOverview: React.FC = () => {
             textDecoration: discountedPrice != null ? "line-through" : "none",
             color: discountedPrice != null ? "#6b7280" : "#1f2937",
             fontWeight: 500,
-          }}>
+          }}
+        >
           {originalPrice.toLocaleString("vi-VN")} VND
         </span>
         {discountedPrice != null && (
@@ -198,11 +207,10 @@ const AdminOverview: React.FC = () => {
       typeof dateInput === "number" ? new Date(dateInput) : new Date(dateInput);
     if (isNaN(date.getTime())) {
       if (typeof dateInput === "string") {
-        // Xử lý định dạng ngày đầy đủ
         const dateOnlyParts = dateInput.match(/(\d{4})-(\d{2})-(\d{2})/);
         if (dateOnlyParts) {
           const [_, year, month, day] = dateOnlyParts;
-          return `${day}/${month}/${year}`; // Chỉ hiển thị ngày, không kèm giờ
+          return `${day}/${month}/${year}`;
         }
       }
       return "N/A";
@@ -210,7 +218,7 @@ const AdminOverview: React.FC = () => {
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
-    return `${day}/${month}/${year}`; // Chỉ hiển thị ngày, không kèm giờ
+    return `${day}/${month}/${year}`;
   };
 
   const formatTimeOnly = (
@@ -218,12 +226,9 @@ const AdminOverview: React.FC = () => {
     dateInput?: string | number
   ) => {
     if (!timeInput) return "N/A";
-
-    // Kiểm tra định dạng giờ (HH:mm)
     const timeParts = timeInput.match(/(\d{2}):(\d{2})/);
     if (timeParts) {
       const [_, hours, minutes] = timeParts;
-      // Nếu có ngày đi kèm, kết hợp ngày và giờ
       if (dateInput) {
         const date =
           typeof dateInput === "number"
@@ -236,10 +241,8 @@ const AdminOverview: React.FC = () => {
           return `${day}/${month}/${year} ${hours}:${minutes}`;
         }
       }
-      // Nếu không có ngày, chỉ hiển thị giờ
       return `${hours}:${minutes}`;
     }
-
     return "N/A";
   };
 
@@ -328,14 +331,14 @@ const AdminOverview: React.FC = () => {
   return (
     <div style={{ width: "100%" }}>
       {loading ? (
-        <Spin size='large' className='flex justify-center mt-8' />
+        <Spin size="large" className="flex justify-center mt-8" />
       ) : (
         <>
           <Row gutter={[16, 16]} style={{ flexWrap: "nowrap" }}>
             <Col span={4.8}>
               <Card style={cardStyle}>
                 <Statistic
-                  title='Total Users'
+                  title="Total Users"
                   value={stats.totalUsers}
                   prefix={<UserOutlined />}
                   valueStyle={{ color: "#3f8600" }}
@@ -345,7 +348,7 @@ const AdminOverview: React.FC = () => {
             <Col span={4.8}>
               <Card style={cardStyle}>
                 <Statistic
-                  title='Total Bookings'
+                  title="Total Bookings"
                   value={stats.totalBookings}
                   prefix={<ShoppingOutlined />}
                   valueStyle={{ color: "#1890ff" }}
@@ -355,7 +358,7 @@ const AdminOverview: React.FC = () => {
             <Col span={4.8}>
               <Card style={cardStyle}>
                 <Statistic
-                  title='Successful Payments'
+                  title="Successful Payments"
                   value={stats.totalPayments}
                   prefix={<DollarOutlined />}
                   valueStyle={{ color: "#cf1322" }}
@@ -365,10 +368,10 @@ const AdminOverview: React.FC = () => {
             <Col span={4.8}>
               <Card style={cardStyle}>
                 <Statistic
-                  title='Average Rating'
+                  title="Average Rating"
                   value={stats.avgRating}
                   prefix={<StarOutlined />}
-                  suffix='/5'
+                  suffix="/5"
                   precision={1}
                   valueStyle={{ color: "#faad14" }}
                 />
@@ -377,7 +380,7 @@ const AdminOverview: React.FC = () => {
             <Col span={4.8}>
               <Card style={cardStyle}>
                 <Statistic
-                  title='Completed & Reviewed'
+                  title="Completed & Reviewed"
                   value={stats.totalBookingsCheckedOutAndReviewed}
                   prefix={<ShoppingOutlined />}
                   valueStyle={{ color: "#722ed1" }}
@@ -388,17 +391,18 @@ const AdminOverview: React.FC = () => {
 
           <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
             <Col xs={24} lg={12}>
-              <Card title='Overview Statistics' style={{ height: "100%" }}>
-                <ResponsiveContainer width='100%' height={300}>
+              <Card title="Overview Statistics" style={{ height: "100%" }}>
+                <ResponsiveContainer width="100%" height={300}>
                   <BarChart
                     data={chartData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray='3 3' />
-                    <XAxis dataKey='name' />
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey='value' fill='#8884d8' barSize={50} />
+                    <Bar dataKey="value" fill="#8884d8" barSize={50} />
                   </BarChart>
                 </ResponsiveContainer>
               </Card>
@@ -413,20 +417,20 @@ const AdminOverview: React.FC = () => {
                     Top Booked Services
                   </>
                 }
-                style={{ height: "100%" }}>
+                style={{ height: "100%" }}
+              >
                 <Table
                   columns={serviceColumns}
                   dataSource={topServices}
-                  rowKey='serviceName'
+                  rowKey="serviceName"
                   pagination={false}
-                  size='middle'
+                  size="middle"
                   bordered
                 />
               </Card>
             </Col>
           </Row>
 
-          {/* Bảng booking gần đây */}
           <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
             <Col span={24}>
               <Card
@@ -435,7 +439,8 @@ const AdminOverview: React.FC = () => {
                     <ClockCircleOutlined style={{ marginRight: 8 }} />
                     Recent Bookings
                   </>
-                }>
+                }
+              >
                 <Table
                   columns={recentBookingColumns}
                   dataSource={recentBookings}
@@ -443,7 +448,7 @@ const AdminOverview: React.FC = () => {
                     record.BookingID || Math.random().toString()
                   }
                   pagination={{ pageSize: 5 }}
-                  size='middle'
+                  size="middle"
                   bordered
                 />
               </Card>

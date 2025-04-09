@@ -8,14 +8,21 @@ import {
   FaBan,
 } from "react-icons/fa";
 import { Payment } from "../../types/booking";
+import { useAuth } from "../../context/AuthContext";
 
 interface ApiResponse {
   error: number;
   message: string;
-  data: Payment | Payment[];
+  data: {
+    payments: Payment[];
+    total: number;
+    page: number;
+    totalPages: number;
+  };
 }
 
 const StaffCheckOut: React.FC = () => {
+  const { token } = useAuth();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,8 +33,13 @@ const StaffCheckOut: React.FC = () => {
       : "https://luluspa-production.up.railway.app/api";
 
   useEffect(() => {
-    fetchPayments();
-  }, []);
+    if (token) {
+      fetchPayments();
+    } else {
+      console.warn("No token available, skipping fetch.");
+      toast.warn("Please log in to view payments.");
+    }
+  }, [token]);
 
   const fetchPayments = async () => {
     setLoading(true);
@@ -36,6 +48,7 @@ const StaffCheckOut: React.FC = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "x-auth-token": token || "",
         },
       });
 
@@ -49,14 +62,19 @@ const StaffCheckOut: React.FC = () => {
       }
 
       const data: ApiResponse = await response.json();
-      if (!Array.isArray(data.data)) {
-        console.error(
-          "API did not return a valid array in 'data' field:",
-          data
-        );
-        throw new Error("Invalid data format from API");
+      console.log("API Response:", data);
+
+      // Kiểm tra dữ liệu an toàn
+      const paymentData = data.data?.payments && Array.isArray(data.data.payments)
+        ? data.data.payments
+        : [];
+      
+      if (paymentData.length === 0) {
+        console.warn("No payments found in API response");
+        toast.info("No payments available.");
       }
-      setPayments(data.data);
+
+      setPayments(paymentData);
     } catch (error) {
       console.error("Error fetching payments:", error);
       toast.error(
@@ -70,10 +88,7 @@ const StaffCheckOut: React.FC = () => {
 
   const indexOfLastPayment = currentPage * paymentsPerPage;
   const indexOfFirstPayment = indexOfLastPayment - paymentsPerPage;
-  const currentPayments = payments.slice(
-    indexOfFirstPayment,
-    indexOfLastPayment
-  );
+  const currentPayments = payments.slice(indexOfFirstPayment, indexOfLastPayment);
   const totalPages = Math.ceil(payments.length / paymentsPerPage);
 
   const goToPreviousPage = () => {
@@ -86,9 +101,7 @@ const StaffCheckOut: React.FC = () => {
   return (
     <div className="container mx-auto p-6">
       <ToastContainer />
-      <h1 className="text-3xl font-bold text-center mb-6">
-        All Payments View
-      </h1>
+      <h1 className="text-3xl font-bold text-center mb-6">All Payments View</h1>
       {loading ? (
         <p className="text-center text-gray-600">Loading data...</p>
       ) : (
@@ -106,13 +119,14 @@ const StaffCheckOut: React.FC = () => {
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Amount (VND)
                   </th>
-                  {/* <th className="py-3 px-4 border-b text-left whitespace-nowrap">
-                    Description
-                  </th> */}
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Status
                   </th>
+                  {/* Uncomment nếu muốn hiển thị thêm cột */}
                   {/* <th className="py-3 px-4 border-b text-left whitespace-nowrap">
+                    Description
+                  </th>
+                  <th className="py-3 px-4 border-b text-left whitespace-nowrap">
                     Created At
                   </th>
                   <th className="py-3 px-4 border-b text-left whitespace-nowrap">
@@ -123,28 +137,25 @@ const StaffCheckOut: React.FC = () => {
               <tbody>
                 {currentPayments.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-4 text-gray-600">
+                    <td colSpan={4} className="text-center py-4 text-gray-600">
                       No payments available
                     </td>
                   </tr>
                 ) : (
                   currentPayments.map((payment) => (
                     <tr
-                      key={payment._id}
+                      key={payment._id || payment.paymentID} // Fallback nếu _id không có
                       className="hover:bg-gray-50 transition-colors duration-300"
                     >
                       <td className="py-2 px-4 border-b whitespace-nowrap sticky left-0 bg-white z-10">
-                        {payment.paymentID}
+                        {payment.paymentID || "N/A"}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {payment.description}
-                      </td>
-                      <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {payment.amount.toLocaleString("vi-VN")}
-                      </td>
-                      {/* <td className="py-2 px-4 border-b whitespace-nowrap">
                         {payment.description || "N/A"}
-                      </td> */}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        {payment.amount ? payment.amount.toLocaleString("vi-VN") : "N/A"}
+                      </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2 py-1 rounded-full text-sm font-medium ${
@@ -169,15 +180,20 @@ const StaffCheckOut: React.FC = () => {
                           {payment.status === "cancelled" && (
                             <FaBan className="mr-1" />
                           )}
-                          {payment.status.charAt(0).toUpperCase() +
-                            payment.status.slice(1)}
+                          {payment.status
+                            ? payment.status.charAt(0).toUpperCase() + payment.status.slice(1)
+                            : "N/A"}
                         </span>
                       </td>
+                      {/* Uncomment nếu muốn hiển thị thêm cột */}
                       {/* <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {new Date(payment.createdAt).toLocaleString()}
+                        {payment.description || "N/A"}
                       </td>
                       <td className="py-2 px-4 border-b whitespace-nowrap">
-                        {new Date(payment.updatedAt).toLocaleString()}
+                        {payment.createdAt ? new Date(payment.createdAt).toLocaleString() : "N/A"}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        {payment.updatedAt ? new Date(payment.updatedAt).toLocaleString() : "N/A"}
                       </td> */}
                     </tr>
                   ))

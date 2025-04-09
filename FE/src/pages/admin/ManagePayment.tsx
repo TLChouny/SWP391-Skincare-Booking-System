@@ -33,20 +33,21 @@ function ManagePayment() {
       const res = await api.get("/payments/all", {
         headers: { "x-auth-token": token },
       });
-      console.log("API response from /payments:", res.data.data); // Debug dữ liệu API
-      const data = Array.isArray(res.data.data) ? res.data.data : [];
-      // Thêm key cho mỗi item
+      console.log("API response from /payments:", res.data);
+      // Lấy mảng payments từ res.data.data.payments
+      const data = Array.isArray(res.data.data.payments) ? res.data.data.payments : [];
       const dataWithKey = data.map((payment: any) => ({
         ...payment,
-        key: payment._id, // Sử dụng _id làm key
+        key: payment._id || Math.random().toString(), // Fallback nếu _id không tồn tại
       }));
-      setPayments(dataWithKey);
-      setFilteredPayments(dataWithKey);
+      console.log("Data with keys:", dataWithKey);
+      setPayments([...dataWithKey]);
+      setFilteredPayments([...dataWithKey]);
       if (data.length === 0) {
         console.log("No payments returned from API.");
       }
     } catch (error: any) {
-      console.error("Error fetching payments:", error.response?.data.data || error);
+      console.error("Error fetching payments:", error.response?.data || error);
       setPayments([]);
       setFilteredPayments([]);
     } finally {
@@ -63,25 +64,29 @@ function ManagePayment() {
   const filterPayments = useCallback(() => {
     let result = [...payments];
 
-    // Lọc theo orderName
     if (searchOrderName) {
       result = result.filter((payment) =>
-        payment.orderName?.toLowerCase().includes(searchOrderName.toLowerCase())
+        payment.orderName?.toLowerCase?.().includes(searchOrderName.toLowerCase())
       );
     }
 
-    // Lọc theo status
     if (filterStatus) {
       result = result.filter((payment) => payment.status === filterStatus);
     }
 
-    console.log("Filtered payments:", result); // Debug dữ liệu sau khi lọc
-    setFilteredPayments(result);
+    console.log("Filtered payments:", result);
+    setFilteredPayments([...result]);
   }, [payments, searchOrderName, filterStatus]);
 
   useEffect(() => {
     filterPayments();
-  }, [searchOrderName, filterStatus, filterPayments]);
+  }, [searchOrderName, filterStatus, payments]);
+
+  // Debug state sau khi cập nhật
+  useEffect(() => {
+    console.log("Updated state - payments:", payments);
+    console.log("Updated state - filteredPayments:", filteredPayments);
+  }, [payments, filteredPayments]);
 
   const columns = [
     {
@@ -140,12 +145,13 @@ function ManagePayment() {
       <Form.Item name="description" label="Description">
         <Input.TextArea />
       </Form.Item>
-      <Form.Item name="status" label="Status" initialValue="pending">    <Select>
-        <Select.Option value="pending">Pending</Select.Option>
-        <Select.Option value="success">Success</Select.Option>
-        <Select.Option value="failed">Failed</Select.Option>
-        <Select.Option value="cancelled">Cancelled</Select.Option>
-      </Select>
+      <Form.Item name="status" label="Status" initialValue="pending">
+        <Select>
+          <Select.Option value="pending">Pending</Select.Option>
+          <Select.Option value="success">Success</Select.Option>
+          <Select.Option value="failed">Failed</Select.Option>
+          <Select.Option value="cancelled">Cancelled</Select.Option>
+        </Select>
       </Form.Item>
       <Form.Item name="returnUrl" label="Return URL">
         <Input />
@@ -157,7 +163,7 @@ function ManagePayment() {
   );
 
   const filterControls = (
-    <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+    <div style={{ display: "flex", gap: " Paul16px", alignItems: "center" }}>
       <Input.Search
         placeholder="Search by order name"
         onChange={(e) => setSearchOrderName(e.target.value)}
@@ -179,7 +185,6 @@ function ManagePayment() {
     </div>
   );
 
-  // Log dữ liệu trước khi render
   console.log("Payments dataSource before render:", filteredPayments);
 
   function onUpdateSuccess(): void {
@@ -196,6 +201,7 @@ function ManagePayment() {
       mode="readonly"
       onUpdateSuccess={onUpdateSuccess}
       filterControls={filterControls}
+      // loading={loading}
     />
   );
 }
